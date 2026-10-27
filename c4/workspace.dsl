@@ -3,7 +3,9 @@
  *
  * Fuente autoritativa de los diagramas de arquitectura.
  *
- * Estado: Fase 3 — C4 Nivel 2 (Contenedores). Se conserva el Nivel 1 de la Fase 2.
+ * Estado: Fase 4 — C4 Nivel 3 (Componentes) para los contenedores autorizados por ARG-02-R.
+ *   Se conservan el Nivel 1 (Fase 2) y el Nivel 2 (Fase 3 y remediación de ARG-02).
+ *   El servicio de transferencias y el ejecutor del alta de clientes NO tienen diseño de componentes (B-05).
  *   - Vista "ContextoPrincipal": alcance confirmado por el reto y supuestos aceptados.
  *   - Vista "ContextoAmpliado": agrega actores y sistemas candidatos y relaciones por validar.
  *   - Vista "Contenedores": contenedores de aplicación (sin almacenes ni broker).
@@ -354,62 +356,233 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
         // ================================================================
         // Relaciones de Nivel 2 — contenedores (Fase 3)
         // ================================================================
-        cliente -> plataforma.spa "Usa la banca web" "HTTPS"
-        cliente -> plataforma.app "Usa la banca móvil" "Aplicación nativa"
-        solicitante -> plataforma.app "Realiza la vinculación digital" "Aplicación nativa"
-        cliente -> plataforma.idp "Se autentica en las páginas de inicio de sesión" "HTTPS (OpenID Connect)"
-        solicitante -> plataforma.idp "Registra sus credenciales al activar el acceso" "HTTPS"
+        cliente -> plataforma.spa "Usa la banca web" "HTTPS" "Nivel2"
+        cliente -> plataforma.app "Usa la banca móvil" "Aplicación nativa" "Nivel2"
+        solicitante -> plataforma.app "Realiza la vinculación digital" "Aplicación nativa" "Nivel2"
+        cliente -> plataforma.idp "Se autentica en las páginas de inicio de sesión" "HTTPS (OpenID Connect)" "Nivel2"
+        solicitante -> plataforma.idp "Registra sus credenciales al activar el acceso" "HTTPS" "Nivel2"
 
-        plataforma.spa -> plataforma.gateway "Invoca la API de canal con la sesión del BFF" "HTTPS/JSON; cookie segura"
-        plataforma.app -> plataforma.gateway "Invoca la API de canal con un token de acceso" "HTTPS/JSON; OAuth 2.0"
-        plataforma.app -> plataforma.idp "Autentica al usuario (Authorization Code + PKCE)" "HTTPS (OpenID Connect)"
-        plataforma.gateway -> plataforma.idp "Obtiene las claves para validar tokens" "HTTPS (JWKS)"
-        plataforma.gateway -> plataforma.bff "Enruta las solicitudes de canal" "HTTPS/JSON"
-        plataforma.bff -> plataforma.idp "Intercambia códigos y renueva tokens como cliente confidencial de la SPA" "HTTPS (OAuth 2.0)"
+        plataforma.spa -> plataforma.gateway "Invoca la API de canal con la sesión del BFF" "HTTPS/JSON; cookie segura" "Nivel2"
+        plataforma.app -> plataforma.gateway "Invoca la API de canal con un token de acceso" "HTTPS/JSON; OAuth 2.0" "Nivel2"
+        plataforma.app -> plataforma.idp "Autentica al usuario (Authorization Code + PKCE)" "HTTPS (OpenID Connect)" "Nivel2"
+        plataforma.gateway -> plataforma.idp "Obtiene las claves para validar tokens" "HTTPS (JWKS)" "Nivel2"
+        plataforma.gateway -> plataforma.bff "Enruta las solicitudes de canal" "HTTPS/JSON" "Nivel2"
+        plataforma.bff -> plataforma.idp "Intercambia códigos y renueva tokens como cliente confidencial de la SPA" "HTTPS (OAuth 2.0)" "Nivel2"
 
-        plataforma.bff -> plataforma.bffSesiones "Guarda y recupera sesiones y tokens cifrados" "Protocolo del almacén (TLS)"
-        plataforma.bff -> plataforma.notif "Registra dispositivos y preferencias de notificación" "HTTPS/JSON"
-        plataforma.bff -> plataforma.consultas "Consulta cliente, cuentas y movimientos" "HTTPS/JSON"
-        plataforma.bff -> plataforma.vinculacion "Gestiona solicitudes de vinculación" "HTTPS/JSON"
-        plataforma.bff -> plataforma.transferencias "Inicia transferencias y consulta su estado por identificador de operación" "HTTPS/JSON; Idempotency-Key"
+        plataforma.bff -> plataforma.bffSesiones "Guarda y recupera sesiones y tokens cifrados" "Protocolo del almacén (TLS)" "Nivel2"
+        plataforma.bff -> plataforma.notif "Registra dispositivos y preferencias de notificación" "HTTPS/JSON" "Nivel2"
+        plataforma.bff -> plataforma.consultas "Consulta cliente, cuentas y movimientos" "HTTPS/JSON" "Nivel2"
+        plataforma.bff -> plataforma.vinculacion "Gestiona solicitudes de vinculación" "HTTPS/JSON" "Nivel2"
+        plataforma.bff -> plataforma.transferencias "Inicia transferencias y consulta su estado por identificador de operación" "HTTPS/JSON; Idempotency-Key" "Nivel2"
 
-        plataforma.consultas -> core "Consulta datos del cliente, cuentas y movimientos (ACL; CL-3/CL-4)" "Protocolo del Core (por validar, S3)"
-        plataforma.consultas -> complementario "Consulta información extendida (ACL)" "Protocolo por validar"
-        plataforma.consultas -> plataforma.cache "Lee y escribe datos derivados (Cache-Aside)" "Protocolo de la caché"
-        plataforma.consultas -> plataforma.consultasDb "Registra eventos de auditoría en el outbox" "SQL/TLS"
-        plataforma.consultas -> plataforma.broker "Publica eventos de auditoría y consume eventos de invalidación" "Mensajería"
+        plataforma.consultas -> core "Consulta datos del cliente, cuentas y movimientos (ACL; CL-3/CL-4)" "Protocolo del Core (por validar, S3)" "Nivel2"
+        plataforma.consultas -> complementario "Consulta información extendida (ACL)" "Protocolo por validar" "Nivel2"
+        plataforma.consultas -> plataforma.cache "Lee y escribe datos derivados (Cache-Aside)" "Protocolo de la caché" "Nivel2"
+        plataforma.consultas -> plataforma.consultasDb "Registra eventos de auditoría en el outbox" "SQL/TLS" "Nivel2"
+        plataforma.consultas -> plataforma.broker "Publica eventos de auditoría y consume eventos de invalidación" "Mensajería" "Nivel2"
 
-        plataforma.vinculacion -> kyc "Verifica la identidad del solicitante" "HTTPS (API del proveedor)"
-        plataforma.vinculacion -> core "Busca y crea clientes (ACL; CL-1/CL-2)" "Protocolo del Core (por validar, S3)"
-        plataforma.vinculacion -> plataforma.idp "Crea y activa la cuenta digital vinculada (único contenedor autorizado)" "HTTPS (API de administración)"
-        plataforma.vinculacion -> plataforma.vinculacionDb "Persiste el estado y la evidencia de la vinculación" "SQL/TLS"
-        plataforma.vinculacion -> plataforma.broker "Publica eventos de estado y de auditoría (outbox)" "Mensajería"
+        plataforma.vinculacion -> kyc "Verifica la identidad del solicitante" "HTTPS (API del proveedor)" "Nivel2"
+        plataforma.vinculacion -> core "Busca y crea clientes (ACL; CL-1/CL-2)" "Protocolo del Core (por validar, S3)" "Nivel2"
+        plataforma.vinculacion -> plataforma.idp "Crea y activa la cuenta digital vinculada (único contenedor autorizado)" "HTTPS (API de administración)" "Nivel2"
+        plataforma.vinculacion -> plataforma.vinculacionDb "Persiste el estado y la evidencia de la vinculación" "SQL/TLS" "Nivel2"
+        plataforma.vinculacion -> plataforma.broker "Publica eventos de estado y de auditoría (outbox)" "Mensajería" "Nivel2"
 
-        plataforma.transferencias -> core "Ejecuta transferencias y concilia (ACL; CL-1/CL-2; permiso de envío único)" "Protocolo del Core (por validar, S3)"
-        plataforma.transferencias -> transferencias "Solicita el procesamiento interbancario (ruta por validar)" "Por validar (Q-01)" "Ruta por validar"
-        plataforma.transferencias -> plataforma.transferenciasDb "Reserva intenciones y aplica transiciones cercadas" "SQL/TLS"
-        plataforma.transferencias -> plataforma.broker "Publica movimientos confirmados, cambios de estado y auditoría (outbox)" "Mensajería"
-        plataforma.transferencias -> plataforma.diarioDespacho "Anexa y confirma la autorización de despacho antes de cada envío (INV-DR-1)" "Por seleccionar (DD-23)"
-        plataforma.vinculacion -> plataforma.diarioDespacho "Anexa y confirma la autorización de despacho del alta de clientes" "Por seleccionar (DD-23)"
+        plataforma.transferencias -> core "Ejecuta transferencias y concilia (ACL; CL-1/CL-2; permiso de envío único)" "Protocolo del Core (por validar, S3)" "Nivel2"
+        plataforma.transferencias -> transferencias "Solicita el procesamiento interbancario (ruta por validar)" "Por validar (Q-01)" "Ruta por validar,Nivel2"
+        plataforma.transferencias -> plataforma.transferenciasDb "Reserva intenciones y aplica transiciones cercadas" "SQL/TLS" "Nivel2"
+        plataforma.transferencias -> plataforma.broker "Publica movimientos confirmados, cambios de estado y auditoría (outbox)" "Mensajería" "Nivel2"
+        plataforma.transferencias -> plataforma.diarioDespacho "Anexa y confirma la autorización de despacho antes de cada envío (INV-DR-1)" "Por seleccionar (DD-23)" "Nivel2"
+        plataforma.vinculacion -> plataforma.diarioDespacho "Anexa y confirma la autorización de despacho del alta de clientes" "Por seleccionar (DD-23)" "Nivel2"
 
-        plataforma.idp -> plataforma.idpDb "Lee y escribe cuentas, factores y sesiones" "SQL/TLS"
-        plataforma.idp -> plataforma.broker "Publica eventos de seguridad" "Mensajería"
+        plataforma.idp -> plataforma.idpDb "Lee y escribe cuentas, factores y sesiones" "SQL/TLS" "Nivel2"
+        plataforma.idp -> plataforma.broker "Publica eventos de seguridad" "Mensajería" "Nivel2"
 
-        plataforma.notif -> plataforma.broker "Consume eventos notificables" "Mensajería"
-        plataforma.notif -> plataforma.notifDb "Deduplica y registra los intentos de entrega" "SQL/TLS"
-        plataforma.notif -> notificaciones "Envía notificaciones push, SMS y correo" "HTTPS (API de los proveedores)"
-        plataforma.notif -> plataforma.consultas "Obtiene los datos de contacto vigentes del destinatario" "HTTPS/JSON (API interna)"
-        plataforma.bff -> plataforma.broker "Consume eventos de seguridad para invalidar sesiones" "Mensajería"
+        plataforma.notif -> plataforma.broker "Consume eventos notificables" "Mensajería" "Nivel2"
+        plataforma.notif -> plataforma.notifDb "Deduplica y registra los intentos de entrega" "SQL/TLS" "Nivel2"
+        plataforma.notif -> notificaciones "Envía notificaciones push, SMS y correo" "HTTPS (API de los proveedores)" "Nivel2"
+        plataforma.notif -> plataforma.consultas "Obtiene los datos de contacto vigentes del destinatario" "HTTPS/JSON (API interna)" "Nivel2"
+        plataforma.bff -> plataforma.broker "Consume eventos de seguridad para invalidar sesiones" "Mensajería" "Nivel2"
 
-        plataforma.auditoria -> plataforma.broker "Consume eventos de auditoría" "Mensajería"
-        plataforma.auditoria -> plataforma.auditoriaDb "Anexa registros encadenados" "SQL/TLS"
+        plataforma.auditoria -> plataforma.broker "Consume eventos de auditoría" "Mensajería" "Nivel2"
+        plataforma.auditoria -> plataforma.auditoriaDb "Anexa registros encadenados" "SQL/TLS" "Nivel2"
 
-        operadorSoporte -> plataforma.consola "Resuelve casos de conciliación y revisión manual" "HTTPS" "Por validar"
-        auditor -> plataforma.consola "Consulta el registro de auditoría" "HTTPS" "Por validar"
-        plataforma.consola -> plataforma.transferencias "Resuelve casos de conciliación y cierres excepcionales (cuatro ojos)" "HTTPS/JSON (API de operaciones)"
-        plataforma.consola -> plataforma.vinculacion "Resuelve revisiones manuales de vinculación (cuatro ojos)" "HTTPS/JSON (API de operaciones)"
-        plataforma.consola -> plataforma.auditoria "Consulta el registro de auditoría" "HTTPS/JSON"
-        plataforma.consola -> idpCorporativo "Autentica al personal (federación)" "OpenID Connect o SAML" "Por validar"
+        operadorSoporte -> plataforma.consola "Resuelve casos de conciliación y revisión manual" "HTTPS" "Por validar,Nivel2"
+        auditor -> plataforma.consola "Consulta el registro de auditoría" "HTTPS" "Por validar,Nivel2"
+        plataforma.consola -> plataforma.transferencias "Resuelve casos de conciliación y cierres excepcionales (cuatro ojos)" "HTTPS/JSON (API de operaciones)" "Nivel2"
+        plataforma.consola -> plataforma.vinculacion "Resuelve revisiones manuales de vinculación (cuatro ojos)" "HTTPS/JSON (API de operaciones)" "Nivel2"
+        plataforma.consola -> plataforma.auditoria "Consulta el registro de auditoría" "HTTPS/JSON" "Nivel2"
+        plataforma.consola -> idpCorporativo "Autentica al personal (federación)" "OpenID Connect o SAML" "Por validar,Nivel2"
+
+        // ================================================================
+        // Nivel 3 — Componentes (Fase 4). Solo contenedores autorizados por ARG-02-R.
+        // El servicio de transferencias NO tiene componentes: diseño bloqueado (B-05).
+        // ================================================================
+        !element plataforma.bff {
+            bffApi = component "API de canal" "Controladores HTTP por canal (web y móvil): validación de esquemas, correlación y propagación del plazo." "Módulo de entrada"
+            bffSeguridad = component "Contexto de seguridad del canal" "Resuelve el principal desde la sesión web o desde el token móvil; comprueba la audiencia y los alcances." "Módulo de seguridad"
+            bffSesion = component "Gestor de sesión web" "Cliente confidencial OIDC de la SPA: cookie __Host-, anti-CSRF, renovación y rotación de tokens, cierre de sesión e invalidación (ADR-0019)." "Módulo de seguridad"
+            bffComposicion = component "Composición de lecturas" "Tablero y movimientos: combina consultas con las operaciones en curso; degradación explícita si no puede verificarlas (ARG02-M06)." "Caso de uso de canal"
+            bffRelevoTransferencias = component "Relevo de transferencias" "Retransmite el inicio y la consulta de estado por identificador de operación; propaga Idempotency-Key sin cambios; sin reintentos (PT-04)." "Caso de uso de canal"
+            bffVinculacion = component "Adaptador del flujo de vinculación" "Adapta al canal móvil las etapas de vinculación; sin reglas de negocio." "Caso de uso de canal"
+            bffDispositivos = component "Relevo de registro de dispositivos" "Registra los tokens de dispositivo y las preferencias de notificación de la app." "Caso de uso de canal"
+            bffClientes = component "Clientes de servicios de dominio" "Llamadas HTTP con timeouts, plazo propagado y Circuit Breaker por servicio (SDK, ADR-0003)." "Adaptador de salida"
+            bffEventosSeguridad = component "Consumidor de eventos de seguridad" "Invalida las sesiones de un sujeto ante cambios de credenciales, bloqueos o revocaciones." "Adaptador de entrada (eventos)"
+            bffPublicador = component "Publicador de eventos de sesión" "Publica los eventos de inicio y cierre de sesión (A7) con confirmación." "Adaptador de salida (eventos)"
+        }
+        !element plataforma.consultas {
+            conApi = component "API de consultas" "Endpoints de canal para el perfil, las cuentas, los saldos y los movimientos; paginación y validación." "Módulo de entrada"
+            conApiContactos = component "API interna de contactos" "Datos de contacto vigentes del destinatario para el servicio de notificaciones; solo autenticación entre servicios." "Módulo de entrada"
+            conAutorizacion = component "Autorización de acceso a recursos" "Verifica que cada cuenta o recurso pertenezca al cliente autenticado (protección contra el acceso a objetos ajenos)." "Política de dominio"
+            conPerfil = component "Caso de uso: perfil del cliente" "Combina datos básicos del Core y extendidos del Sistema Complementario." "Caso de uso"
+            conCuentas = component "Caso de uso: cuentas, saldos y movimientos" "Lecturas con frescura por categoría; read-your-writes; indicador de antigüedad." "Caso de uso"
+            conContactos = component "Caso de uso: datos de contacto" "Contactos vigentes para notificaciones, con minimización." "Caso de uso"
+            conFrescura = component "Política de frescura" "Matriz de cacheabilidad, TTL de seguridad gobernados y ventana read-your-writes (ADR-0004)." "Política de dominio"
+            conCache = component "Repositorio Cache-Aside" "Lectura y escritura en la caché con marcas de invalidación contra la carrera de llenado." "Adaptador de salida"
+            conInvalidacion = component "Consumidor de invalidaciones" "Aplica marcas de invalidación ante eventos de movimientos confirmados." "Adaptador de entrada (eventos)"
+            conAclClientes = component "ACL de clientes (lectura)" "Traduce el modelo de cliente del Core; clasificación de errores." "ACL"
+            conAclMovimientos = component "ACL de movimientos" "Traduce cuentas, saldos y movimientos del Core; paginación." "ACL"
+            conAclComplementario = component "ACL del Sistema Complementario" "Traduce los datos extendidos y los contactos." "ACL"
+            conAdmision = component "Control de admisión hacia el Core" "Cuotas CL-3 y CL-4 por réplica, bulkheads y presión de retorno (ADR-0011, RI-01 a RI-08)." "Política técnica"
+            conAuditoria = component "Registrador de auditoría de doble ruta" "Eventos A4 y A5: publicación confirmada en el broker o outbox local; responde solo con una ruta confirmada (ADR-0020)." "Adaptador de salida"
+        }
+        !element plataforma.vinculacion {
+            vinApi = component "API de vinculación" "Endpoints del canal móvil para iniciar y avanzar la vinculación; Idempotency-Key obligatoria (ADR-0006)." "Módulo de entrada"
+            vinApiOperaciones = component "API de operaciones" "Revisión manual con cuatro ojos; no puede asignar CREATED_BY_THIS_REQUEST sin evidencia." "Módulo de entrada"
+            vinAplicacion = component "Servicio de aplicación de vinculación" "Orquesta las etapas E1 a E6 y los límites transaccionales; sin lógica de integración." "Caso de uso"
+            vinDominio = component "Modelo de dominio de vinculación" "Estados, transiciones válidas e invariantes INV-O1 a INV-O6." "Dominio"
+            vinPolitica = component "Política de autorización de vinculación" "Reglas VD-01 a VD-10; ruta PRE_EXISTING deshabilitada hasta DD-21 (falla cerrada)." "Política de dominio"
+            vinKyc = component "ACL del proveedor KYC/biométrico" "Traduce resultados del proveedor; la indisponibilidad no es un rechazo (VD-09)." "ACL"
+            vinBusqueda = component "ACL de búsqueda de clientes" "Búsqueda por identificación en el Core (CL-2, solo lectura)." "ACL"
+            vinAlta = component "Ejecutor del alta en el Core (BLOQUEADO)" "Frontera del tramo CUSTOMER_CREATION: permiso único, diario y recuperación. Diseño bloqueado (B-05, ARG02-C01)." "Frontera bloqueada" {
+                tags "Bloqueado"
+            }
+            vinFirmante = component "Firmante de afirmaciones de vinculación" "Firma con el gestor de claves la afirmación que exige la operación de vinculación del IdP (ADR-0013)." "Adaptador de salida"
+            vinIdp = component "Adaptador de la operación de vinculación del IdP" "Invoca la operación acotada de creación y activación de la cuenta digital." "Adaptador de salida"
+            vinRepo = component "Repositorio de vinculación" "Escrituras condicionales (CAS), unicidad de claves y outbox en la misma transacción." "Adaptador de persistencia"
+            vinRele = component "Relé del outbox" "Publica en el broker los eventos de estado y de auditoría (A3)." "Adaptador de salida (eventos)"
+        }
+        !element plataforma.notif {
+            notConsumidor = component "Consumidor de eventos notificables" "Deduplica por identificador de evento y ordena por secuencia de la entidad; descarta estados anteriores (ARG02-M01)." "Adaptador de entrada (eventos)"
+            notApiDispositivos = component "API de registro de dispositivos" "Alta y baja de tokens de dispositivo y preferencias de canal." "Módulo de entrada"
+            notPolitica = component "Política de notificación" "Qué evento se notifica, por qué canales (al menos dos para movimientos, R4) y con qué prioridad." "Política de dominio"
+            notDestinatarios = component "Resolvedor de destinatarios" "Contactos vigentes desde el servicio de consultas y tokens de dispositivo propios." "Caso de uso"
+            notEntrega = component "Orquestador de entrega" "Intentos, reintentos acotados, canal alternativo y Circuit Breaker por proveedor." "Caso de uso"
+            notProveedores = component "Adaptadores de proveedores" "Push, SMS y correo; contenido minimizado." "Adaptador de salida"
+            notRepo = component "Repositorio de notificaciones" "Eventos procesados, intentos, dispositivos y preferencias; outbox." "Adaptador de persistencia"
+            notRele = component "Relé del outbox" "Publica los eventos de auditoría de los intentos de entrega." "Adaptador de salida (eventos)"
+        }
+        !element plataforma.auditoria {
+            audConsumidor = component "Consumidor de eventos de auditoría" "Recibe los eventos de todas las fuentes (al menos una vez)." "Adaptador de entrada (eventos)"
+            audValidador = component "Validador y clasificador" "Valida el esquema, la categoría A1 a A8 y la minimización." "Política de dominio"
+            audDeduplicador = component "Deduplicador" "Descarta los eventos ya registrados por identificador antes de encadenar." "Caso de uso"
+            audAnexador = component "Anexador encadenado por partición" "Anexa con encadenamiento de hashes por fuente y partición (ADR-0020)." "Caso de uso"
+            audHuecos = component "Detector de huecos" "Detecta huecos de secuencia por fuente y genera alertas." "Caso de uso"
+            audAnclaje = component "Anclaje en archivo inmutable" "Ancla periódicamente las cabezas de las cadenas en el archivo inmutable." "Caso de uso"
+            audApi = component "API de consulta de auditoría" "Solo lectura para roles de auditoría; cada acceso se audita (A6)." "Módulo de entrada"
+            audRepo = component "Repositorio de auditoría" "Tabla de solo anexión y archivo inmutable." "Adaptador de persistencia"
+        }
+
+        // Relaciones de componentes — BFF
+        plataforma.gateway -> plataforma.bff.bffApi "Enruta solicitudes de canal" "HTTPS/JSON"
+        plataforma.bff.bffApi -> plataforma.bff.bffSeguridad "Resuelve el principal"
+        plataforma.bff.bffSeguridad -> plataforma.bff.bffSesion "Obtiene la sesión web y el token vigente"
+        plataforma.bff.bffSesion -> plataforma.bffSesiones "Lee y escribe sesiones cifradas" "Protocolo del almacén (TLS)"
+        plataforma.bff.bffSesion -> plataforma.idp "Intercambia códigos, renueva y revoca tokens" "HTTPS (OAuth 2.0)"
+        plataforma.bff.bffSesion -> plataforma.bff.bffPublicador "Emite eventos de sesión"
+        plataforma.bff.bffPublicador -> plataforma.broker "Publica con confirmación" "Mensajería"
+        plataforma.bff.bffEventosSeguridad -> plataforma.broker "Consume eventos de seguridad" "Mensajería"
+        plataforma.bff.bffEventosSeguridad -> plataforma.bff.bffSesion "Invalida las sesiones del sujeto"
+        plataforma.bff.bffApi -> plataforma.bff.bffComposicion "Solicita vistas compuestas"
+        plataforma.bff.bffApi -> plataforma.bff.bffRelevoTransferencias "Retransmite comandos y consultas de estado"
+        plataforma.bff.bffApi -> plataforma.bff.bffVinculacion "Retransmite pasos de vinculación"
+        plataforma.bff.bffApi -> plataforma.bff.bffDispositivos "Retransmite registros de dispositivo"
+        plataforma.bff.bffComposicion -> plataforma.bff.bffClientes "Lee consultas y operaciones en curso"
+        plataforma.bff.bffRelevoTransferencias -> plataforma.bff.bffClientes "Invoca el servicio de transferencias"
+        plataforma.bff.bffVinculacion -> plataforma.bff.bffClientes "Invoca el servicio de vinculación"
+        plataforma.bff.bffDispositivos -> plataforma.bff.bffClientes "Invoca el servicio de notificaciones"
+        plataforma.bff.bffClientes -> plataforma.consultas "Consultas" "HTTPS/JSON"
+        plataforma.bff.bffClientes -> plataforma.transferencias "Inicio y estado de transferencias" "HTTPS/JSON; Idempotency-Key"
+        plataforma.bff.bffClientes -> plataforma.vinculacion "Pasos de vinculación" "HTTPS/JSON; Idempotency-Key"
+        plataforma.bff.bffClientes -> plataforma.notif "Registro de dispositivos" "HTTPS/JSON"
+
+        // Relaciones de componentes — Consultas
+        plataforma.bff -> plataforma.consultas.conApi "Consulta cliente, cuentas y movimientos" "HTTPS/JSON"
+        plataforma.notif -> plataforma.consultas.conApiContactos "Obtiene contactos vigentes" "HTTPS/JSON (interna)"
+        plataforma.consultas.conApi -> plataforma.consultas.conAutorizacion "Verifica la propiedad del recurso"
+        plataforma.consultas.conApi -> plataforma.consultas.conPerfil "Ejecuta"
+        plataforma.consultas.conApi -> plataforma.consultas.conCuentas "Ejecuta"
+        plataforma.consultas.conApiContactos -> plataforma.consultas.conContactos "Ejecuta"
+        plataforma.consultas.conAutorizacion -> plataforma.consultas.conAclClientes "Obtiene las relaciones cliente-cuenta"
+        plataforma.consultas.conPerfil -> plataforma.consultas.conFrescura "Aplica la política"
+        plataforma.consultas.conCuentas -> plataforma.consultas.conFrescura "Aplica la política"
+        plataforma.consultas.conFrescura -> plataforma.consultas.conCache "Lee o llena según la categoría"
+        plataforma.consultas.conCache -> plataforma.cache "Lee y escribe; marcas de invalidación" "Protocolo de la caché"
+        plataforma.consultas.conInvalidacion -> plataforma.broker "Consume movimientos confirmados" "Mensajería"
+        plataforma.consultas.conInvalidacion -> plataforma.consultas.conCache "Marca entradas invalidadas"
+        plataforma.consultas.conPerfil -> plataforma.consultas.conAclClientes "Datos básicos"
+        plataforma.consultas.conPerfil -> plataforma.consultas.conAclComplementario "Datos extendidos"
+        plataforma.consultas.conCuentas -> plataforma.consultas.conAclMovimientos "Cuentas, saldos y movimientos"
+        plataforma.consultas.conContactos -> plataforma.consultas.conAclComplementario "Contactos"
+        plataforma.consultas.conAclClientes -> plataforma.consultas.conAdmision "Solicita cupo CL-3"
+        plataforma.consultas.conAclMovimientos -> plataforma.consultas.conAdmision "Solicita cupo CL-3/CL-4"
+        plataforma.consultas.conAclClientes -> core "Consulta clientes" "Protocolo del Core (S3)"
+        plataforma.consultas.conAclMovimientos -> core "Consulta cuentas y movimientos" "Protocolo del Core (S3)"
+        plataforma.consultas.conAclComplementario -> complementario "Consulta datos extendidos y contactos" "Protocolo por validar"
+        plataforma.consultas.conApi -> plataforma.consultas.conAuditoria "Registra A4/A5 antes de responder"
+        plataforma.consultas.conApiContactos -> plataforma.consultas.conAuditoria "Registra el acceso a contactos (A4)"
+        plataforma.consultas.conAuditoria -> plataforma.broker "Ruta 1: publicación confirmada" "Mensajería"
+        plataforma.consultas.conAuditoria -> plataforma.consultasDb "Ruta 2: outbox local" "SQL/TLS"
+
+        // Relaciones de componentes — Vinculación
+        plataforma.bff -> plataforma.vinculacion.vinApi "Gestiona solicitudes de vinculación" "HTTPS/JSON"
+        plataforma.consola -> plataforma.vinculacion.vinApiOperaciones "Resuelve revisiones manuales" "HTTPS/JSON"
+        plataforma.vinculacion.vinApi -> plataforma.vinculacion.vinAplicacion "Ejecuta"
+        plataforma.vinculacion.vinApiOperaciones -> plataforma.vinculacion.vinAplicacion "Ejecuta resoluciones"
+        plataforma.vinculacion.vinAplicacion -> plataforma.vinculacion.vinDominio "Aplica transiciones"
+        plataforma.vinculacion.vinAplicacion -> plataforma.vinculacion.vinPolitica "Evalúa la autorización de la vinculación"
+        plataforma.vinculacion.vinAplicacion -> plataforma.vinculacion.vinKyc "E1: verificación de identidad"
+        plataforma.vinculacion.vinAplicacion -> plataforma.vinculacion.vinBusqueda "E2: identificación del cliente"
+        plataforma.vinculacion.vinAplicacion -> plataforma.vinculacion.vinAlta "E3: alta (frontera bloqueada)"
+        plataforma.vinculacion.vinAplicacion -> plataforma.vinculacion.vinFirmante "Firma la afirmación de vinculación"
+        plataforma.vinculacion.vinAplicacion -> plataforma.vinculacion.vinIdp "E5: activa el acceso digital"
+        plataforma.vinculacion.vinAplicacion -> plataforma.vinculacion.vinRepo "Persiste estado, evidencia y outbox"
+        plataforma.vinculacion.vinKyc -> kyc "Verifica la identidad" "HTTPS (API del proveedor)"
+        plataforma.vinculacion.vinBusqueda -> core "Busca por identificación (CL-2)" "Protocolo del Core (S3)"
+        plataforma.vinculacion.vinAlta -> core "Alta del cliente (CL-1; bloqueado)" "Protocolo del Core (S3)"
+        plataforma.vinculacion.vinAlta -> plataforma.diarioDespacho "Anexa la autorización de despacho (bloqueado)" "DD-23"
+        plataforma.vinculacion.vinIdp -> plataforma.idp "Operación de vinculación acotada con afirmación firmada" "HTTPS"
+        plataforma.vinculacion.vinRepo -> plataforma.vinculacionDb "CAS, unicidad y outbox" "SQL/TLS"
+        plataforma.vinculacion.vinRele -> plataforma.vinculacionDb "Lee el outbox" "SQL/TLS"
+        plataforma.vinculacion.vinRele -> plataforma.broker "Publica eventos" "Mensajería"
+
+        // Relaciones de componentes — Notificaciones
+        plataforma.bff -> plataforma.notif.notApiDispositivos "Registra dispositivos y preferencias" "HTTPS/JSON"
+        plataforma.notif.notConsumidor -> plataforma.broker "Consume eventos notificables" "Mensajería"
+        plataforma.notif.notConsumidor -> plataforma.notif.notRepo "Deduplica y controla la secuencia"
+        plataforma.notif.notConsumidor -> plataforma.notif.notPolitica "Evalúa el evento"
+        plataforma.notif.notPolitica -> plataforma.notif.notDestinatarios "Resuelve destinatarios y canales"
+        plataforma.notif.notDestinatarios -> plataforma.consultas "Obtiene contactos vigentes" "HTTPS/JSON (interna)"
+        plataforma.notif.notDestinatarios -> plataforma.notif.notRepo "Lee tokens de dispositivo y preferencias"
+        plataforma.notif.notPolitica -> plataforma.notif.notEntrega "Solicita la entrega"
+        plataforma.notif.notEntrega -> plataforma.notif.notProveedores "Envía por canal"
+        plataforma.notif.notEntrega -> plataforma.notif.notRepo "Registra intentos y outbox"
+        plataforma.notif.notProveedores -> notificaciones "Entrega push, SMS y correo" "HTTPS (API de los proveedores)"
+        plataforma.notif.notApiDispositivos -> plataforma.notif.notRepo "Registra dispositivos"
+        plataforma.notif.notRepo -> plataforma.notifDb "Lee y escribe" "SQL/TLS"
+        plataforma.notif.notRele -> plataforma.notifDb "Lee el outbox" "SQL/TLS"
+        plataforma.notif.notRele -> plataforma.broker "Publica eventos de auditoría" "Mensajería"
+
+        // Relaciones de componentes — Auditoría
+        plataforma.consola -> plataforma.auditoria.audApi "Consulta el registro (solo lectura)" "HTTPS/JSON"
+        plataforma.auditoria.audConsumidor -> plataforma.broker "Consume eventos de auditoría" "Mensajería"
+        plataforma.auditoria.audConsumidor -> plataforma.auditoria.audValidador "Valida y clasifica"
+        plataforma.auditoria.audValidador -> plataforma.auditoria.audDeduplicador "Entrega eventos válidos"
+        plataforma.auditoria.audDeduplicador -> plataforma.auditoria.audAnexador "Entrega eventos nuevos"
+        plataforma.auditoria.audAnexador -> plataforma.auditoria.audRepo "Anexa con hash encadenado"
+        plataforma.auditoria.audHuecos -> plataforma.auditoria.audRepo "Verifica secuencias por fuente"
+        plataforma.auditoria.audAnclaje -> plataforma.auditoria.audRepo "Ancla las cabezas de las cadenas"
+        plataforma.auditoria.audApi -> plataforma.auditoria.audRepo "Consulta"
+        plataforma.auditoria.audRepo -> plataforma.auditoriaDb "Solo anexión y archivo inmutable" "SQL/TLS; almacenamiento de objetos"
     }
 
     views {
@@ -467,13 +640,46 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
             autolayout lr 250 150
         }
 
-        // TODO (Fase 4): component <contenedor> "Componentes-<contenedor>" { ... }
+
+        component plataforma.bff "Componentes-BFF" "C4 Nivel 3 — BFF de canales digitales." {
+            title "C4 Nivel 3 — BFF de canales digitales"
+            include *
+            exclude "relationship.tag==Nivel2"
+            autolayout lr 200 120
+        }
+        component plataforma.consultas "Componentes-Consultas" "C4 Nivel 3 — Servicio de consultas." {
+            title "C4 Nivel 3 — Servicio de consultas"
+            include *
+            exclude "relationship.tag==Nivel2"
+            autolayout lr 200 120
+        }
+        component plataforma.vinculacion "Componentes-Vinculacion" "C4 Nivel 3 — Servicio de vinculación digital. El ejecutor del alta es una frontera BLOQUEADA (B-05)." {
+            title "C4 Nivel 3 — Servicio de vinculación digital"
+            include *
+            exclude "relationship.tag==Nivel2"
+            autolayout lr 200 120
+        }
+        component plataforma.notif "Componentes-Notificaciones" "C4 Nivel 3 — Servicio de notificaciones." {
+            title "C4 Nivel 3 — Servicio de notificaciones"
+            include *
+            exclude "relationship.tag==Nivel2"
+            autolayout lr 200 120
+        }
+        component plataforma.auditoria "Componentes-Auditoria" "C4 Nivel 3 — Servicio de auditoría." {
+            title "C4 Nivel 3 — Servicio de auditoría"
+            include *
+            exclude "relationship.tag==Nivel2"
+            autolayout lr 200 120
+        }
+
+        // Servicio de transferencias: SIN vista de componentes (B-05; ARG02-C01, CF-01, CF-02).
         // TODO (Fase de infraestructura): deployment plataforma "Producción" "Despliegue" { ... }
 
         terminology {
             person "Persona"
             softwareSystem "Sistema de software"
             container "Contenedor"
+            component "Componente"
             relationship "Relación"
         }
 
@@ -524,6 +730,17 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
             }
             element "Provisional" {
                 stroke #b45f06
+                strokeWidth 6
+                border dashed
+            }
+            element "Component" {
+                background #85bbf0
+                color #000000
+            }
+            element "Bloqueado" {
+                background #f4cccc
+                color #000000
+                stroke #990000
                 strokeWidth 6
                 border dashed
             }

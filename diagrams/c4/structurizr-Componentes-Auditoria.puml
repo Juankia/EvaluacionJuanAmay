@@ -1,0 +1,124 @@
+@startuml
+title <size:24>C4 Nivel 3 — Servicio de auditoría</size>\n<size:24>C4 Nivel 3 — Servicio de auditoría.</size>
+
+set separator none
+left to right direction
+skinparam ranksep 40
+skinparam nodesep 12
+hide stereotype
+
+<style>
+  root {
+    BackgroundColor: #ffffff;
+    FontColor: #444444;
+  }
+  // Element,Component
+  .Element-RWxlbWVudCxDb21wb25lbnQ= {
+    BackgroundColor: #85bbf0;
+    LineColor: #5d82a8;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #000000;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Almacén de datos
+  .Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #204d74;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Mensajería
+  .Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #204d74;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Provisional
+  .Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw= {
+    BackgroundColor: #438dd5;
+    LineColor: #b45f06;
+    LineStyle: 30-30;
+    LineThickness: 6;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Relationship
+  .Relationship-UmVsYXRpb25zaGlw {
+    LineThickness: 2;
+    LineStyle: 0;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
+  // Plataforma de Banca Digital
+  .Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs {
+    BackgroundColor: #ffffff;
+    LineColor: #0b4884;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+  // Servicio de auditoría
+  .Boundary-U2VydmljaW8gZGUgYXVkaXRvcsOtYQ== {
+    BackgroundColor: #ffffff;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+</style>
+
+rectangle "Plataforma de Banca Digital\n<size:15>[Sistema de software]</size>" <<Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs>> {
+  rectangle "Servicio de auditoría\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>" <<Boundary-U2VydmljaW8gZGUgYXVkaXRvcsOtYQ==>> {
+    rectangle "==Consumidor de eventos de auditoría\n<size:15>[Componente: Adaptador de entrada (eventos)]</size>\n\nRecibe los eventos de todas las fuentes (al menos una vez)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodeauditoría.Consumidordeeventosdeauditoría
+    rectangle "==Validador y clasificador\n<size:15>[Componente: Política de dominio]</size>\n\nValida el esquema, la categoría A1 a A8 y la minimización." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodeauditoría.Validadoryclasificador
+    rectangle "==Deduplicador\n<size:15>[Componente: Caso de uso]</size>\n\nDescarta los eventos ya registrados por identificador antes de encadenar." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodeauditoría.Deduplicador
+    rectangle "==Anexador encadenado por partición\n<size:15>[Componente: Caso de uso]</size>\n\nAnexa con encadenamiento de hashes por fuente y partición (ADR-0020)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodeauditoría.Anexadorencadenadoporpartición
+    rectangle "==Detector de huecos\n<size:15>[Componente: Caso de uso]</size>\n\nDetecta huecos de secuencia por fuente y genera alertas." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodeauditoría.Detectordehuecos
+    rectangle "==Anclaje en archivo inmutable\n<size:15>[Componente: Caso de uso]</size>\n\nAncla periódicamente las cabezas de las cadenas en el archivo inmutable." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodeauditoría.Anclajeenarchivoinmutable
+    rectangle "==API de consulta de auditoría\n<size:15>[Componente: Módulo de entrada]</size>\n\nSolo lectura para roles de auditoría; cada acceso se audita (A6)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodeauditoría.APIdeconsultadeauditoría
+    rectangle "==Repositorio de auditoría\n<size:15>[Componente: Adaptador de persistencia]</size>\n\nTabla de solo anexión y archivo inmutable." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodeauditoría.Repositoriodeauditoría
+  }
+
+  queue "==Broker de mensajería\n<size:15>[Contenedor: Broker gestionado de colas y tópicos (por seleccionar, DD-15)]</size>\n\nDistribuye los eventos publicados desde los outbox: entrega al menos una vez, tópicos con suscripciones, colas de mensajes fallidos (ADR-0015)." <<Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE=>> as PlataformadeBancaDigital.Brokerdemensajería
+  database "==Almacén de auditoría\n<size:15>[Contenedor: PostgreSQL + archivo inmutable en almacenamiento de objetos (ADR-0016)]</size>\n\nRegistro de auditoría de solo anexión, con evidencia de integridad y archivo inmutable según la retención acordada." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M=>> as PlataformadeBancaDigital.Almacéndeauditoría
+  rectangle "==Consola de operaciones\n<size:15>[Contenedor: Aplicación web interna (por definir)]</size>\n\nResolución de REQUIRES_RECONCILIATION y MANUAL_REVIEW con cuatro ojos, cierre excepcional y consulta de auditoría. PROVISIONAL: puede sustituirse por un sistema administrativo existente (DD-18)." <<Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Consoladeoperaciones
+}
+
+PlataformadeBancaDigital.Consoladeoperaciones --> PlataformadeBancaDigital.Serviciodeauditoría.APIdeconsultadeauditoría <<Relationship-UmVsYXRpb25zaGlw>> : "Consulta el registro (solo lectura)\n<size:14>[HTTPS/JSON]</size>"
+PlataformadeBancaDigital.Serviciodeauditoría.Consumidordeeventosdeauditoría --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Consume eventos de auditoría\n<size:14>[Mensajería]</size>"
+PlataformadeBancaDigital.Serviciodeauditoría.Consumidordeeventosdeauditoría --> PlataformadeBancaDigital.Serviciodeauditoría.Validadoryclasificador <<Relationship-UmVsYXRpb25zaGlw>> : "Valida y clasifica"
+PlataformadeBancaDigital.Serviciodeauditoría.Validadoryclasificador --> PlataformadeBancaDigital.Serviciodeauditoría.Deduplicador <<Relationship-UmVsYXRpb25zaGlw>> : "Entrega eventos válidos"
+PlataformadeBancaDigital.Serviciodeauditoría.Deduplicador --> PlataformadeBancaDigital.Serviciodeauditoría.Anexadorencadenadoporpartición <<Relationship-UmVsYXRpb25zaGlw>> : "Entrega eventos nuevos"
+PlataformadeBancaDigital.Serviciodeauditoría.Anexadorencadenadoporpartición --> PlataformadeBancaDigital.Serviciodeauditoría.Repositoriodeauditoría <<Relationship-UmVsYXRpb25zaGlw>> : "Anexa con hash encadenado"
+PlataformadeBancaDigital.Serviciodeauditoría.Detectordehuecos --> PlataformadeBancaDigital.Serviciodeauditoría.Repositoriodeauditoría <<Relationship-UmVsYXRpb25zaGlw>> : "Verifica secuencias por fuente"
+PlataformadeBancaDigital.Serviciodeauditoría.Anclajeenarchivoinmutable --> PlataformadeBancaDigital.Serviciodeauditoría.Repositoriodeauditoría <<Relationship-UmVsYXRpb25zaGlw>> : "Ancla las cabezas de las cadenas"
+PlataformadeBancaDigital.Serviciodeauditoría.APIdeconsultadeauditoría --> PlataformadeBancaDigital.Serviciodeauditoría.Repositoriodeauditoría <<Relationship-UmVsYXRpb25zaGlw>> : "Consulta"
+PlataformadeBancaDigital.Serviciodeauditoría.Repositoriodeauditoría --> PlataformadeBancaDigital.Almacéndeauditoría <<Relationship-UmVsYXRpb25zaGlw>> : "Solo anexión y archivo inmutable\n<size:14>[SQL/TLS; almacenamiento de objetos]</size>"
+
+@enduml

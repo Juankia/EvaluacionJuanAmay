@@ -19,6 +19,7 @@ Requisito → Driver / Supuesto → Decisión → Trade-off → Consecuencia
 | Verificación ARG-01-R2 | Verificación independiente de la remediación | **CONDITIONAL GO**. CF-01 y CF-02 remediados en diseño; **pendientes de verificación independiente** ([remediación](docs/reviews/ARG-01-R2-remediacion-CF01-CF02.md)) |
 | Fase 3 | C4 Nivel 2: Contenedores | **Completada; pendiente de la revisión ARG-02** ([preparación](docs/reviews/ARG-02-preparacion-revision-contenedores.md)). El orquestador de transferencias es **provisional**. **No se autoriza implementación productiva** |
 | Revisión ARG-02 | Revisión independiente de contenedores | CONDITIONAL GO con alcance restringido; **NO-GO para el diseño de los componentes de ejecución y recuperación** de transferencias y del alta de clientes. Remediación en [registro](docs/reviews/ARG-02-registro-de-remediacion.md) |
+| Fase 4 | C4 Nivel 3: Componentes | **Parcialmente completada**: BFF, consultas, vinculación (salvo el alta), notificaciones y auditoría. **Bloqueado (B-05):** servicio de transferencias y ejecutor del alta. Pendiente de ARG-03 ([lista de verificación](docs/reviews/ARG-03-lista-de-verificacion-fase-4.md)) |
 | Fases posteriores | C4 de Componentes, seguridad e identidad, infraestructura cloud, DR, justificaciones de frontend y notificaciones | No iniciadas |
 
 > Este repositorio no anticipa decisiones de fases posteriores. Lo que todavía no se ha decidido figura como **decisión diferida**, con su disparador explícito.
@@ -80,6 +81,9 @@ Documentos:
 │   ├── 21-alternativas-tecnologicas.md         Alternativas tecnológicas (incluye R6)
 │   ├── 22-seguridad-entre-contenedores.md      Seguridad e identidad digital
 │   ├── 23-riesgos-y-condiciones-fase-3.md      Gobierno, verificación acotada y bloqueos
+│   ├── 24-arquitectura-de-componentes.md       C4 Nivel 3: componentes (Fase 4)
+│   ├── 25-contratos-eventos-y-errores.md       Contratos, eventos, errores y timeouts
+│   ├── 26-validacion-adversarial-fase-4.md     Escenarios adversariales y preguntas de diseño
 │   ├── adr/                                    Registros de decisiones arquitectónicas
 │   └── reviews/                                Revisiones de arquitectura (ARG) y remediaciones
 ├── c4/

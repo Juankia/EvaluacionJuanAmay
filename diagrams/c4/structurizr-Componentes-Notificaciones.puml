@@ -1,0 +1,144 @@
+@startuml
+title <size:24>C4 Nivel 3 — Servicio de notificaciones</size>\n<size:24>C4 Nivel 3 — Servicio de notificaciones.</size>
+
+set separator none
+left to right direction
+skinparam ranksep 40
+skinparam nodesep 12
+hide stereotype
+
+<style>
+  root {
+    BackgroundColor: #ffffff;
+    FontColor: #444444;
+  }
+  // Element,Component
+  .Element-RWxlbWVudCxDb21wb25lbnQ= {
+    BackgroundColor: #85bbf0;
+    LineColor: #5d82a8;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #000000;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container
+  .Element-RWxlbWVudCxDb250YWluZXI= {
+    BackgroundColor: #438dd5;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Almacén de datos
+  .Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #204d74;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Mensajería
+  .Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #204d74;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Proveedor tercero
+  .Element-RWxlbWVudCxQcm92ZWVkb3IgdGVyY2Vybw== {
+    BackgroundColor: #8a8a8a;
+    LineColor: #606060;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Relationship
+  .Relationship-UmVsYXRpb25zaGlw {
+    LineThickness: 2;
+    LineStyle: 0;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
+  // Plataforma de Banca Digital
+  .Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs {
+    BackgroundColor: #ffffff;
+    LineColor: #0b4884;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+  // Servicio de notificaciones
+  .Boundary-U2VydmljaW8gZGUgbm90aWZpY2FjaW9uZXM= {
+    BackgroundColor: #ffffff;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+</style>
+
+rectangle "==Proveedores de Notificaciones\n<size:15>[Sistema de software]</size>\n\nCapacidades externas de entrega de notificaciones por notificación push, SMS y correo electrónico. Proveedores no seleccionados (DD-12)." <<Element-RWxlbWVudCxQcm92ZWVkb3IgdGVyY2Vybw==>> as ProveedoresdeNotificaciones
+
+rectangle "Plataforma de Banca Digital\n<size:15>[Sistema de software]</size>" <<Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs>> {
+  rectangle "Servicio de notificaciones\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>" <<Boundary-U2VydmljaW8gZGUgbm90aWZpY2FjaW9uZXM=>> {
+    rectangle "==Consumidor de eventos notificables\n<size:15>[Componente: Adaptador de entrada (eventos)]</size>\n\nDeduplica por identificador de evento y ordena por secuencia de la entidad; descarta estados anteriores (ARG02-M01)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodenotificaciones.Consumidordeeventosnotificables
+    rectangle "==API de registro de dispositivos\n<size:15>[Componente: Módulo de entrada]</size>\n\nAlta y baja de tokens de dispositivo y preferencias de canal." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodenotificaciones.APIderegistrodedispositivos
+    rectangle "==Política de notificación\n<size:15>[Componente: Política de dominio]</size>\n\nQué evento se notifica, por qué canales (al menos dos para movimientos, R4) y con qué prioridad." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodenotificaciones.Políticadenotificación
+    rectangle "==Resolvedor de destinatarios\n<size:15>[Componente: Caso de uso]</size>\n\nContactos vigentes desde el servicio de consultas y tokens de dispositivo propios." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodenotificaciones.Resolvedordedestinatarios
+    rectangle "==Orquestador de entrega\n<size:15>[Componente: Caso de uso]</size>\n\nIntentos, reintentos acotados, canal alternativo y Circuit Breaker por proveedor." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodenotificaciones.Orquestadordeentrega
+    rectangle "==Adaptadores de proveedores\n<size:15>[Componente: Adaptador de salida]</size>\n\nPush, SMS y correo; contenido minimizado." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodenotificaciones.Adaptadoresdeproveedores
+    rectangle "==Repositorio de notificaciones\n<size:15>[Componente: Adaptador de persistencia]</size>\n\nEventos procesados, intentos, dispositivos y preferencias; outbox." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodenotificaciones.Repositoriodenotificaciones
+    rectangle "==Relé del outbox\n<size:15>[Componente: Adaptador de salida (eventos)]</size>\n\nPublica los eventos de auditoría de los intentos de entrega." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodenotificaciones.Relédeloutbox
+  }
+
+  rectangle "==Servicio de consultas\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nDatos del cliente, cuentas, saldos y movimientos. Contiene las ACL de clientes (lectura), de movimientos y del Sistema Complementario como módulos internos. Aplica Cache-Aside (ADR-0004) y cuotas CL-3/CL-4 (ADR-0011)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.Serviciodeconsultas
+  queue "==Broker de mensajería\n<size:15>[Contenedor: Broker gestionado de colas y tópicos (por seleccionar, DD-15)]</size>\n\nDistribuye los eventos publicados desde los outbox: entrega al menos una vez, tópicos con suscripciones, colas de mensajes fallidos (ADR-0015)." <<Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE=>> as PlataformadeBancaDigital.Brokerdemensajería
+  database "==BD de notificaciones\n<size:15>[Contenedor: PostgreSQL (ADR-0016)]</size>\n\nRegistro de eventos recibidos, intentos de entrega y preferencias de canal." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M=>> as PlataformadeBancaDigital.BDdenotificaciones
+  rectangle "==BFF de canales digitales\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nBackend for Frontend compartido por web y móvil: gestor de tokens de la SPA (sesión en el almacén de sesiones, ADR-0019), composición de lecturas y adaptación por canal. Proceso sin estado; no posee invariantes financieros (ADR-0014)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.BFFdecanalesdigitales
+}
+
+PlataformadeBancaDigital.BFFdecanalesdigitales --> PlataformadeBancaDigital.Serviciodenotificaciones.APIderegistrodedispositivos <<Relationship-UmVsYXRpb25zaGlw>> : "Registra dispositivos y preferencias\n<size:14>[HTTPS/JSON]</size>"
+PlataformadeBancaDigital.Serviciodenotificaciones.Consumidordeeventosnotificables --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Consume eventos notificables\n<size:14>[Mensajería]</size>"
+PlataformadeBancaDigital.Serviciodenotificaciones.Consumidordeeventosnotificables --> PlataformadeBancaDigital.Serviciodenotificaciones.Repositoriodenotificaciones <<Relationship-UmVsYXRpb25zaGlw>> : "Deduplica y controla la secuencia"
+PlataformadeBancaDigital.Serviciodenotificaciones.Consumidordeeventosnotificables --> PlataformadeBancaDigital.Serviciodenotificaciones.Políticadenotificación <<Relationship-UmVsYXRpb25zaGlw>> : "Evalúa el evento"
+PlataformadeBancaDigital.Serviciodenotificaciones.Políticadenotificación --> PlataformadeBancaDigital.Serviciodenotificaciones.Resolvedordedestinatarios <<Relationship-UmVsYXRpb25zaGlw>> : "Resuelve destinatarios y canales"
+PlataformadeBancaDigital.Serviciodenotificaciones.Resolvedordedestinatarios --> PlataformadeBancaDigital.Serviciodeconsultas <<Relationship-UmVsYXRpb25zaGlw>> : "Obtiene contactos vigentes\n<size:14>[HTTPS/JSON (interna)]</size>"
+PlataformadeBancaDigital.Serviciodenotificaciones.Resolvedordedestinatarios --> PlataformadeBancaDigital.Serviciodenotificaciones.Repositoriodenotificaciones <<Relationship-UmVsYXRpb25zaGlw>> : "Lee tokens de dispositivo y preferencias"
+PlataformadeBancaDigital.Serviciodenotificaciones.Políticadenotificación --> PlataformadeBancaDigital.Serviciodenotificaciones.Orquestadordeentrega <<Relationship-UmVsYXRpb25zaGlw>> : "Solicita la entrega"
+PlataformadeBancaDigital.Serviciodenotificaciones.Orquestadordeentrega --> PlataformadeBancaDigital.Serviciodenotificaciones.Adaptadoresdeproveedores <<Relationship-UmVsYXRpb25zaGlw>> : "Envía por canal"
+PlataformadeBancaDigital.Serviciodenotificaciones.Orquestadordeentrega --> PlataformadeBancaDigital.Serviciodenotificaciones.Repositoriodenotificaciones <<Relationship-UmVsYXRpb25zaGlw>> : "Registra intentos y outbox"
+PlataformadeBancaDigital.Serviciodenotificaciones.Adaptadoresdeproveedores --> ProveedoresdeNotificaciones <<Relationship-UmVsYXRpb25zaGlw>> : "Entrega push, SMS y correo\n<size:14>[HTTPS (API de los proveedores)]</size>"
+PlataformadeBancaDigital.Serviciodenotificaciones.APIderegistrodedispositivos --> PlataformadeBancaDigital.Serviciodenotificaciones.Repositoriodenotificaciones <<Relationship-UmVsYXRpb25zaGlw>> : "Registra dispositivos"
+PlataformadeBancaDigital.Serviciodenotificaciones.Repositoriodenotificaciones --> PlataformadeBancaDigital.BDdenotificaciones <<Relationship-UmVsYXRpb25zaGlw>> : "Lee y escribe\n<size:14>[SQL/TLS]</size>"
+PlataformadeBancaDigital.Serviciodenotificaciones.Relédeloutbox --> PlataformadeBancaDigital.BDdenotificaciones <<Relationship-UmVsYXRpb25zaGlw>> : "Lee el outbox\n<size:14>[SQL/TLS]</size>"
+PlataformadeBancaDigital.Serviciodenotificaciones.Relédeloutbox --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Publica eventos de auditoría\n<size:14>[Mensajería]</size>"
+
+@enduml

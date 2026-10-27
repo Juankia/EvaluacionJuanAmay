@@ -1,0 +1,204 @@
+@startuml
+title <size:24>C4 Nivel 3 — Servicio de vinculación digital</size>\n<size:24>C4 Nivel 3 — Servicio de vinculación digital. El ejecutor del alta es una frontera BLOQUEADA (B-05).</size>
+
+set separator none
+left to right direction
+skinparam ranksep 40
+skinparam nodesep 12
+hide stereotype
+
+<style>
+  root {
+    BackgroundColor: #ffffff;
+    FontColor: #444444;
+  }
+  // Element,Component
+  .Element-RWxlbWVudCxDb21wb25lbnQ= {
+    BackgroundColor: #85bbf0;
+    LineColor: #5d82a8;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #000000;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Component,Bloqueado
+  .Element-RWxlbWVudCxDb21wb25lbnQsQmxvcXVlYWRv {
+    BackgroundColor: #f4cccc;
+    LineColor: #990000;
+    LineStyle: 30-30;
+    LineThickness: 6;
+    FontColor: #000000;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container
+  .Element-RWxlbWVudCxDb250YWluZXI= {
+    BackgroundColor: #438dd5;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Almacén de datos
+  .Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #204d74;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Almacén de datos,Provisional
+  .Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #b45f06;
+    LineStyle: 30-30;
+    LineThickness: 6;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Mensajería
+  .Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #204d74;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Provisional
+  .Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw= {
+    BackgroundColor: #438dd5;
+    LineColor: #b45f06;
+    LineStyle: 30-30;
+    LineThickness: 6;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Proveedor tercero
+  .Element-RWxlbWVudCxQcm92ZWVkb3IgdGVyY2Vybw== {
+    BackgroundColor: #8a8a8a;
+    LineColor: #606060;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Sistema existente
+  .Element-RWxlbWVudCxTaXN0ZW1hIGV4aXN0ZW50ZQ== {
+    BackgroundColor: #5b6770;
+    LineColor: #3f484e;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Relationship
+  .Relationship-UmVsYXRpb25zaGlw {
+    LineThickness: 2;
+    LineStyle: 0;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
+  // Plataforma de Banca Digital
+  .Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs {
+    BackgroundColor: #ffffff;
+    LineColor: #0b4884;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+  // Servicio de vinculación digital
+  .Boundary-U2VydmljaW8gZGUgdmluY3VsYWNpw7NuIGRpZ2l0YWw= {
+    BackgroundColor: #ffffff;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+</style>
+
+rectangle "==Core Bancario\n<size:15>[Sistema de software]</size>\n\nSistema existente y autoritativo para los datos maestros del cliente, productos, cuentas, movimientos y transacciones bancarias (S1, S2, ADR-0009)." <<Element-RWxlbWVudCxTaXN0ZW1hIGV4aXN0ZW50ZQ==>> as CoreBancario
+rectangle "==Proveedor KYC/Biométrico\n<size:15>[Sistema de software]</size>\n\nCapacidad externa de verificación de identidad: reconocimiento facial, prueba de vida, validación de documentos de identidad y resultado de la verificación. Proveedor no seleccionado (DD-14)." <<Element-RWxlbWVudCxQcm92ZWVkb3IgdGVyY2Vybw==>> as ProveedorKYCBiométrico
+
+rectangle "Plataforma de Banca Digital\n<size:15>[Sistema de software]</size>" <<Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs>> {
+  rectangle "Servicio de vinculación digital\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>" <<Boundary-U2VydmljaW8gZGUgdmluY3VsYWNpw7NuIGRpZ2l0YWw=>> {
+    rectangle "==API de vinculación\n<size:15>[Componente: Módulo de entrada]</size>\n\nEndpoints del canal móvil para iniciar y avanzar la vinculación; Idempotency-Key obligatoria (ADR-0006)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.APIdevinculación
+    rectangle "==API de operaciones\n<size:15>[Componente: Módulo de entrada]</size>\n\nRevisión manual con cuatro ojos; no puede asignar CREATED_BY_THIS_REQUEST sin evidencia." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.APIdeoperaciones
+    rectangle "==Servicio de aplicación de vinculación\n<size:15>[Componente: Caso de uso]</size>\n\nOrquesta las etapas E1 a E6 y los límites transaccionales; sin lógica de integración." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación
+    rectangle "==Modelo de dominio de vinculación\n<size:15>[Componente: Dominio]</size>\n\nEstados, transiciones válidas e invariantes INV-O1 a INV-O6." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.Modelodedominiodevinculación
+    rectangle "==Política de autorización de vinculación\n<size:15>[Componente: Política de dominio]</size>\n\nReglas VD-01 a VD-10; ruta PRE_EXISTING deshabilitada hasta DD-21 (falla cerrada)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.Políticadeautorizacióndevinculación
+    rectangle "==ACL del proveedor KYC/biométrico\n<size:15>[Componente: ACL]</size>\n\nTraduce resultados del proveedor; la indisponibilidad no es un rechazo (VD-09)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.ACLdelproveedorKYCbiométrico
+    rectangle "==ACL de búsqueda de clientes\n<size:15>[Componente: ACL]</size>\n\nBúsqueda por identificación en el Core (CL-2, solo lectura)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.ACLdebúsquedadeclientes
+    rectangle "==Ejecutor del alta en el Core (BLOQUEADO)\n<size:15>[Componente: Frontera bloqueada]</size>\n\nFrontera del tramo CUSTOMER_CREATION: permiso único, diario y recuperación. Diseño bloqueado (B-05, ARG02-C01)." <<Element-RWxlbWVudCxDb21wb25lbnQsQmxvcXVlYWRv>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.EjecutordelaltaenelCoreBLOQUEADO
+    rectangle "==Firmante de afirmaciones de vinculación\n<size:15>[Componente: Adaptador de salida]</size>\n\nFirma con el gestor de claves la afirmación que exige la operación de vinculación del IdP (ADR-0013)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.Firmantedeafirmacionesdevinculación
+    rectangle "==Adaptador de la operación de vinculación del IdP\n<size:15>[Componente: Adaptador de salida]</size>\n\nInvoca la operación acotada de creación y activación de la cuenta digital." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.AdaptadordelaoperacióndevinculacióndelIdP
+    rectangle "==Repositorio de vinculación\n<size:15>[Componente: Adaptador de persistencia]</size>\n\nEscrituras condicionales (CAS), unicidad de claves y outbox en la misma transacción." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.Repositoriodevinculación
+    rectangle "==Relé del outbox\n<size:15>[Componente: Adaptador de salida (eventos)]</size>\n\nPublica en el broker los eventos de estado y de auditoría (A3)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital.Relédeloutbox
+  }
+
+  rectangle "==Proveedor de identidad (IdP)\n<size:15>[Contenedor: Producto OIDC; candidato provisional: Keycloak (ADR-0013)]</size>\n\nServidor de autorización OAuth 2.0 / OpenID Connect para clientes: autenticación, MFA, sesiones y emisión de tokens. Interno a la plataforma (ADR-0013)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.ProveedordeidentidadIdP
+  database "==BD de vinculación\n<size:15>[Contenedor: PostgreSQL (ADR-0016)]</size>\n\nEstado durable de las solicitudes de vinculación, claves de idempotencia, evidencia de creación y outbox. Sujeta a PT-01 a PT-03 y PT-07 por el alta de clientes (ADR-0016)." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M=>> as PlataformadeBancaDigital.BDdevinculación
+  database "==Diario de autorización de despacho\n<size:15>[Contenedor: Almacén linealizable con quórum entre dominios de falla (capacidad por seleccionar, DD-23)]</size>\n\nRegistro independiente, de solo anexión y con confirmación por quórum en al menos tres dominios de falla. Ningún tramo se despacha sin su entrada (INV-DR-1). Mantiene la época regional (ADR-0021). PROVISIONAL." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Diariodeautorizacióndedespacho
+  queue "==Broker de mensajería\n<size:15>[Contenedor: Broker gestionado de colas y tópicos (por seleccionar, DD-15)]</size>\n\nDistribuye los eventos publicados desde los outbox: entrega al menos una vez, tópicos con suscripciones, colas de mensajes fallidos (ADR-0015)." <<Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE=>> as PlataformadeBancaDigital.Brokerdemensajería
+  rectangle "==Consola de operaciones\n<size:15>[Contenedor: Aplicación web interna (por definir)]</size>\n\nResolución de REQUIRES_RECONCILIATION y MANUAL_REVIEW con cuatro ojos, cierre excepcional y consulta de auditoría. PROVISIONAL: puede sustituirse por un sistema administrativo existente (DD-18)." <<Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Consoladeoperaciones
+  rectangle "==BFF de canales digitales\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nBackend for Frontend compartido por web y móvil: gestor de tokens de la SPA (sesión en el almacén de sesiones, ADR-0019), composición de lecturas y adaptación por canal. Proceso sin estado; no posee invariantes financieros (ADR-0014)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.BFFdecanalesdigitales
+}
+
+PlataformadeBancaDigital.BFFdecanalesdigitales --> PlataformadeBancaDigital.Serviciodevinculacióndigital.APIdevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "Gestiona solicitudes de vinculación\n<size:14>[HTTPS/JSON]</size>"
+PlataformadeBancaDigital.Consoladeoperaciones --> PlataformadeBancaDigital.Serviciodevinculacióndigital.APIdeoperaciones <<Relationship-UmVsYXRpb25zaGlw>> : "Resuelve revisiones manuales\n<size:14>[HTTPS/JSON]</size>"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.APIdevinculación --> PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "Ejecuta"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.APIdeoperaciones --> PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "Ejecuta resoluciones"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación --> PlataformadeBancaDigital.Serviciodevinculacióndigital.Modelodedominiodevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "Aplica transiciones"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación --> PlataformadeBancaDigital.Serviciodevinculacióndigital.Políticadeautorizacióndevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "Evalúa la autorización de la vinculación"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación --> PlataformadeBancaDigital.Serviciodevinculacióndigital.ACLdelproveedorKYCbiométrico <<Relationship-UmVsYXRpb25zaGlw>> : "E1: verificación de identidad"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación --> PlataformadeBancaDigital.Serviciodevinculacióndigital.ACLdebúsquedadeclientes <<Relationship-UmVsYXRpb25zaGlw>> : "E2: identificación del cliente"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación --> PlataformadeBancaDigital.Serviciodevinculacióndigital.EjecutordelaltaenelCoreBLOQUEADO <<Relationship-UmVsYXRpb25zaGlw>> : "E3: alta (frontera bloqueada)"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación --> PlataformadeBancaDigital.Serviciodevinculacióndigital.Firmantedeafirmacionesdevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "Firma la afirmación de vinculación"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación --> PlataformadeBancaDigital.Serviciodevinculacióndigital.AdaptadordelaoperacióndevinculacióndelIdP <<Relationship-UmVsYXRpb25zaGlw>> : "E5: activa el acceso digital"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Serviciodeaplicacióndevinculación --> PlataformadeBancaDigital.Serviciodevinculacióndigital.Repositoriodevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "Persiste estado, evidencia y outbox"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.ACLdelproveedorKYCbiométrico --> ProveedorKYCBiométrico <<Relationship-UmVsYXRpb25zaGlw>> : "Verifica la identidad\n<size:14>[HTTPS (API del proveedor)]</size>"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.ACLdebúsquedadeclientes --> CoreBancario <<Relationship-UmVsYXRpb25zaGlw>> : "Busca por identificación (CL-2)\n<size:14>[Protocolo del Core (S3)]</size>"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.EjecutordelaltaenelCoreBLOQUEADO --> CoreBancario <<Relationship-UmVsYXRpb25zaGlw>> : "Alta del cliente (CL-1; bloqueado)\n<size:14>[Protocolo del Core (S3)]</size>"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.EjecutordelaltaenelCoreBLOQUEADO --> PlataformadeBancaDigital.Diariodeautorizacióndedespacho <<Relationship-UmVsYXRpb25zaGlw>> : "Anexa la autorización de despacho (bloqueado)\n<size:14>[DD-23]</size>"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.AdaptadordelaoperacióndevinculacióndelIdP --> PlataformadeBancaDigital.ProveedordeidentidadIdP <<Relationship-UmVsYXRpb25zaGlw>> : "Operación de vinculación acotada con afirmación firmada\n<size:14>[HTTPS]</size>"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Repositoriodevinculación --> PlataformadeBancaDigital.BDdevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "CAS, unicidad y outbox\n<size:14>[SQL/TLS]</size>"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Relédeloutbox --> PlataformadeBancaDigital.BDdevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "Lee el outbox\n<size:14>[SQL/TLS]</size>"
+PlataformadeBancaDigital.Serviciodevinculacióndigital.Relédeloutbox --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Publica eventos\n<size:14>[Mensajería]</size>"
+
+@enduml

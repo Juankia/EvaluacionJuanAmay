@@ -130,3 +130,7 @@ La cobertura y lo pendiente por requisito están en [ARG-02 — Preparación, se
 | ARG02-H03 | R5 | [ADR-0020](adr/ADR-0020-politica-de-auditoria-por-categoria.md) | QA6, QA15 | RR-23 |
 | ARG02-H04 | R2, R3; C4 | ADR-0013 (enmienda) | QA11 | RR-21 |
 | ARG02-H05 | C6 | S21; Q-20; [19 §5](19-comunicacion-entre-contenedores.md#5-ubicación-del-core-y-conectividad-arg02-h05) | — | RR-22 |
+
+## 10. Representación en los componentes (Fase 4)
+
+La trazabilidad de requisitos a componentes está en [24 §7](24-arquitectura-de-componentes.md#7-trazabilidad-de-componentes). **R1 (transferencias) y R3 (alta del cliente en el Core) solo tienen contratos de frontera** en el nivel 3 mientras rija B-05.

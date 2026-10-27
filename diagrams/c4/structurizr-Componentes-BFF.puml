@@ -1,0 +1,154 @@
+@startuml
+title <size:24>C4 Nivel 3 — BFF de canales digitales</size>\n<size:24>C4 Nivel 3 — BFF de canales digitales.</size>
+
+set separator none
+left to right direction
+skinparam ranksep 40
+skinparam nodesep 12
+hide stereotype
+
+<style>
+  root {
+    BackgroundColor: #ffffff;
+    FontColor: #444444;
+  }
+  // Element,Component
+  .Element-RWxlbWVudCxDb21wb25lbnQ= {
+    BackgroundColor: #85bbf0;
+    LineColor: #5d82a8;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #000000;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container
+  .Element-RWxlbWVudCxDb250YWluZXI= {
+    BackgroundColor: #438dd5;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Almacén de datos
+  .Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #204d74;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Mensajería
+  .Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #204d74;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Provisional
+  .Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw= {
+    BackgroundColor: #438dd5;
+    LineColor: #b45f06;
+    LineStyle: 30-30;
+    LineThickness: 6;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Relationship
+  .Relationship-UmVsYXRpb25zaGlw {
+    LineThickness: 2;
+    LineStyle: 0;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
+  // BFF de canales digitales
+  .Boundary-QkZGIGRlIGNhbmFsZXMgZGlnaXRhbGVz {
+    BackgroundColor: #ffffff;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+  // Plataforma de Banca Digital
+  .Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs {
+    BackgroundColor: #ffffff;
+    LineColor: #0b4884;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+</style>
+
+rectangle "Plataforma de Banca Digital\n<size:15>[Sistema de software]</size>" <<Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs>> {
+  rectangle "BFF de canales digitales\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>" <<Boundary-QkZGIGRlIGNhbmFsZXMgZGlnaXRhbGVz>> {
+    rectangle "==Adaptador del flujo de vinculación\n<size:15>[Componente: Caso de uso de canal]</size>\n\nAdapta al canal móvil las etapas de vinculación; sin reglas de negocio." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.BFFdecanalesdigitales.Adaptadordelflujodevinculación
+    rectangle "==Relevo de registro de dispositivos\n<size:15>[Componente: Caso de uso de canal]</size>\n\nRegistra los tokens de dispositivo y las preferencias de notificación de la app." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.BFFdecanalesdigitales.Relevoderegistrodedispositivos
+    rectangle "==Clientes de servicios de dominio\n<size:15>[Componente: Adaptador de salida]</size>\n\nLlamadas HTTP con timeouts, plazo propagado y Circuit Breaker por servicio (SDK, ADR-0003)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.BFFdecanalesdigitales.Clientesdeserviciosdedominio
+    rectangle "==Consumidor de eventos de seguridad\n<size:15>[Componente: Adaptador de entrada (eventos)]</size>\n\nInvalida las sesiones de un sujeto ante cambios de credenciales, bloqueos o revocaciones." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.BFFdecanalesdigitales.Consumidordeeventosdeseguridad
+    rectangle "==Publicador de eventos de sesión\n<size:15>[Componente: Adaptador de salida (eventos)]</size>\n\nPublica los eventos de inicio y cierre de sesión (A7) con confirmación." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.BFFdecanalesdigitales.Publicadordeeventosdesesión
+    rectangle "==API de canal\n<size:15>[Componente: Módulo de entrada]</size>\n\nControladores HTTP por canal (web y móvil): validación de esquemas, correlación y propagación del plazo." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.BFFdecanalesdigitales.APIdecanal
+    rectangle "==Contexto de seguridad del canal\n<size:15>[Componente: Módulo de seguridad]</size>\n\nResuelve el principal desde la sesión web o desde el token móvil; comprueba la audiencia y los alcances." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.BFFdecanalesdigitales.Contextodeseguridaddelcanal
+    rectangle "==Gestor de sesión web\n<size:15>[Componente: Módulo de seguridad]</size>\n\nCliente confidencial OIDC de la SPA: cookie __Host-, anti-CSRF, renovación y rotación de tokens, cierre de sesión e invalidación (ADR-0019)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.BFFdecanalesdigitales.Gestordesesiónweb
+    rectangle "==Composición de lecturas\n<size:15>[Componente: Caso de uso de canal]</size>\n\nTablero y movimientos: combina consultas con las operaciones en curso; degradación explícita si no puede verificarlas (ARG02-M06)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.BFFdecanalesdigitales.Composicióndelecturas
+    rectangle "==Relevo de transferencias\n<size:15>[Componente: Caso de uso de canal]</size>\n\nRetransmite el inicio y la consulta de estado por identificador de operación; propaga Idempotency-Key sin cambios; sin reintentos (PT-04)." <<Element-RWxlbWVudCxDb21wb25lbnQ=>> as PlataformadeBancaDigital.BFFdecanalesdigitales.Relevodetransferencias
+  }
+
+  database "==Almacén de sesiones del BFF\n<size:15>[Contenedor: Almacén clave-valor en memoria con alta disponibilidad (producto con DD-15)]</size>\n\nSesiones web y tokens de la SPA cifrados, índice de sujeto a sesiones y claves de intenciones pendientes generadas por la SPA (ADR-0019)." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M=>> as PlataformadeBancaDigital.AlmacéndesesionesdelBFF
+  rectangle "==Proveedor de identidad (IdP)\n<size:15>[Contenedor: Producto OIDC; candidato provisional: Keycloak (ADR-0013)]</size>\n\nServidor de autorización OAuth 2.0 / OpenID Connect para clientes: autenticación, MFA, sesiones y emisión de tokens. Interno a la plataforma (ADR-0013)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.ProveedordeidentidadIdP
+  rectangle "==Servicio de consultas\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nDatos del cliente, cuentas, saldos y movimientos. Contiene las ACL de clientes (lectura), de movimientos y del Sistema Complementario como módulos internos. Aplica Cache-Aside (ADR-0004) y cuotas CL-3/CL-4 (ADR-0011)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.Serviciodeconsultas
+  rectangle "==Servicio de vinculación digital\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nMáquina de estados de vinculación (E1 a E6, ADR-0009): verificación de identidad, identificación y alta del cliente, autorización de la vinculación y activación del acceso digital. Contiene la ACL de alta y búsqueda de clientes." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital
+  rectangle "==Servicio de transferencias\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nContrato de idempotencia (ADR-0006) y orquestador durable de transferencias (ADR-0005): titularidad cercada, permiso de envío único, conciliación y efecto tardío. Contiene la ACL de transferencias. PROVISIONAL: CF-01/CF-02 sin verificación independiente." <<Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Serviciodetransferencias
+  queue "==Broker de mensajería\n<size:15>[Contenedor: Broker gestionado de colas y tópicos (por seleccionar, DD-15)]</size>\n\nDistribuye los eventos publicados desde los outbox: entrega al menos una vez, tópicos con suscripciones, colas de mensajes fallidos (ADR-0015)." <<Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE=>> as PlataformadeBancaDigital.Brokerdemensajería
+  rectangle "==Servicio de notificaciones\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nConvierte eventos confirmados en notificaciones push, SMS y correo; deduplicación, reintentos y canal alternativo. Una falla de notificación nunca revierte una operación." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.Serviciodenotificaciones
+  rectangle "==API Gateway\n<size:15>[Contenedor: Producto de API Gateway gestionado (por seleccionar, DD-15)]</size>\n\nPunto único de entrada: enrutamiento, validación de tokens, limitación de tasa, correlación y políticas de seguridad de borde. Sin lógica de negocio ni estado financiero (ADR-0002)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.APIGateway
+}
+
+PlataformadeBancaDigital.APIGateway --> PlataformadeBancaDigital.BFFdecanalesdigitales.APIdecanal <<Relationship-UmVsYXRpb25zaGlw>> : "Enruta solicitudes de canal\n<size:14>[HTTPS/JSON]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales.APIdecanal --> PlataformadeBancaDigital.BFFdecanalesdigitales.Contextodeseguridaddelcanal <<Relationship-UmVsYXRpb25zaGlw>> : "Resuelve el principal"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Contextodeseguridaddelcanal --> PlataformadeBancaDigital.BFFdecanalesdigitales.Gestordesesiónweb <<Relationship-UmVsYXRpb25zaGlw>> : "Obtiene la sesión web y el token vigente"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Gestordesesiónweb --> PlataformadeBancaDigital.AlmacéndesesionesdelBFF <<Relationship-UmVsYXRpb25zaGlw>> : "Lee y escribe sesiones cifradas\n<size:14>[Protocolo del almacén (TLS)]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Gestordesesiónweb --> PlataformadeBancaDigital.ProveedordeidentidadIdP <<Relationship-UmVsYXRpb25zaGlw>> : "Intercambia códigos, renueva y revoca tokens\n<size:14>[HTTPS (OAuth 2.0)]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Gestordesesiónweb --> PlataformadeBancaDigital.BFFdecanalesdigitales.Publicadordeeventosdesesión <<Relationship-UmVsYXRpb25zaGlw>> : "Emite eventos de sesión"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Publicadordeeventosdesesión --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Publica con confirmación\n<size:14>[Mensajería]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Consumidordeeventosdeseguridad --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Consume eventos de seguridad\n<size:14>[Mensajería]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Consumidordeeventosdeseguridad --> PlataformadeBancaDigital.BFFdecanalesdigitales.Gestordesesiónweb <<Relationship-UmVsYXRpb25zaGlw>> : "Invalida las sesiones del sujeto"
+PlataformadeBancaDigital.BFFdecanalesdigitales.APIdecanal --> PlataformadeBancaDigital.BFFdecanalesdigitales.Composicióndelecturas <<Relationship-UmVsYXRpb25zaGlw>> : "Solicita vistas compuestas"
+PlataformadeBancaDigital.BFFdecanalesdigitales.APIdecanal --> PlataformadeBancaDigital.BFFdecanalesdigitales.Relevodetransferencias <<Relationship-UmVsYXRpb25zaGlw>> : "Retransmite comandos y consultas de estado"
+PlataformadeBancaDigital.BFFdecanalesdigitales.APIdecanal --> PlataformadeBancaDigital.BFFdecanalesdigitales.Adaptadordelflujodevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "Retransmite pasos de vinculación"
+PlataformadeBancaDigital.BFFdecanalesdigitales.APIdecanal --> PlataformadeBancaDigital.BFFdecanalesdigitales.Relevoderegistrodedispositivos <<Relationship-UmVsYXRpb25zaGlw>> : "Retransmite registros de dispositivo"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Composicióndelecturas --> PlataformadeBancaDigital.BFFdecanalesdigitales.Clientesdeserviciosdedominio <<Relationship-UmVsYXRpb25zaGlw>> : "Lee consultas y operaciones en curso"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Relevodetransferencias --> PlataformadeBancaDigital.BFFdecanalesdigitales.Clientesdeserviciosdedominio <<Relationship-UmVsYXRpb25zaGlw>> : "Invoca el servicio de transferencias"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Adaptadordelflujodevinculación --> PlataformadeBancaDigital.BFFdecanalesdigitales.Clientesdeserviciosdedominio <<Relationship-UmVsYXRpb25zaGlw>> : "Invoca el servicio de vinculación"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Relevoderegistrodedispositivos --> PlataformadeBancaDigital.BFFdecanalesdigitales.Clientesdeserviciosdedominio <<Relationship-UmVsYXRpb25zaGlw>> : "Invoca el servicio de notificaciones"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Clientesdeserviciosdedominio --> PlataformadeBancaDigital.Serviciodeconsultas <<Relationship-UmVsYXRpb25zaGlw>> : "Consultas\n<size:14>[HTTPS/JSON]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Clientesdeserviciosdedominio --> PlataformadeBancaDigital.Serviciodetransferencias <<Relationship-UmVsYXRpb25zaGlw>> : "Inicio y estado de transferencias\n<size:14>[HTTPS/JSON; Idempotency-Key]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Clientesdeserviciosdedominio --> PlataformadeBancaDigital.Serviciodevinculacióndigital <<Relationship-UmVsYXRpb25zaGlw>> : "Pasos de vinculación\n<size:14>[HTTPS/JSON; Idempotency-Key]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales.Clientesdeserviciosdedominio --> PlataformadeBancaDigital.Serviciodenotificaciones <<Relationship-UmVsYXRpb25zaGlw>> : "Registro de dispositivos\n<size:14>[HTTPS/JSON]</size>"
+
+@enduml
