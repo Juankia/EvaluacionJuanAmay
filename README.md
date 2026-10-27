@@ -103,7 +103,7 @@ Puntos principales de la política:
 
 - Redacción en español técnico profesional (es-EC).
 - Identificadores de código, contratos y eventos en inglés.
-- Mensajes de commit en inglés con Conventional Commits.
+- Mensajes de commit en español con la estructura de Conventional Commits.
 
 ## Herramientas
 

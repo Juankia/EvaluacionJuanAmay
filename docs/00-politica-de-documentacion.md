@@ -46,6 +46,7 @@ Se redactan en español técnico profesional (es-EC):
 - Escenarios de atributos de calidad.
 - Justificaciones técnicas.
 - Títulos, descripciones, relaciones y etiquetas de los diagramas C4.
+- Mensajes de commit, salvo los tipos normalizados de Conventional Commits (sección 6).
 
 ### 3.2 Contenido que se mantiene en inglés
 
@@ -58,7 +59,6 @@ Se mantienen en inglés, según las convenciones de ingeniería:
 | Contratos técnicos (OpenAPI, AsyncAPI, esquemas) | `TransferRequest`, `idempotencyKey` |
 | Eventos de software | `TransferInitiated`, `TransferCompleted`, `PaymentRejected` |
 | Nombres técnicos de componentes desplegables | `digital-banking-bff`, `transfer-service` |
-| Mensajes de commit | Ver sección 6 |
 
 Las reglas detalladas de idioma y nomenclatura del código, el glosario de dominio (término de negocio → término en código) y los estándares de diseño están en [Estándares de ingeniería](00-estandares-de-ingenieria.md).
 
@@ -140,20 +140,30 @@ Según corresponda, se consideran estas entidades y marcos:
 
 ## 6. Convenciones de control de versiones
 
-Los mensajes de commit se escriben en inglés y siguen [Conventional Commits](https://www.conventionalcommits.org/):
+Los mensajes de commit se escriben en **español** y siguen la estructura de [Conventional Commits](https://www.conventionalcommits.org/):
 
 ```text
-<type>(<scope>): <description>
+<tipo>(<alcance>): <descripción>
+
+<cuerpo opcional>
 ```
 
-Tipos habituales: `docs`, `feat`, `fix`, `refactor`, `chore`, `test`, `ci`.
+| Elemento | Idioma | Regla |
+|---|---|---|
+| Tipo | Token normalizado (en inglés) | Se mantienen los tipos del estándar para no romper herramientas de versionado ni de generación de cambios: `docs`, `feat`, `fix`, `refactor`, `chore`, `test`, `ci` |
+| Alcance | Español, sin tildes, en minúsculas | Ejemplos: `arquitectura`, `adr`, `c4`, `estandares` |
+| Descripción | Español | Verbo en infinitivo, en minúsculas y sin punto final. Ejemplo: «agregar el ADR-0011 de selección de API Gateway» |
+| Cuerpo | Español | Explica qué cambia y por qué. Líneas de hasta 72 caracteres |
+| Pie (*trailers*) | Formato del estándar | Ejemplo: `Co-Authored-By:` y `BREAKING CHANGE:` se mantienen tal cual |
+
+Los identificadores técnicos que aparezcan en el mensaje (clases, endpoints, eventos) se escriben como están en el código, en inglés.
 
 Ejemplos:
 
 ```text
-docs(adr): add ADR-001 for API Gateway selection
-docs(c4): add system context diagram
-docs: add documentation and language policy
+docs(adr): agregar el ADR-0011 de selección de API Gateway
+docs(c4): agregar el diagrama de contenedores
+fix(transferencias): evitar el reintento automático tras un timeout de lectura
 ```
 
 ## 7. Convenciones para diagramas C4

@@ -19,7 +19,7 @@ Este documento fija los estándares que debe cumplir el código de la plataforma
 | Tema | Documento normativo |
 |---|---|
 | Idioma de la documentación, de los ADR y de los diagramas C4 | [Política de documentación](00-politica-de-documentacion.md), secciones 3 y 7 |
-| Mensajes de commit (inglés, Conventional Commits) | [Política de documentación](00-politica-de-documentacion.md), sección 6 |
+| Mensajes de commit (español, estructura Conventional Commits) | [Política de documentación](00-politica-de-documentacion.md), sección 6 |
 | Nombres de archivos de documentación | [Política de documentación](00-politica-de-documentacion.md), sección 9 |
 | Idioma y nomenclatura **del código**, glosario de dominio, estándares de diseño, pruebas y calidad automatizada | **Este documento** |
 
