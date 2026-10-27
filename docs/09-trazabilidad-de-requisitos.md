@@ -62,6 +62,13 @@
 | [ADR-0009](adr/ADR-0009-core-autoritativo.md) | R3, contexto del reto (fuentes de información) |
 | [ADR-0010](adr/ADR-0010-residencia-de-datos.md) | C1, C6 |
 | [ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md) | R1, C2, C5 |
+| [ADR-0012](adr/ADR-0012-descomposicion-hibrida-de-contenedores.md) | R1, R3, R4, R5, C2, C5 |
+| [ADR-0013](adr/ADR-0013-frontera-del-idp.md) | R2, R3, C1, C4 |
+| [ADR-0014](adr/ADR-0014-api-gateway-y-bff-de-canales.md) | R1, R2, R6, C4 |
+| [ADR-0015](adr/ADR-0015-mensajeria-asincrona-con-outbox.md) | R4, R5, C2, C5 |
+| [ADR-0016](adr/ADR-0016-persistencia-y-durabilidad-del-estado.md) | R1, R3, R5, C2, C3 |
+| [ADR-0017](adr/ADR-0017-stack-de-backend.md) | C5, C6 |
+| [ADR-0018](adr/ADR-0018-stack-de-frontend.md) | R6, R3 |
 
 ## 6. Representación en el contexto del sistema (Fase 2)
 
@@ -70,7 +77,7 @@ Esta sección indica cómo aparece cada requisito en el diagrama de contexto (C4
 | Requisito | Representación en el contexto | Actores o sistemas externos | Decisiones | Supuestos | Brechas pendientes |
 |---|---|---|---|---|---|
 | R1 | REL-01, REL-03, REL-04, REL-05 | Cliente bancario; Core Bancario; Sistema Complementario; Sistema Externo de Transferencias | ADR-0001, ADR-0002 | S1, S2, S5, S13 | El API Gateway y los tres servicios se modelan en la Fase 3. Topología de transferencias (Q-01, DD-16) |
-| R2 | REL-06; IdP candidato (REL-10, REL-11) | Proveedor KYC/Biométrico; IdP (por validar) | — | S9, S16 | Frontera del IdP (Q-03), flujo OAuth, vinculación de tokens (DD-03, DD-04) |
+| R2 | REL-06; IdP interno desde la Fase 3 (ADR-0013; REL-10 y REL-11 retiradas) | Proveedor KYC/Biométrico; IdP (contenedor interno) | — | S9, S16 | Frontera del IdP (Q-03), flujo OAuth, vinculación de tokens (DD-03, DD-04) |
 | R3 | Solicitante de vinculación; REL-02, REL-06, REL-03 (creación de cliente), REL-09; Fuente Oficial candidata (REL-12) | Solicitante; Proveedor KYC/Biométrico; Core Bancario | ADR-0005, ADR-0006, ADR-0009 | S16 | Métodos de acceso posteriores al onboarding (Q-14). Herramientas de industria (DD-14). Fuente oficial (Q-07) |
 | R4 | REL-07, REL-08, REL-09; REL-13 por validar | Proveedores de Notificaciones; Core Bancario (por validar) | ADR-0005 (notificación en estados terminales), ADR-0008 | S14, S17 | Alcance de «cada movimiento» (Q-04). Canales (Q-10, DD-12) |
 | R5 | Auditor candidato (REL-15) | Responsable de auditoría (candidato) | ADR-0004 (caché) | — | Base de datos de auditoría y componentes de caché en la Fase 3. Actores internos (Q-08, DD-18) |
@@ -98,3 +105,17 @@ Los cambios de la remediación no agregan requisitos. Precisan las decisiones qu
 | R2-N01 (CF-01) | R1, R3; AQ-02 | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) v3 §3, §7 y §8; [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) v3 (IC-12); [ADR-0009](adr/ADR-0009-core-autoritativo.md) (VD-06) | QA5 (revisado), QA13 (nuevo) | RR-04, RR-17 |
 | R2-N02 (CF-02) | R1, C2; AQ-02 | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) v3 §4; [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) v3 (IC-14) | QA12 (nuevo) | RR-18 |
 | R2-N04 | R1; AQ-02 | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) v3 (IC-15) | QA9 | RR-13 |
+
+## 8. Representación en los contenedores (Fase 3)
+
+La cobertura y lo pendiente por requisito están en [ARG-02 — Preparación, sección 9](reviews/ARG-02-preparacion-revision-contenedores.md#9-cobertura-de-requisitos). Esta tabla indica **qué contenedor** realiza cada requisito.
+
+| Requisito | Contenedores |
+|---|---|
+| R1 | API Gateway, BFF, Servicio de consultas (cliente y movimientos), Servicio de transferencias (provisional) |
+| R2 | IdP, BFF (gestor de tokens), API Gateway (validación), Servicio de vinculación (KYC) |
+| R3 | Aplicación móvil, Servicio de vinculación, IdP (activación) |
+| R4 | Servicio de notificaciones, broker, servicios productores de eventos |
+| R5 | Servicio y almacén de auditoría; caché de consultas en el Servicio de consultas |
+| R6 | SPA web, aplicación móvil |
+| C1–C6 | Transversales: [22](22-seguridad-entre-contenedores.md), [19](19-comunicacion-entre-contenedores.md), [18](18-propiedad-y-consistencia-de-datos.md), [21](21-alternativas-tecnologicas.md) |

@@ -100,7 +100,7 @@ El solicitante se modela como un actor distinto del cliente porque **todavía no
 | **Sistema Externo de Transferencias** | Infraestructura financiera externa | Procesamiento de transferencias interbancarias. Representa una **capacidad lógica**; la topología de integración está por validar (sección 4.1) | Confirmada como dependencia; topología por validar | R1, S13, DD-16 |
 | **Proveedor KYC/Biométrico** | Proveedor tercero | Reconocimiento facial, prueba de vida (*liveness detection*), validación de documentos de identidad y resultado de la verificación. **Proveedor no seleccionado** | Supuesta (S16) | R2, R3, DD-14 |
 | **Proveedores de Notificaciones** | Proveedores terceros | Entrega de notificaciones push, SMS y correo electrónico. **Proveedores no seleccionados** | Supuesta (S17) | R4, DD-12 |
-| **Proveedor de Identidad (IdP)** | Candidato; frontera por decidir | Servidor de autorización OAuth 2.0 y OpenID Connect para clientes (sección 4.2) | Por validar | R2, S9, DD-03 |
+| **Proveedor de Identidad (IdP)** | ~~Candidato~~ **Resuelto en la Fase 3: contenedor interno** ([ADR-0013](adr/ADR-0013-frontera-del-idp.md)) | Servidor de autorización OAuth 2.0 y OpenID Connect para clientes (sección 4.2) | Por validar | R2, S9, DD-03 |
 | **Fuente Oficial de Identidad** | Candidato | Fuente oficial de datos de identificación de personas (sección 4.3) | Por validar | DD-17 |
 
 **No se modela** la «base de datos principal» que el reto menciona. Es un elemento interno de los sistemas existentes, y la plataforma no accede a ella (S12).
@@ -118,6 +118,8 @@ El solicitante se modela como un actor distinto del cliente porque **todavía no
 La topología final es la **pregunta abierta Q-01** y la **decisión diferida DD-16**. Su resolución afecta a la máquina de estados (los estados `DEBIT_CONFIRMED` y `PENDING_EXTERNAL_CONFIRMATION` de [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), este último antes llamado `SPI_PROCESSING`) y al catálogo de integraciones.
 
 ### 4.2 Proveedor de Identidad: frontera por decidir
+
+> **Actualización de la Fase 3:** la frontera se decidió en [ADR-0013](adr/ADR-0013-frontera-del-idp.md): el IdP es un **contenedor interno** de la plataforma. El análisis siguiente se conserva como registro histórico de la Fase 2.
 
 El reto exige OAuth 2.0 (R2). Se asume que la institución no tiene un IdP moderno para clientes (S9). Hay dos alternativas de frontera:
 
@@ -151,8 +153,8 @@ En la vista ampliada, la relación se dibuja desde la plataforma. Es igualmente 
 | REL-07 | Plataforma | Proveedores de Notificaciones | Solicita el envío de notificaciones de movimientos y del estado de la vinculación | Notificar cada movimiento (R4) e informar el avance de la vinculación | Supuesta (S17) | Principal |
 | REL-08 | Proveedores de Notificaciones | Cliente bancario | Entrega notificaciones de cada movimiento | Cumplir R4 | Supuesta (S17) | Principal |
 | REL-09 | Proveedores de Notificaciones | Solicitante de vinculación | Entrega notificaciones del estado de la vinculación | Comunicar los estados intermedios del onboarding | Supuesta (S17) | Principal |
-| REL-10 | Cliente bancario | IdP | Se autentica para acceder a los canales digitales (si el IdP es externo) | Autenticación del cliente (R2) | Por validar (DD-03) | Ampliada |
-| REL-11 | Plataforma | IdP | Delega la autenticación del cliente y la emisión de tokens OAuth 2.0 (si el IdP es externo) | Autorización de acceso a las API (R2) | Por validar (DD-03) | Ampliada |
+| REL-10 | — | — | *Retirada en la Fase 3:* el IdP es un contenedor interno (ADR-0013); la autenticación se modela como relación de contenedor | — | — | — |
+| REL-11 | — | — | *Retirada en la Fase 3:* el IdP es un contenedor interno (ADR-0013) | — | — | — |
 | REL-12 | Plataforma | Fuente Oficial de Identidad | Contrasta los datos de identificación del solicitante (mecanismo de acceso por validar) | Fortalecer la verificación de identidad | Por validar (DD-17) | Ampliada |
 | REL-13 | Core Bancario | Plataforma | Informa movimientos originados en otros canales para su notificación | Notificar movimientos que no originó la plataforma (alcance de R4) | Por validar (Q-04) | Ampliada |
 | REL-14 | Operador de soporte | Plataforma | Atiende operaciones en verificación, conciliaciones y vinculaciones en revisión manual | Resolver `REQUIRES_RECONCILIATION` y `MANUAL_REVIEW` | Por validar (DD-18) | Ampliada |
@@ -180,7 +182,7 @@ Notas:
 | TB-1 | Canales digitales públicos | Dispositivos del cliente, navegador, app móvil en ejecución, Internet |
 | TB-2 | Plataforma de Banca Digital | Componentes de servidor de la plataforma |
 | TB-3 | Sistemas bancarios existentes | Core Bancario, Sistema Complementario, base de datos principal |
-| TB-4 | Proveedores terceros | KYC/Biometría, Notificaciones, IdP (si es externo) |
+| TB-4 | Proveedores terceros | KYC/Biometría, Notificaciones, (el IdP es interno desde la Fase 3) |
 | TB-5 | Infraestructura financiera externa | Sistema Externo de Transferencias y la infraestructura de pagos interbancarios |
 
 Detalle de los cruces y de sus implicaciones de seguridad en [14](14-limites-de-confianza.md).
@@ -214,7 +216,7 @@ Las preguntas priorizadas por impacto están en [15 — Preguntas abiertas de la
 | Requisito | Representación en el contexto | Cobertura en el nivel 1 |
 |---|---|---|
 | R1 | REL-01, REL-03, REL-04, REL-05 | **Parcial.** El nivel 1 muestra los sistemas involucrados. El API Gateway y los tres servicios son elementos de la Fase 3 |
-| R2 | REL-06; IdP como candidato (REL-10, REL-11) | **Parcial.** El flujo OAuth y el IdP están pendientes (DD-03) |
+| R2 | REL-06; IdP interno desde la Fase 3 (ADR-0013) | **Parcial.** La frontera del IdP está resuelta; el flujo OAuth y el producto, pendientes (DD-03) |
 | R3 | Solicitante de vinculación, REL-02, REL-06, REL-03 (creación de cliente) | **Parcial.** Los métodos de acceso posteriores y las herramientas están pendientes |
 | R4 | REL-07, REL-08, REL-09; REL-13 por validar | **Parcial.** Los canales concretos y el alcance de «cada movimiento» están pendientes (Q-04) |
 | R5 | Auditor candidato (REL-15) | **No cubierto en el nivel 1.** La base de datos de auditoría y la caché son de la Fase 3 |

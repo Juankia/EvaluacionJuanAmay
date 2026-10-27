@@ -119,3 +119,7 @@ El reto pide identificar los componentes. A nivel conceptual son los siguientes;
 | ACL | Fuente en caso de fallo de caché, con protección del Core |
 | Mecanismo de invalidación | Local síncrono (mínimo) o dirigido por eventos (diferido) |
 | Observabilidad | Tasa de aciertos, latencia, llamadas al Core evitadas y antigüedad de los datos servidos |
+
+## 6. Actualización de la Fase 3
+
+La resolución de diseño de M03 (marcas de invalidación frente a la carrera de Cache-Aside, *read-your-writes* con `VENTANA_RYW`, indicadores de antigüedad y consulta del estado de transferencias por identificador de operación) está en [16 §9](16-arquitectura-de-contenedores.md#9-caché-y-experiencia-del-cliente-resolución-de-diseño-de-m03). La tecnología de caché es provisional ([21 §4](21-alternativas-tecnologicas.md#4-caché-distribuida)).

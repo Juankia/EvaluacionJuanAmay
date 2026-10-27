@@ -211,6 +211,39 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Riesgo residual | Bajo-medio |
 | Disparador de reevaluación | Casos de efecto tardío; respuesta a Q-17 |
 
+### RR-19 — Durabilidad del almacén transaccional y restauración
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Una conmutación con replicación asíncrona, una restauración desde un respaldo o una topología con varios escritores pierden o duplican permisos de envío, y la plataforma reenvía al Core |
+| Origen | Verificación acotada de la Fase 3, V-3 a V-5 ([23](23-riesgos-y-condiciones-fase-3.md)) |
+| Impacto | **Alto**: duplicación financiera originada en la plataforma |
+| Mitigación | PT-01 (RPO 0 de las escrituras confirmadas), PT-02 (cuarentena), PT-03 (escritor único) en [ADR-0016](adr/ADR-0016-persistencia-y-durabilidad-del-estado.md) |
+| Riesgo residual | Alto hasta verificar PT-01 a PT-03 en la infraestructura |
+| Disparador de reevaluación | Diseño de infraestructura y de DR; simulacros |
+
+### RR-20 — Complejidad operativa de la arquitectura híbrida
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Cinco servicios, un BFF, un IdP, varios almacenes y un broker exigen capacidades operativas y de observabilidad que el equipo podría no tener |
+| Origen | [ADR-0012](adr/ADR-0012-descomposicion-hibrida-de-contenedores.md) |
+| Impacto | Medio |
+| Mitigación | Servicios gestionados; observabilidad estándar; reevaluar la alternativa A si S11 es falso |
+| Riesgo residual | Medio |
+| Disparador de reevaluación | Respuesta a Q-18; incidentes operativos |
+
+### RR-21 — El IdP interno como componente crítico
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Todo acceso depende del IdP; su operación (parches, alta disponibilidad, seguridad) recae en la institución |
+| Origen | [ADR-0013](adr/ADR-0013-frontera-del-idp.md) |
+| Impacto | Medio-alto |
+| Mitigación | Despliegue multizona, base de datos replicada, endurecimiento y monitoreo; evaluar un IdP gestionado dentro del entorno de la institución en la fase de seguridad |
+| Riesgo residual | Medio-alto hasta la fase de seguridad y de infraestructura |
+| Disparador de reevaluación | Selección del producto de IdP |
+
 ## 3. Resumen
 
 | ID | Riesgo | Impacto | Riesgo residual |
@@ -233,3 +266,6 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | RR-16 | Reverso no posible por la vía automática | Alto | Medio |
 | RR-17 | Operaciones sin resolución concluyente | Medio-alto | Medio-alto |
 | RR-18 | Ejecución tardía única de un ejecutor zombi | Medio | Bajo-medio |
+| RR-19 | Durabilidad del almacén transaccional y restauración | Alto | Alto |
+| RR-20 | Complejidad operativa de la arquitectura híbrida | Medio | Medio |
+| RR-21 | IdP interno como componente crítico | Medio-alto | Medio-alto |

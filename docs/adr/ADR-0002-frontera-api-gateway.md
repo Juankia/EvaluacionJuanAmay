@@ -67,3 +67,7 @@ El Gateway puede tener **timeouts de infraestructura y de solicitud**. Los **pla
 
 - Puede percibirse como una desviación del texto del reto. Se mitiga documentando la interpretación y su justificación, y mostrando en los diagramas C4 que el Gateway enruta hacia al menos los tres servicios requeridos.
 - Un BFF mal gobernado podría acumular lógica de negocio. Debe limitarse a composición y adaptación al canal.
+
+## Actualización de la Fase 3
+
+La existencia y las responsabilidades del BFF se decidieron en [ADR-0014](ADR-0014-api-gateway-y-bff-de-canales.md) (BFF compartido de canales, sin invariantes financieros).

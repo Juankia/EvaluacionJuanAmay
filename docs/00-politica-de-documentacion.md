@@ -152,7 +152,7 @@ Los mensajes de commit se escriben en **español** y siguen la estructura de [Co
 |---|---|---|
 | Tipo | Token normalizado (en inglés) | Se mantienen los tipos del estándar para no romper herramientas de versionado ni de generación de cambios: `docs`, `feat`, `fix`, `refactor`, `chore`, `test`, `ci` |
 | Alcance | Español, sin tildes, en minúsculas | Ejemplos: `arquitectura`, `adr`, `c4`, `estandares` |
-| Descripción | Español | Verbo en infinitivo, en minúsculas y sin punto final. Ejemplo: «agregar el ADR-0011 de selección de API Gateway» |
+| Descripción | Español | Verbo en infinitivo, en minúsculas y sin punto final. Ejemplo: «agregar el ADR de selección del producto de API Gateway» |
 | Cuerpo | Español | Explica qué cambia y por qué. Líneas de hasta 72 caracteres |
 | Pie (*trailers*) | Formato del estándar | Ejemplo: `BREAKING CHANGE:` se mantiene tal cual. **No se agregan trailers de coautoría de herramientas o asistentes:** la autoría de los commits corresponde únicamente al autor del repositorio |
 
@@ -161,7 +161,7 @@ Los identificadores técnicos que aparezcan en el mensaje (clases, endpoints, ev
 Ejemplos:
 
 ```text
-docs(adr): agregar el ADR-0011 de selección de API Gateway
+docs(adr): agregar el ADR de selección del producto de API Gateway
 docs(c4): agregar el diagrama de contenedores
 fix(transferencias): evitar el reintento automático tras un timeout de lectura
 ```

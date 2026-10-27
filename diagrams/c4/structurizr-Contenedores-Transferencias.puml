@@ -1,0 +1,181 @@
+@startuml
+title <size:24>C4 Nivel 2 — Transferencias (provisional)</size>\n<size:24>Vista focalizada: transferencias. El orquestador es PROVISIONAL (CF-01/CF-02 pendientes de verificación independiente).</size>
+
+set separator none
+left to right direction
+skinparam ranksep 50
+skinparam nodesep 15
+hide stereotype
+
+<style>
+  root {
+    BackgroundColor: #ffffff;
+    FontColor: #444444;
+  }
+  // Element,Container
+  .Element-RWxlbWVudCxDb250YWluZXI= {
+    BackgroundColor: #438dd5;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Almacén de datos,Provisional
+  .Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #b45f06;
+    LineStyle: 30-30;
+    LineThickness: 6;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Mensajería
+  .Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #204d74;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Móvil
+  .Element-RWxlbWVudCxDb250YWluZXIsTcOzdmls {
+    BackgroundColor: #438dd5;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Navegador
+  .Element-RWxlbWVudCxDb250YWluZXIsTmF2ZWdhZG9y {
+    BackgroundColor: #438dd5;
+    LineColor: #2e6295;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Container,Provisional
+  .Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw= {
+    BackgroundColor: #438dd5;
+    LineColor: #b45f06;
+    LineStyle: 30-30;
+    LineThickness: 6;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Infraestructura financiera externa
+  .Element-RWxlbWVudCxJbmZyYWVzdHJ1Y3R1cmEgZmluYW5jaWVyYSBleHRlcm5h {
+    BackgroundColor: #7a5c2e;
+    LineColor: #554020;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Person
+  .Element-RWxlbWVudCxQZXJzb24= {
+    BackgroundColor: #08427b;
+    LineColor: #052e56;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Sistema existente
+  .Element-RWxlbWVudCxTaXN0ZW1hIGV4aXN0ZW50ZQ== {
+    BackgroundColor: #5b6770;
+    LineColor: #3f484e;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Relationship
+  .Relationship-UmVsYXRpb25zaGlw {
+    LineThickness: 2;
+    LineStyle: 0;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
+  // Relationship,Ruta por validar
+  .Relationship-UmVsYXRpb25zaGlwLFJ1dGEgcG9yIHZhbGlkYXI= {
+    LineThickness: 3;
+    LineStyle: 15-15;
+    LineColor: #7a5c2e;
+    FontColor: #7a5c2e;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
+  // Plataforma de Banca Digital
+  .Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs {
+    BackgroundColor: #ffffff;
+    LineColor: #0b4884;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+  }
+</style>
+
+person "==Cliente bancario\n<size:15>[Persona]</size>\n\nCliente de la institución (socio, en el contexto cooperativo) que usa los canales web y móvil para consultar su información, cuentas y movimientos y realizar transferencias." <<Element-RWxlbWVudCxQZXJzb24=>> as Clientebancario
+rectangle "==Core Bancario\n<size:15>[Sistema de software]</size>\n\nSistema existente y autoritativo para los datos maestros del cliente, productos, cuentas, movimientos y transacciones bancarias (S1, S2, ADR-0009)." <<Element-RWxlbWVudCxTaXN0ZW1hIGV4aXN0ZW50ZQ==>> as CoreBancario
+rectangle "==Sistema Externo de Transferencias\n<size:15>[Sistema de software]</size>\n\nCapacidad externa que procesa las transferencias interbancarias. La topología de integración (directa, mediante la infraestructura de pagos existente de la institución o mediante un intermediario autorizado) está por validar (S13, DD-16)." <<Element-RWxlbWVudCxJbmZyYWVzdHJ1Y3R1cmEgZmluYW5jaWVyYSBleHRlcm5h>> as SistemaExternodeTransferencias
+
+rectangle "Plataforma de Banca Digital\n<size:15>[Sistema de software]</size>" <<Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs>> {
+  rectangle "==Servicio de transferencias\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nContrato de idempotencia (ADR-0006) y orquestador durable de transferencias (ADR-0005): titularidad cercada, permiso de envío único, conciliación y efecto tardío. Contiene la ACL de transferencias. PROVISIONAL: CF-01/CF-02 sin verificación independiente." <<Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Serviciodetransferencias
+  database "==BD transaccional de transferencias\n<size:15>[Contenedor: PostgreSQL (ADR-0016)]</size>\n\nIntenciones, huellas, estado de las operaciones, titularidad y tokens, evidencia huérfana, casos de conciliación y outbox. Requisitos: escritor único, RPO 0 de las escrituras confirmadas y cuarentena tras restauración (ADR-0016)." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.BDtransaccionaldetransferencias
+  queue "==Broker de mensajería\n<size:15>[Contenedor: Broker gestionado de colas y tópicos (por seleccionar, DD-15)]</size>\n\nDistribuye los eventos publicados desde los outbox: entrega al menos una vez, tópicos con suscripciones, colas de mensajes fallidos (ADR-0015)." <<Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE=>> as PlataformadeBancaDigital.Brokerdemensajería
+  rectangle "==Consola de operaciones\n<size:15>[Contenedor: Aplicación web interna (por definir)]</size>\n\nResolución de REQUIRES_RECONCILIATION y MANUAL_REVIEW con cuatro ojos, cierre excepcional y consulta de auditoría. PROVISIONAL: puede sustituirse por un sistema administrativo existente (DD-18)." <<Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Consoladeoperaciones
+  rectangle "==SPA web\n<size:15>[Contenedor: React + TypeScript]</size>\n\nAplicación de página única para la banca web: consultas y transferencias. No conserva tokens OAuth en el navegador (sesión gestionada por el BFF)." <<Element-RWxlbWVudCxDb250YWluZXIsTmF2ZWdhZG9y>> as PlataformadeBancaDigital.SPAweb
+  rectangle "==Aplicación móvil\n<size:15>[Contenedor: React Native + TypeScript (recomendado, ADR-0018)]</size>\n\nAplicación multiplataforma para la banca móvil y la vinculación digital. Integra el SDK del proveedor KYC/biométrico y la biometría local del dispositivo." <<Element-RWxlbWVudCxDb250YWluZXIsTcOzdmls>> as PlataformadeBancaDigital.Aplicaciónmóvil
+  rectangle "==API Gateway\n<size:15>[Contenedor: Producto de API Gateway gestionado (por seleccionar, DD-15)]</size>\n\nPunto único de entrada: enrutamiento, validación de tokens, limitación de tasa, correlación y políticas de seguridad de borde. Sin lógica de negocio ni estado financiero (ADR-0002)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.APIGateway
+  rectangle "==BFF de canales digitales\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nBackend for Frontend compartido por web y móvil: gestor de tokens de la SPA, composición de lecturas y adaptación por canal. No posee invariantes financieros (ADR-0014)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.BFFdecanalesdigitales
+}
+
+Clientebancario --> PlataformadeBancaDigital.SPAweb <<Relationship-UmVsYXRpb25zaGlw>> : "Usa la banca web\n<size:14>[HTTPS]</size>"
+Clientebancario --> PlataformadeBancaDigital.Aplicaciónmóvil <<Relationship-UmVsYXRpb25zaGlw>> : "Usa la banca móvil\n<size:14>[Aplicación nativa]</size>"
+PlataformadeBancaDigital.SPAweb --> PlataformadeBancaDigital.APIGateway <<Relationship-UmVsYXRpb25zaGlw>> : "Invoca la API de canal con la sesión del BFF\n<size:14>[HTTPS/JSON; cookie segura]</size>"
+PlataformadeBancaDigital.Aplicaciónmóvil --> PlataformadeBancaDigital.APIGateway <<Relationship-UmVsYXRpb25zaGlw>> : "Invoca la API de canal con un token de acceso\n<size:14>[HTTPS/JSON; OAuth 2.0]</size>"
+PlataformadeBancaDigital.APIGateway --> PlataformadeBancaDigital.BFFdecanalesdigitales <<Relationship-UmVsYXRpb25zaGlw>> : "Enruta las solicitudes de canal\n<size:14>[HTTPS/JSON]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales --> PlataformadeBancaDigital.Serviciodetransferencias <<Relationship-UmVsYXRpb25zaGlw>> : "Inicia transferencias y consulta su estado por identificador de operación\n<size:14>[HTTPS/JSON; Idempotency-Key]</size>"
+PlataformadeBancaDigital.Serviciodetransferencias --> CoreBancario <<Relationship-UmVsYXRpb25zaGlw>> : "Ejecuta transferencias y concilia (ACL; CL-1/CL-2; permiso de envío único)\n<size:14>[Protocolo del Core (por validar, S3)]</size>"
+PlataformadeBancaDigital.Serviciodetransferencias --> SistemaExternodeTransferencias <<Relationship-UmVsYXRpb25zaGlwLFJ1dGEgcG9yIHZhbGlkYXI=>> : "Solicita el procesamiento interbancario (ruta por validar)\n<size:14>[Por validar (Q-01)]</size>"
+PlataformadeBancaDigital.Serviciodetransferencias --> PlataformadeBancaDigital.BDtransaccionaldetransferencias <<Relationship-UmVsYXRpb25zaGlw>> : "Reserva intenciones y aplica transiciones cercadas\n<size:14>[SQL/TLS]</size>"
+PlataformadeBancaDigital.Serviciodetransferencias --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Publica movimientos confirmados, cambios de estado y auditoría (outbox)\n<size:14>[Mensajería]</size>"
+PlataformadeBancaDigital.Consoladeoperaciones --> PlataformadeBancaDigital.Serviciodetransferencias <<Relationship-UmVsYXRpb25zaGlw>> : "Resuelve casos de conciliación y cierres excepcionales (cuatro ojos)\n<size:14>[HTTPS/JSON (API de operaciones)]</size>"
+
+@enduml

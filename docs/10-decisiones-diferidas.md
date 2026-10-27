@@ -37,3 +37,17 @@ Esto evita seleccionar tecnología antes de entender el problema. En el registro
 | DD-20 | **Mecanismo dinámico de cuotas del Core** (M2: cuotas coordinadas o arrendadas entre réplicas) | La asignación estática (M1) garantiza el presupuesto; M2 solo optimiza el uso | Subutilización medida del Core con pocas réplicas que produce rechazos relevantes | Fase de infraestructura o posterior a mediciones | [ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md) |
 | DD-21 | **Mecanismo de prueba de control para vincular clientes preexistentes** y restricciones iniciales del acceso recién vinculado | El requisito está aprobado (ADR-0009, VD-03 y VD-10); el mecanismo pertenece a la fase de seguridad | Inicio de la fase de seguridad; respuesta a Q-15 | Seguridad | [ADR-0009](adr/ADR-0009-core-autoritativo.md), QA11 |
 | DD-22 | **Adopción de capacidades del Core para evidencia determinista**: consulta por referencia con consistencia fuerte y cierre de la referencia, expiración de solicitudes, retención y captura en dos fases | Ninguna se asume; dependen de lo que ofrezca el Core | Respuesta a Q-17 | Fase 3 o de integración | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) v3 §3 y §4.3; RR-17, RR-18 |
+
+## 3. Estado tras la Fase 3
+
+| ID | Estado | Referencia |
+|---|---|---|
+| DD-01 | **Patrón resuelto** (Outbox + broker gestionado); el producto pasa a DD-15 | [ADR-0015](adr/ADR-0015-mensajeria-asincrona-con-outbox.md) |
+| DD-03 | **Frontera resuelta** (IdP interno); el flujo OAuth y el producto siguen en la fase de seguridad | [ADR-0013](adr/ADR-0013-frontera-del-idp.md) |
+| DD-07 | Candidato provisional: caché compatible con Redis; el producto, con DD-15 | [21 §4](21-alternativas-tecnologicas.md#4-caché-distribuida) |
+| DD-10 | **Resuelta**: ACL como módulos internos; BFF compartido | [ADR-0012](adr/ADR-0012-descomposicion-hibrida-de-contenedores.md), [ADR-0014](adr/ADR-0014-api-gateway-y-bff-de-canales.md) |
+| DD-11 | **Resuelta en diseño**: servicio y almacén de auditoría | [16 §8](16-arquitectura-de-contenedores.md#8-notificaciones-y-auditoría), [18 §4](18-propiedad-y-consistencia-de-datos.md#4-durabilidad-transaccional-y-durabilidad-de-auditoría) |
+| DD-13 | **Resuelta** (recomendación B) | [ADR-0018](adr/ADR-0018-stack-de-frontend.md) |
+| DD-19 | **Provisional** (Java 21 + Quarkus) | [ADR-0017](adr/ADR-0017-stack-de-backend.md) |
+| DD-20 | Disparador ampliado: rechazos de CL-1 con baja utilización real del Core | [19 §3.5](19-comunicacion-entre-contenedores.md#35-comportamiento-con-menos-réplicas-que-el-máximo) |
+| DD-15 | Ahora concentra la selección de productos: Gateway, broker, caché, PostgreSQL gestionado y entorno de ejecución | [21](21-alternativas-tecnologicas.md) |

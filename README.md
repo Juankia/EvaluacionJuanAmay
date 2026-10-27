@@ -17,7 +17,7 @@ Requisito → Driver / Supuesto → Decisión → Trade-off → Consecuencia
 | Fase 2 | C4 Nivel 1: Contexto del sistema, catálogo de integraciones y límites de confianza | Cerrada (pendiente de aprobación del comité) |
 | Revisión ARG-01 | Architecture Review Gate de las Fases 0–2 | **NO-GO** (1 CRITICAL, 5 HIGH). Remediación completada; **pendiente de la revisión ARG-01-R2** ([informe](docs/reviews/ARG-01-informe-de-remediacion.md)) |
 | Verificación ARG-01-R2 | Verificación independiente de la remediación | **CONDITIONAL GO**. CF-01 y CF-02 remediados en diseño; **pendientes de verificación independiente** ([remediación](docs/reviews/ARG-01-R2-remediacion-CF01-CF02.md)) |
-| Fase 3 | C4 Nivel 2: Contenedores | Puede iniciarse bajo CONDITIONAL GO. El contenedor del orquestador de transferencias espera la verificación de CF-01 y CF-02. No iniciada |
+| Fase 3 | C4 Nivel 2: Contenedores | **Completada; pendiente de la revisión ARG-02** ([preparación](docs/reviews/ARG-02-preparacion-revision-contenedores.md)). El orquestador de transferencias es **provisional**. **No se autoriza implementación productiva** |
 | Fases posteriores | C4 de Componentes, seguridad e identidad, infraestructura cloud, DR, justificaciones de frontend y notificaciones | No iniciadas |
 
 > Este repositorio no anticipa decisiones de fases posteriores. Lo que todavía no se ha decidido figura como **decisión diferida**, con su disparador explícito.
@@ -71,6 +71,14 @@ Documentos:
 │   ├── 13-catalogo-de-integraciones.md         Catálogo de integraciones
 │   ├── 14-limites-de-confianza.md              Límites de confianza (vista conceptual)
 │   ├── 15-preguntas-abiertas-fase-2.md         Preguntas abiertas priorizadas
+│   ├── 16-arquitectura-de-contenedores.md      C4 Nivel 2: contenedores (Fase 3)
+│   ├── 17-matriz-de-responsabilidades.md       Responsabilidades por contenedor
+│   ├── 18-propiedad-y-consistencia-de-datos.md Propiedad de datos y consistencia
+│   ├── 19-comunicacion-entre-contenedores.md   Comunicación y capacidad del Core
+│   ├── 20-alternativas-de-descomposicion.md    Monolito, híbrida y microservicios
+│   ├── 21-alternativas-tecnologicas.md         Alternativas tecnológicas (incluye R6)
+│   ├── 22-seguridad-entre-contenedores.md      Seguridad e identidad digital
+│   ├── 23-riesgos-y-condiciones-fase-3.md      Gobierno, verificación acotada y bloqueos
 │   ├── adr/                                    Registros de decisiones arquitectónicas
 │   └── reviews/                                Revisiones de arquitectura (ARG) y remediaciones
 ├── c4/
@@ -94,6 +102,13 @@ Documentos:
 | [ADR-0009](docs/adr/ADR-0009-core-autoritativo.md) | El Core es autoritativo para la identidad del cliente; la vinculación digital requiere autorización explícita | Aceptada — enmendada en ARG-01 |
 | [ADR-0010](docs/adr/ADR-0010-residencia-de-datos.md) | Región cloud y residencia de datos sujetas a validación legal y de cumplimiento | Propuesta. Pendiente de validación |
 | [ADR-0011](docs/adr/ADR-0011-presupuesto-de-capacidad-del-core.md) | Presupuesto global de capacidad del Core y control de admisión por clase de operación | Aceptada (ARG-01) |
+| [ADR-0012](docs/adr/ADR-0012-descomposicion-hibrida-de-contenedores.md) | Descomposición híbrida de contenedores y ubicación de las ACL | Aceptada con condiciones |
+| [ADR-0013](docs/adr/ADR-0013-frontera-del-idp.md) | El IdP es un contenedor interno de la plataforma | Aceptada con condiciones (frontera); producto provisional |
+| [ADR-0014](docs/adr/ADR-0014-api-gateway-y-bff-de-canales.md) | API Gateway de borde y un BFF compartido de canales | Aceptada con condiciones |
+| [ADR-0015](docs/adr/ADR-0015-mensajeria-asincrona-con-outbox.md) | Mensajería asíncrona con Outbox transaccional y broker gestionado | Aceptada (patrón); producto diferido |
+| [ADR-0016](docs/adr/ADR-0016-persistencia-y-durabilidad-del-estado.md) | Persistencia relacional por servicio y durabilidad del estado financiero | Aceptada con condiciones |
+| [ADR-0017](docs/adr/ADR-0017-stack-de-backend.md) | Stack de backend: Java 21 y Quarkus | Provisional |
+| [ADR-0018](docs/adr/ADR-0018-stack-de-frontend.md) | Stack de frontend: React + TS y React Native + TS | Aceptada con condiciones |
 
 ## Fuente del reto
 

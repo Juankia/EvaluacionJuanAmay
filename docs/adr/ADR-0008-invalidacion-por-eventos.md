@@ -62,3 +62,7 @@ Con Cache-Aside ([ADR-0004](ADR-0004-cache-aside.md)), un TTL por sí solo deja 
 ## Riesgos
 
 - RR-05: fallas en la invalidación o en la entrega de eventos.
+
+## Actualización de la Fase 3
+
+El disparador de DD-01 se cumplió (notificaciones, auditoría e invalidación confirmadas). El patrón se decidió en [ADR-0015](ADR-0015-mensajeria-asincrona-con-outbox.md) (Outbox transaccional + broker gestionado de colas y tópicos; Kafka no seleccionado). El producto queda en DD-15.

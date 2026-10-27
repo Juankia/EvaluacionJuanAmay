@@ -110,3 +110,7 @@ M2 solo se justificaría si esa subutilización produce rechazos medibles con N 
 
 - **RR-14:** cuotas mal dimensionadas, que producen rechazos artificiales (demasiado bajas) o no protegen (demasiado altas o con un `N_MAX_REPLICAS` desactualizado). La coordinación dinámica, si se activa, es un posible punto de falla (mitigado por el respaldo M1).
 - **Dependencia del dato de capacidad del Core:** si el propietario no puede informarlo, se requieren pruebas de capacidad controladas.
+
+## Actualización de la Fase 3
+
+La regla M1 se corrigió en el diseño de contenedores para considerar `N_EFECTIVO_MAX` (réplicas adicionales de despliegue, solapamiento blue/green, réplicas en terminación y réplicas temporales), el reparto de cada clase entre servicios y los requisitos RI-01 a RI-07 ([19 §3](../19-comunicacion-entre-contenedores.md#3-protección-de-la-capacidad-del-core-adr-0011-y-r2-n06); R2-N06, R2-N07). Pendiente de verificación en ARG-02.
