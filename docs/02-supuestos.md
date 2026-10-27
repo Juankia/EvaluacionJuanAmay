@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Fase | 0 — Drivers, supuestos y escenarios de calidad |
-| Estado | Cerrado. Cada supuesto está pendiente de validación con la institución |
+| Estado | Vigente (S13 revisado y S16–S17 agregados en la Fase 2). Cada supuesto está pendiente de validación con la institución |
 | Documentos relacionados | [01 — Drivers](01-drivers-arquitectonicos.md), [11 — Riesgos residuales](11-riesgos-residuales.md) |
 
 ## 1. Propósito
@@ -103,12 +103,16 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 - **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-acl-por-dominio.md), [ADR-0009](adr/ADR-0009-core-autoritativo.md).
 - **Validación:** confirmar con la institución que existen interfaces de servicio suficientes para todas las consultas requeridas.
 
-### S13 — Las transferencias interbancarias usan el sistema de pagos nacional
+### S13 — Las transferencias interbancarias dependen de una capacidad externa de procesamiento
 
-- **Enunciado:** las transferencias interbancarias se liquidan a través del sistema de pagos administrado por el Banco Central del Ecuador. En este documento se le llama de forma genérica **SPI**. La plataforma no se conecta directamente con él: lo hace mediante el Core o mediante el componente que la institución use hoy.
+- **Enunciado:** las transferencias interbancarias se procesan mediante una capacidad externa a la plataforma, el **Sistema Externo de Transferencias** de la vista de contexto. Esa capacidad está vinculada al sistema de pagos interbancarios administrado por el Banco Central del Ecuador, al que este repositorio llama de forma genérica **SPI**. **No se asume una integración directa de la plataforma con el BCE ni con el SPI.**
+- **Modelos posibles** (revisión de la Fase 2; ver [12, sección 4.1](12-contexto-del-sistema.md#41-sistema-externo-de-transferencias-modelos-de-integración-posibles)):
+  - **A.** integración directa, si es legal y técnicamente admisible;
+  - **B.** mediante la infraestructura de pagos existente de la institución (Core o componente de pagos);
+  - **C.** mediante un intermediario autorizado o un servicio bancario.
 - **Base:** el reto indica que las transferencias invocan «servicios externos según el tipo». El mecanismo exacto no se especifica.
-- **Decisiones afectadas:** [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md).
-- **Validación:** confirmar con la institución el mecanismo de participación en el sistema de pagos, los horarios y ciclos de compensación, y quién origina el mensaje de pago.
+- **Decisiones afectadas:** [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) (el nombre del estado conceptual `SPI_PROCESSING` presupone el SPI y se revisará cuando se resuelva Q-01) y DD-16.
+- **Validación:** confirmar con la institución el modelo de integración, el mecanismo de participación en el sistema de pagos, los horarios y ciclos de compensación, y quién origina el mensaje de pago (Q-01).
 
 ### S14 — El fundamento normativo de la notificación no está verificado
 
@@ -126,6 +130,20 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 - **Terminología:** se usa «cliente», el término del reto. En el contexto cooperativo debe leerse como «socio».
 - **Validación:** confirmar el tipo de institución destinataria.
 
+### S16 — KYC y biometría provistos por un tercero especializado
+
+- **Enunciado:** las capacidades de reconocimiento facial, prueba de vida, validación de documentos de identidad y verificación de identidad las provee un **tercero especializado**, no la institución.
+- **Base:** el reto pide incluir «herramientas de KYC y biometría» y recomendar «herramientas de industria» (R2, R3). Esto sugiere soluciones de mercado, pero no excluye que la institución ya cuente con alguna.
+- **Decisiones afectadas:** contexto del sistema (Proveedor KYC/Biométrico), DD-14, [ADR-0010](adr/ADR-0010-residencia-de-datos.md).
+- **Validación:** inventario de las herramientas de identidad actuales de la institución (Q-06).
+
+### S17 — Entrega de notificaciones mediante proveedores externos
+
+- **Enunciado:** la entrega de notificaciones push, SMS y correo electrónico usa **proveedores externos de entrega**. La decisión de qué notificar y cuándo permanece en la plataforma.
+- **Base:** el reto admite canales «propios o externos» (R4). La entrega push depende en la práctica de los servicios de los fabricantes de los sistemas operativos móviles. Para SMS y correo, el supuesto es que la institución no opera infraestructura propia.
+- **Decisiones afectadas:** contexto del sistema (Proveedores de Notificaciones), DD-12.
+- **Validación:** confirmar los canales y los proveedores actuales de la institución (Q-10).
+
 ## 3. Resumen
 
 | ID | Supuesto | Criticidad si es falso | Decisiones afectadas |
@@ -142,6 +160,8 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 | S10 | Cifras no especificadas | Alta | Escenarios de calidad, ADR-0007, DD-09 |
 | S11 | Organización de ingeniería madura | Media | ADR-0001, ADR-0003 |
 | S12 | Sin acceso directo a la base de datos principal | Alta | ADR-0001, ADR-0009 |
-| S13 | Transferencias interbancarias mediante el SPI | Media | ADR-0005 |
+| S13 | Transferencias interbancarias mediante una capacidad externa; topología por validar | Alta | ADR-0005, DD-16 |
 | S14 | Fundamento normativo de la notificación no verificado | Media | Fase de notificaciones |
 | S15 | Tipo de institución por confirmar | Media | Todas las referencias regulatorias |
+| S16 | KYC y biometría provistos por un tercero | Media | Contexto, DD-14, ADR-0010 |
+| S17 | Notificaciones mediante proveedores externos | Baja | Contexto, DD-12 |

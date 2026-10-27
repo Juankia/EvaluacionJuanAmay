@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Fase | 0–1 |
+| Fase | 0–2 |
 | Estado | Vigente. Se actualiza al cierre de cada fase |
 | Fuente | `Reto Técnico Arquitecto Jardín Azuayo.pdf`. El texto de los requisitos se reproduce literalmente |
 
@@ -42,8 +42,8 @@
 
 | Entregable (texto del reto) | Estado | Ubicación prevista |
 |---|---|---|
-| **E1.** «Modelo C4 hasta nivel de componentes: Diagrama de Contexto (actores y sistemas externos), Diagrama de Contenedores (aplicaciones, bases de datos, servicios), Diagrama de Componentes (detalle interno de los contenedores principales)» | Base del modelo inicializada; vistas pendientes (Fase 2 en adelante) | [`c4/workspace.dsl`](../c4/workspace.dsl) |
-| **E2.** «Infraestructura: Diagrame la infraestructura cloud propuesta con la herramienta de su preferencia.» | Pendiente | `c4/workspace.dsl` (vista de despliegue) y `diagrams/` |
+| **E1.** «Modelo C4 hasta nivel de componentes: Diagrama de Contexto (actores y sistemas externos), Diagrama de Contenedores (aplicaciones, bases de datos, servicios), Diagrama de Componentes (detalle interno de los contenedores principales)» | Contexto: **completado** (Fase 2, vistas `ContextoPrincipal` y `ContextoAmpliado`). Contenedores y componentes: pendientes | [`c4/workspace.dsl`](../c4/workspace.dsl), [12 — Contexto del sistema](12-contexto-del-sistema.md), `diagrams/c4/` |
+| **E2.** «Infraestructura: Diagrame la infraestructura cloud propuesta con la herramienta de su preferencia.» | Pendiente. Los límites de confianza conceptuales ([14](14-limites-de-confianza.md)) son un insumo | `c4/workspace.dsl` (vista de despliegue) y `diagrams/` |
 | **E3.** «Justificaciones: Documento breve con las decisiones de diseño: selección de frameworks frontend, flujo OAuth, herramientas de KYC/biometría, patrones de diseño aplicados y canales de notificación.» | Parcial: patrones de diseño aplicados en ADR-0001 a ADR-0009 | `docs/` y `docs/adr/` |
 | **E4.** «Formato de entrega: Repositorio en GitHub o documento compartido con los diagramas y el documento de justificaciones.» | En curso | Este repositorio |
 
@@ -61,3 +61,22 @@
 | [ADR-0008](adr/ADR-0008-invalidacion-por-eventos.md) | R4, R5, C5 |
 | [ADR-0009](adr/ADR-0009-core-autoritativo.md) | R3, contexto del reto (fuentes de información) |
 | [ADR-0010](adr/ADR-0010-residencia-de-datos.md) | C1, C6 |
+
+## 6. Representación en el contexto del sistema (Fase 2)
+
+Esta sección indica cómo aparece cada requisito en el diagrama de contexto (C4 nivel 1) y qué falta. **Un diagrama de nivel 1 no satisface por sí solo** requisitos que se resuelven en los niveles de contenedor, de componente o de infraestructura.
+
+| Requisito | Representación en el contexto | Actores o sistemas externos | Decisiones | Supuestos | Brechas pendientes |
+|---|---|---|---|---|---|
+| R1 | REL-01, REL-03, REL-04, REL-05 | Cliente bancario; Core Bancario; Sistema Complementario; Sistema Externo de Transferencias | ADR-0001, ADR-0002 | S1, S2, S5, S13 | El API Gateway y los tres servicios se modelan en la Fase 3. Topología de transferencias (Q-01, DD-16) |
+| R2 | REL-06; IdP candidato (REL-10, REL-11) | Proveedor KYC/Biométrico; IdP (por validar) | — | S9, S16 | Frontera del IdP (Q-03), flujo OAuth, vinculación de tokens (DD-03, DD-04) |
+| R3 | Solicitante de vinculación; REL-02, REL-06, REL-03 (creación de cliente), REL-09; Fuente Oficial candidata (REL-12) | Solicitante; Proveedor KYC/Biométrico; Core Bancario | ADR-0005, ADR-0006, ADR-0009 | S16 | Métodos de acceso posteriores al onboarding (Q-14). Herramientas de industria (DD-14). Fuente oficial (Q-07) |
+| R4 | REL-07, REL-08, REL-09; REL-13 por validar | Proveedores de Notificaciones; Core Bancario (por validar) | ADR-0005 (notificación en estados terminales), ADR-0008 | S14, S17 | Alcance de «cada movimiento» (Q-04). Canales (Q-10, DD-12) |
+| R5 | Auditor candidato (REL-15) | Responsable de auditoría (candidato) | ADR-0004 (caché) | — | Base de datos de auditoría y componentes de caché en la Fase 3. Actores internos (Q-08, DD-18) |
+| R6 | REL-01, REL-02 (la plataforma incluye los canales web y móvil) | Cliente; Solicitante | — | — | Los stacks de frontend son de la fase de frontend (DD-13) |
+| C1 | Límites de confianza y datos sensibles hacia terceros ([14](14-limites-de-confianza.md), [13](13-catalogo-de-integraciones.md)) | Proveedores terceros | ADR-0010 | S8, S15 | Tipo de institución (Q-05). Datos biométricos (Q-06) |
+| C2 | Dependencias externas identificadas, cuya falla se debe tolerar | Todos los sistemas externos | ADR-0001, ADR-0005 | S4 | Topología de alta disponibilidad (fase de infraestructura) |
+| C3 | — | — | — | S10 | RTO, RPO y DR (DD-09) |
+| C4 | Cruces de límites de confianza X-1 a X-6 | — | — | — | Controles concretos (fase de seguridad). SIEM institucional (Q-13) |
+| C5 | Sistemas externos aislados detrás de la plataforma; nuevas integraciones como nuevas relaciones del contexto | — | ADR-0001 | S7 | Detalle en la Fase 3 |
+| C6 | — | — | ADR-0010 | S8 | Infraestructura cloud (DD-15) |

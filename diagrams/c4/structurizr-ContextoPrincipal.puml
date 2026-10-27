@@ -1,0 +1,114 @@
+@startuml
+title <size:24>C4 Nivel 1 — Contexto principal de la Plataforma de Banca Digital</size>\n<size:24>C4 Nivel 1 — Contexto principal: alcance confirmado por el reto y supuestos aceptados.</size>
+
+set separator none
+left to right direction
+skinparam ranksep 60
+skinparam nodesep 20
+hide stereotype
+
+<style>
+  root {
+    BackgroundColor: #ffffff;
+    FontColor: #444444;
+  }
+  // Element,Infraestructura financiera externa
+  .Element-RWxlbWVudCxJbmZyYWVzdHJ1Y3R1cmEgZmluYW5jaWVyYSBleHRlcm5h {
+    BackgroundColor: #7a5c2e;
+    LineColor: #554020;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Person
+  .Element-RWxlbWVudCxQZXJzb24= {
+    BackgroundColor: #08427b;
+    LineColor: #052e56;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Proveedor tercero
+  .Element-RWxlbWVudCxQcm92ZWVkb3IgdGVyY2Vybw== {
+    BackgroundColor: #8a8a8a;
+    LineColor: #606060;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Sistema en diseño
+  .Element-RWxlbWVudCxTaXN0ZW1hIGVuIGRpc2XDsW8= {
+    BackgroundColor: #1168bd;
+    LineColor: #0b4884;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Element,Sistema existente
+  .Element-RWxlbWVudCxTaXN0ZW1hIGV4aXN0ZW50ZQ== {
+    BackgroundColor: #5b6770;
+    LineColor: #3f484e;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
+  // Relationship,Confirmada
+  .Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE= {
+    LineThickness: 2;
+    LineStyle: 0;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
+  // Relationship,Supuesta
+  .Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh {
+    LineThickness: 2;
+    LineStyle: 10-10;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
+</style>
+
+person "==Cliente bancario\n<size:15>[Persona]</size>\n\nCliente de la institución (socio, en el contexto cooperativo) que usa los canales web y móvil para consultar su información, cuentas y movimientos y realizar transferencias." <<Element-RWxlbWVudCxQZXJzb24=>> as Clientebancario
+rectangle "==Proveedores de Notificaciones\n<size:15>[Sistema de software]</size>\n\nCapacidades externas de entrega de notificaciones por notificación push, SMS y correo electrónico. Proveedores no seleccionados (DD-12)." <<Element-RWxlbWVudCxQcm92ZWVkb3IgdGVyY2Vybw==>> as ProveedoresdeNotificaciones
+person "==Solicitante de vinculación\n<size:15>[Persona]</size>\n\nPersona que inicia su vinculación como nuevo cliente desde la app móvil, con verificación de identidad y reconocimiento facial." <<Element-RWxlbWVudCxQZXJzb24=>> as Solicitantedevinculación
+rectangle "==Plataforma de Banca Digital\n<size:15>[Sistema de software]</size>\n\nPlataforma de canales digitales web y móvil que permite a clientes de una institución financiera consultar información, visualizar movimientos, realizar transferencias y completar procesos de vinculación digital, mediante integraciones seguras con sistemas bancarios y proveedores externos." <<Element-RWxlbWVudCxTaXN0ZW1hIGVuIGRpc2XDsW8=>> as PlataformadeBancaDigital
+rectangle "==Core Bancario\n<size:15>[Sistema de software]</size>\n\nSistema existente y autoritativo para los datos maestros del cliente, productos, cuentas, movimientos y transacciones bancarias (S1, S2, ADR-0009)." <<Element-RWxlbWVudCxTaXN0ZW1hIGV4aXN0ZW50ZQ==>> as CoreBancario
+rectangle "==Sistema Complementario de Clientes\n<size:15>[Sistema de software]</size>\n\nSistema existente con información extendida del cliente. No es autoritativo para la creación ni para la identidad del cliente (S5, ADR-0009)." <<Element-RWxlbWVudCxTaXN0ZW1hIGV4aXN0ZW50ZQ==>> as SistemaComplementariodeClientes
+rectangle "==Sistema Externo de Transferencias\n<size:15>[Sistema de software]</size>\n\nCapacidad externa que procesa las transferencias interbancarias. La topología de integración (directa, mediante la infraestructura de pagos existente de la institución o mediante un intermediario autorizado) está por validar (S13, DD-16)." <<Element-RWxlbWVudCxJbmZyYWVzdHJ1Y3R1cmEgZmluYW5jaWVyYSBleHRlcm5h>> as SistemaExternodeTransferencias
+rectangle "==Proveedor KYC/Biométrico\n<size:15>[Sistema de software]</size>\n\nCapacidad externa de verificación de identidad: reconocimiento facial, prueba de vida, validación de documentos de identidad y resultado de la verificación. Proveedor no seleccionado (DD-14)." <<Element-RWxlbWVudCxQcm92ZWVkb3IgdGVyY2Vybw==>> as ProveedorKYCBiométrico
+
+Clientebancario --> PlataformadeBancaDigital <<Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE=>> : "Consulta su información, cuentas y movimientos, y realiza transferencias propias e interbancarias"
+Solicitantedevinculación --> PlataformadeBancaDigital <<Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE=>> : "Inicia su vinculación digital y completa la verificación de identidad y biométrica desde la app móvil"
+PlataformadeBancaDigital --> CoreBancario <<Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE=>> : "Consulta datos del cliente, cuentas y movimientos, y solicita la ejecución de transferencias y la creación de clientes"
+PlataformadeBancaDigital --> SistemaComplementariodeClientes <<Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE=>> : "Consulta información extendida del cliente"
+PlataformadeBancaDigital --> SistemaExternodeTransferencias <<Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE=>> : "Solicita el procesamiento de transferencias interbancarias y consulta su resultado (topología por validar)"
+PlataformadeBancaDigital --> ProveedorKYCBiométrico <<Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh>> : "Verifica la identidad del solicitante mediante reconocimiento facial, prueba de vida y validación de documento"
+PlataformadeBancaDigital --> ProveedoresdeNotificaciones <<Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh>> : "Solicita el envío de notificaciones de movimientos y del estado de la vinculación"
+ProveedoresdeNotificaciones --> Clientebancario <<Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh>> : "Entrega notificaciones de cada movimiento"
+ProveedoresdeNotificaciones --> Solicitantedevinculación <<Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh>> : "Entrega notificaciones del estado de la vinculación"
+
+@enduml

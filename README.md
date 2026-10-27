@@ -14,8 +14,9 @@ Requisito → Driver / Supuesto → Decisión → Trade-off → Consecuencia
 |---|---|---|
 | Fase 0 | Drivers arquitectónicos, supuestos y escenarios de calidad | Cerrada (pendiente de revisión del comité) |
 | Fase 1 | Decisión sobre la frontera de integración con el Core Bancario | Cerrada (pendiente de revisión del comité) |
-| Fase 2 | Diagrama C4 de Contexto | Siguiente fase. No iniciada |
-| Fases posteriores | C4 de Contenedores y Componentes, seguridad e identidad, infraestructura cloud, DR, justificaciones de frontend y notificaciones | No iniciadas |
+| Fase 2 | C4 Nivel 1: Contexto del sistema, catálogo de integraciones y límites de confianza | Cerrada (pendiente de aprobación del comité) |
+| Fase 3 | C4 Nivel 2: Contenedores | Siguiente fase. No iniciada |
+| Fases posteriores | C4 de Componentes, seguridad e identidad, infraestructura cloud, DR, justificaciones de frontend y notificaciones | No iniciadas |
 
 > Este repositorio no anticipa decisiones de fases posteriores. Lo que todavía no se ha decidido figura como **decisión diferida**, con su disparador explícito.
 
@@ -29,6 +30,22 @@ Requisito → Driver / Supuesto → Decisión → Trade-off → Consecuencia
 6. **Cache-Aside con estrategia de frescura por categoría de dato.** No hay TTL arbitrarios ([ADR-0004](docs/adr/ADR-0004-cache-aside.md)).
 7. **Se difieren con disparadores medibles:** CQRS ([ADR-0007](docs/adr/ADR-0007-cqrs-diferido.md)), la tecnología del bus de eventos ([ADR-0008](docs/adr/ADR-0008-invalidacion-por-eventos.md)) y la región cloud y la residencia de datos ([ADR-0010](docs/adr/ADR-0010-residencia-de-datos.md)).
 
+## Resumen de la Fase 2 — Contexto del sistema
+
+- **Un único sistema en diseño:** la Plataforma de Banca Digital.
+- **Dos actores confirmados:** Cliente bancario y Solicitante de vinculación.
+- **Cinco sistemas externos en la vista principal:** Core Bancario, Sistema Complementario de Clientes, Sistema Externo de Transferencias, Proveedor KYC/Biométrico y Proveedores de Notificaciones.
+- **Vista ampliada con candidatos por validar:** IdP (frontera por decidir), Fuente Oficial de Identidad y actores internos de soporte y auditoría.
+- **Sin integración directa con el BCE/SPI:** la topología de las transferencias interbancarias es la pregunta abierta Q-01.
+- **Límites de confianza en una vista conceptual separada,** distinta de la frontera de software C4.
+
+Documentos:
+
+- [12 — Contexto del sistema](docs/12-contexto-del-sistema.md)
+- [13 — Catálogo de integraciones](docs/13-catalogo-de-integraciones.md)
+- [14 — Límites de confianza](docs/14-limites-de-confianza.md)
+- [15 — Preguntas abiertas](docs/15-preguntas-abiertas-fase-2.md)
+
 ## Estructura del repositorio
 
 ```text
@@ -37,7 +54,7 @@ Requisito → Driver / Supuesto → Decisión → Trade-off → Consecuencia
 ├── docs/
 │   ├── 00-politica-de-documentacion.md         Convenciones de idioma y redacción
 │   ├── 01-drivers-arquitectonicos.md           Drivers funcionales y de calidad
-│   ├── 02-supuestos.md                         Supuestos arquitectónicos (S1–S15)
+│   ├── 02-supuestos.md                         Supuestos arquitectónicos (S1–S17)
 │   ├── 03-atributos-de-calidad.md              Priorización de atributos de calidad
 │   ├── 04-escenarios-de-calidad.md             Escenarios de calidad medibles
 │   ├── 05-frontera-de-integracion-core.md      Frontera de integración con el Core (Fase 1)
@@ -47,10 +64,15 @@ Requisito → Driver / Supuesto → Decisión → Trade-off → Consecuencia
 │   ├── 09-trazabilidad-de-requisitos.md        Matriz de trazabilidad de requisitos
 │   ├── 10-decisiones-diferidas.md              Registro de decisiones diferidas
 │   ├── 11-riesgos-residuales.md                Registro de riesgos residuales
+│   ├── 12-contexto-del-sistema.md              C4 Nivel 1: contexto del sistema (Fase 2)
+│   ├── 13-catalogo-de-integraciones.md         Catálogo de integraciones
+│   ├── 14-limites-de-confianza.md              Límites de confianza (vista conceptual)
+│   ├── 15-preguntas-abiertas-fase-2.md         Preguntas abiertas priorizadas
 │   └── adr/                                    Registros de decisiones arquitectónicas
 ├── c4/
-│   └── workspace.dsl                           Modelo C4 en Structurizr DSL (base de la Fase 2)
-└── diagrams/                                   Diagramas exportados (fases posteriores)
+│   └── workspace.dsl                           Modelo C4 en Structurizr DSL (fuente autoritativa)
+└── diagrams/
+    └── c4/                                     Diagramas generados desde el DSL (no editar)
 ```
 
 ## Registros de decisiones arquitectónicas (ADR)
@@ -87,3 +109,13 @@ Toda la documentación sigue la [política de documentación e idioma](docs/00-p
   ```bash
   docker run --rm -v "$PWD/c4:/usr/local/structurizr:ro" structurizr/structurizr validate -workspace /usr/local/structurizr/workspace.dsl
   ```
+
+- **Regeneración de diagramas** (PlantUML y SVG en `diagrams/c4/`):
+
+  ```bash
+  docker run --rm -v "$PWD/c4:/usr/local/structurizr:ro" -v "$PWD/diagrams/c4:/out" \
+    structurizr/structurizr export -w /usr/local/structurizr/workspace.dsl -f plantuml/structurizr -o /out
+  docker run --rm -v "$PWD/diagrams/c4:/data" plantuml/plantuml -tsvg "/data/*.puml"
+  ```
+
+  Se usa el formato `plantuml/structurizr` porque respeta los estilos del DSL; el formato C4-PlantUML los ignora.

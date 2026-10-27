@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Fase | 0–1 |
+| Fase | 0–2 |
 | Estado | Vigente |
 
 ## 1. Propósito
@@ -112,6 +112,39 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Riesgo residual | Bajo |
 | Disparador de reevaluación | Confirmación del tipo de institución |
 
+### RR-10 — Topología de transferencias interbancarias no validada
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Se diseñan los contenedores de transferencias sin conocer si la plataforma se integra directamente, mediante la infraestructura existente o mediante un intermediario |
+| Origen | S13, DD-16 (Fase 2) |
+| Impacto | Alto. Afecta a la máquina de estados, a las integraciones críticas y a las obligaciones del participante del sistema de pagos |
+| Mitigación | Se modela como capacidad lógica en el contexto. La máquina de estados es conceptual. La ACL de transferencias aísla la topología del dominio. Se prioriza Q-01 |
+| Riesgo residual | Medio |
+| Disparador de reevaluación | Respuesta a Q-01 |
+
+### RR-11 — Datos sensibles tratados por terceros
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | El proveedor KYC/biométrico (y el IdP, si es externo) trata datos biométricos, de identidad o credenciales fuera de la institución |
+| Origen | S16, DD-03, DD-14 (Fase 2) |
+| Impacto | Alto. Exposición de datos sensibles, dependencia de proveedor y posibles restricciones de residencia |
+| Mitigación | Minimización de datos. Evaluación de terceros. Condiciones de retención y eliminación. Decisión de residencia sujeta a [ADR-0010](adr/ADR-0010-residencia-de-datos.md) |
+| Riesgo residual | Medio-alto hasta resolver Q-06 |
+| Disparador de reevaluación | Respuesta a Q-06; selección de proveedor |
+
+### RR-12 — Alcance incompleto de la notificación de movimientos
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Si R4 abarca movimientos originados fuera del canal digital y el Core no puede informarlos, la plataforma no podría notificar «cada movimiento» |
+| Origen | R4, S14, Q-04 (Fase 2) |
+| Impacto | Medio-alto. Posible incumplimiento del requisito del reto y de la norma subyacente |
+| Mitigación | Relación REL-13 identificada como candidata. Alternativa: que la notificación de esos movimientos la haga otro sistema institucional |
+| Riesgo residual | Medio |
+| Disparador de reevaluación | Respuesta a Q-04 |
+
 ## 3. Resumen
 
 | ID | Riesgo | Impacto | Riesgo residual |
@@ -125,3 +158,6 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | RR-07 | Enrutamiento entre varios Core | Medio | Medio |
 | RR-08 | Complejidad del estado durable | Medio | Bajo-medio |
 | RR-09 | Atribución regulatoria incorrecta | Medio-alto | Bajo |
+| RR-10 | Topología de transferencias no validada | Alto | Medio |
+| RR-11 | Datos sensibles tratados por terceros | Alto | Medio-alto |
+| RR-12 | Alcance incompleto de la notificación de movimientos | Medio-alto | Medio |

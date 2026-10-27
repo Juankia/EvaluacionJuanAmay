@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Fase | 0–1 |
+| Fase | 0–2 |
 | Estado | Vigente |
 
 ## 1. Propósito
@@ -17,7 +17,7 @@ Esto evita seleccionar tecnología antes de entender el problema. En el registro
 |---|---|---|---|---|---|
 | DD-01 | **Tecnología del bus de eventos** | No se ha confirmado qué flujos asíncronos son requisitos arquitectónicos | Se confirma como requisito la invalidación de caché por eventos, la auditoría asíncrona, las notificaciones, la analítica u otros flujos asíncronos | Infraestructura y plataforma | [ADR-0008](adr/ADR-0008-invalidacion-por-eventos.md) |
 | DD-02 | **CQRS para las consultas** | No hay evidencia medida de que Cache-Aside y la optimización de lectura sean insuficientes | Se cumple alguno de los disparadores de [ADR-0007](adr/ADR-0007-cqrs-diferido.md) | Cuando haya mediciones | [ADR-0007](adr/ADR-0007-cqrs-diferido.md) |
-| DD-03 | **IdP y flujo OAuth 2.0 / OpenID Connect** | Corresponde a la fase de seguridad. No existe un IdP moderno (S9) | Inicio de la fase de seguridad e identidad | Seguridad | R2, S9 |
+| DD-03 | **IdP y flujo OAuth 2.0 / OpenID Connect**, incluida la **frontera del IdP** (servicio externo o parte de la plataforma) | Corresponde a la fase de seguridad. No existe un IdP moderno (S9) | **La frontera del IdP debe decidirse antes de cerrar el diagrama de contenedores (Fase 3)**; el flujo y el producto, en la fase de seguridad | Fase 3 (frontera); Seguridad (flujo y producto) | R2, S9, Q-03, [12, sección 4.2](12-contexto-del-sistema.md#42-proveedor-de-identidad-frontera-por-decidir) |
 | DD-04 | **Mecanismo contra el uso de un token robado** (DPoP, mTLS, vinculación de dispositivo, autenticación reforzada, perfil FAPI) | Depende del IdP, de los canales y del modelo de riesgo | Inicio de la fase de seguridad | Seguridad | QA4 |
 | DD-05 | **Región cloud y residencia de datos** | Requiere validación legal y de cumplimiento (S8) | Opinión del área legal y de cumplimiento | Infraestructura | [ADR-0010](adr/ADR-0010-residencia-de-datos.md) |
 | DD-06 | **Mecanismo de propagación del plazo** (`X-Request-Deadline` u otro equivalente) | Depende de los protocolos y del stack de los servicios | Diseño de contenedores y contratos | Contenedores y componentes | [05](05-frontera-de-integracion-core.md) |
@@ -30,3 +30,6 @@ Esto evita seleccionar tecnología antes de entender el problema. En el registro
 | DD-13 | **Stack de frontend** (2 opciones) | Corresponde a la fase de frontend | Inicio de la fase de frontend | Frontend | R6 |
 | DD-14 | **Proveedores de KYC y biometría** | Depende de la residencia de datos y de la fase de seguridad | Inicio de la fase de seguridad | Seguridad | R2, R3 |
 | DD-15 | **Proveedor cloud (AWS o Azure)** | Depende de la latencia hacia el Core, de la residencia de datos y de las capacidades de la institución | Fase de infraestructura | Infraestructura | C6 |
+| DD-16 | **Topología de integración de las transferencias interbancarias** (directa, mediante la infraestructura de pagos existente o mediante un intermediario autorizado) | No hay evidencia sobre el mecanismo actual de la institución | Respuesta a Q-01 | Fase 3 (si es posible) o fase de integración | S13, REL-05, INT-09, INT-10 |
+| DD-17 | **Uso y mecanismo de acceso a una Fuente Oficial de Identidad** | Requiere autorización legal y validación técnica | Respuesta a Q-07 | Seguridad e identidad | REL-12, INT-17 |
+| DD-18 | **Interacción de los actores internos** (operador de soporte, auditoría): consola de la plataforma o sistemas administrativos existentes | El reto no menciona actores internos | Respuesta a Q-08 | Fase 3 | REL-14, REL-15 |

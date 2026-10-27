@@ -1,0 +1,113 @@
+@startuml
+
+set separator none
+hide stereotype
+
+<style>
+  root {
+    BackgroundColor: #ffffff;
+    FontColor: #444444;
+  }
+  // Element,Infraestructura financiera externa
+  .Element-RWxlbWVudCxJbmZyYWVzdHJ1Y3R1cmEgZmluYW5jaWVyYSBleHRlcm5h {
+    BackgroundColor: #7a5c2e;
+    LineColor: #554020;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 200;
+  }
+  // Element,Person
+  .Element-RWxlbWVudCxQZXJzb24= {
+    BackgroundColor: #08427b;
+    LineColor: #052e56;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 200;
+  }
+  // Element,Proveedor tercero
+  .Element-RWxlbWVudCxQcm92ZWVkb3IgdGVyY2Vybw== {
+    BackgroundColor: #8a8a8a;
+    LineColor: #606060;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 200;
+  }
+  // Element,Sistema en diseño
+  .Element-RWxlbWVudCxTaXN0ZW1hIGVuIGRpc2XDsW8= {
+    BackgroundColor: #1168bd;
+    LineColor: #0b4884;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 200;
+  }
+  // Element,Sistema existente
+  .Element-RWxlbWVudCxTaXN0ZW1hIGV4aXN0ZW50ZQ== {
+    BackgroundColor: #5b6770;
+    LineColor: #3f484e;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 200;
+  }
+  // Relationship,Confirmada
+  .Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE= {
+    LineThickness: 2;
+    LineStyle: 0;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
+  // Relationship,Supuesta
+  .Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh {
+    LineThickness: 2;
+    LineStyle: 10-10;
+    LineColor: #444444;
+    FontColor: #444444;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
+  // transparent element for relationships in legend
+  .Element-Transparent {
+    BackgroundColor: transparent;
+    LineColor: transparent;
+    FontColor: transparent;
+  }
+</style>
+
+rectangle "==Infraestructura financiera externa" <<Element-RWxlbWVudCxJbmZyYWVzdHJ1Y3R1cmEgZmluYW5jaWVyYSBleHRlcm5h>>
+
+person "==Person" <<Element-RWxlbWVudCxQZXJzb24=>>
+
+rectangle "==Proveedor tercero" <<Element-RWxlbWVudCxQcm92ZWVkb3IgdGVyY2Vybw==>>
+
+rectangle "==Sistema en diseño" <<Element-RWxlbWVudCxTaXN0ZW1hIGVuIGRpc2XDsW8=>>
+
+rectangle "==Sistema existente" <<Element-RWxlbWVudCxTaXN0ZW1hIGV4aXN0ZW50ZQ==>>
+
+rectangle "." <<.Element-Transparent>> as 1
+1 --> 1 <<Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE=>> : "Confirmada"
+
+rectangle "." <<.Element-Transparent>> as 2
+2 --> 2 <<Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh>> : "Supuesta"
+
+@enduml
