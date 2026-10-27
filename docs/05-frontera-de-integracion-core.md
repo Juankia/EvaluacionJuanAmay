@@ -94,8 +94,8 @@ Se adopta la **Opción C**, documentada en [ADR-0001](adr/ADR-0001-acl-por-domin
 | Traducción del modelo | Del contrato del Core a los tipos del dominio, y viceversa. El dominio nunca ve tipos del Core |
 | Traducción de errores | Los códigos propietarios del Core se convierten en errores de dominio con semántica explícita (por ejemplo, `INSUFFICIENT_FUNDS`, `ACCOUNT_BLOCKED`, `OUTCOME_UNKNOWN`) |
 | Política de resiliencia local | Timeouts, Circuit Breaker, Bulkhead y reintentos **específicos de cada operación** (sección 5) |
-| Protección del Core | Límite de concurrencia por operación y pool de conexiones dedicado |
-| Clasificación del resultado | Distingue entre éxito, falla de negocio, falla técnica con efecto descartado y **resultado desconocido** (sección 6) |
+| Protección del Core | Pool de conexiones dedicado y control de admisión dentro de la cuota de su clase de operación ([ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md)) |
+| Clasificación del resultado | Clasifica cada respuesta o falla en la taxonomía cerrada `NOT_SENT`, `REJECTED_CONFIRMED`, `UNKNOWN` o `CONFIRMED` ([ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md)), con una tabla por contrato (sección 6) |
 | Pruebas de contrato | Pruebas que verifican la ACL contra el contrato del Core (QA7) |
 
 ### 3.2 Lo que la ACL no hace
@@ -189,13 +189,13 @@ Banca Digital ──► Solicitud al Core
 Banca Digital ◄── Timeout de lectura
 ```
 
-En este punto la plataforma **no sabe** si la transferencia se aplicó. La operación queda en estado **`UNKNOWN`**.
+En este punto la plataforma **no sabe** si la transferencia se aplicó. El resultado pertenece a la clase **`UNKNOWN`** y la operación pasa al estado `CORE_UNKNOWN` ([ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md)).
 
 Reglas:
 
 1. Las operaciones financieras críticas **no se reintentan automáticamente** tras un timeout de lectura. Esto es especialmente importante porque se asume que el Core no ofrece idempotencia nativa (S3): un reintento podría duplicar el débito.
-2. Un timeout de **conexión** (la solicitud no salió) puede clasificarse como «no enviada». Aun así, el reintento lo decide la máquina de estados y no la ACL por su cuenta.
-3. El estado `UNKNOWN` se resuelve solo por **conciliación**: consulta de estado si el Core la ofrece, o correlación de negocio ([08](08-idempotencia-y-conciliacion.md)).
+2. Solo una falla con **evidencia local de que ningún byte salió** hacia el destino ni hacia un intermediario es de clase `NOT_SENT`. Cualquier otra falla, incluidas las desconexiones durante o después de la escritura, las conexiones reutilizadas del pool y los errores de intermediarios, es `UNKNOWN`. La taxonomía cerrada está en [ADR-0005, sección 2](adr/ADR-0005-maquina-de-estados-transaccional.md#2-taxonomía-cerrada-del-resultado-de-una-invocación-externa-h01) (remediación ARG01-H01). En caso de duda, `UNKNOWN`.
+3. La clase `UNKNOWN` se resuelve solo por **conciliación**: consulta de estado si el Core la ofrece, o correlación de negocio ([08](08-idempotencia-y-conciliacion.md)).
 4. Al cliente se le comunica un estado «en verificación», no un error definitivo ni un éxito.
 
 ## 7. Comportamiento ante la indisponibilidad del Core

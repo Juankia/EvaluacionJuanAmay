@@ -13,6 +13,8 @@
  *   - Confirmada:   la establece el enunciado del reto.
  *   - Supuesta:     supuesto arquitectónico aceptado (docs/02-supuestos.md).
  *   - Por validar:  candidata. Solo aparece en la vista ampliada.
+ *   - Ruta por validar: la dependencia la establece el reto,
+ *     pero no la conexión directa (REL-05; remediación ARG01-M07).
  *
  * Decisiones vigentes que el modelo respeta:
  *   - ADR-0001: integración con el Core mediante ACL por dominio (detalle interno, no visible en el nivel 1).
@@ -162,7 +164,7 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
                 "Confianza" "Confirmada"
             }
         }
-        plataforma -> transferencias "Solicita el procesamiento de transferencias interbancarias y consulta su resultado (topología por validar)" "" "Confirmada" {
+        plataforma -> transferencias "Solicita el procesamiento de transferencias interbancarias y consulta su resultado (dependencia lógica; ruta por validar)" "" "Ruta por validar" {
             properties {
                 "ID" "REL-05"
                 "Confianza" "Confirmada (dependencia); topología por validar"
@@ -298,6 +300,11 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
             }
             relationship "Supuesta" {
                 style dashed
+            }
+            relationship "Ruta por validar" {
+                style dashed
+                color #7a5c2e
+                thickness 3
             }
             relationship "Por validar" {
                 style dotted

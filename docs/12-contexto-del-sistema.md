@@ -41,13 +41,13 @@ Así, ninguna relación especulativa se presenta como un hecho confirmado.
 
 ### 1.2 Diagramas
 
-**Contexto principal**
+#### Contexto principal
 
 ![C4 Nivel 1 — Contexto principal](../diagrams/c4/structurizr-ContextoPrincipal.svg)
 
 ![Leyenda — Contexto principal](../diagrams/c4/structurizr-ContextoPrincipal-key.svg)
 
-**Contexto ampliado**
+#### Contexto ampliado
 
 ![C4 Nivel 1 — Contexto ampliado](../diagrams/c4/structurizr-ContextoAmpliado.svg)
 
@@ -59,6 +59,7 @@ Así, ninguna relación especulativa se presenta como un hecho confirmado.
 |---|---|
 | Relación confirmada | Línea continua |
 | Relación supuesta | Línea discontinua |
+| Dependencia confirmada con ruta por validar (REL-05) | Línea discontinua gruesa de color ocre. La dependencia es del reto; la conexión directa no está confirmada (remediación ARG01-M07) |
 | Relación por validar | Línea punteada gris (solo en la vista ampliada) |
 | Elemento candidato | Borde discontinuo, fondo blanco |
 
@@ -66,9 +67,7 @@ Los diagramas en `diagrams/c4/` se **generan** a partir del DSL; no se editan a 
 
 ## 2. Sistema en diseño
 
-**Plataforma de Banca Digital**
-
-> Plataforma de canales digitales web y móvil que permite a clientes de una institución financiera consultar información, visualizar movimientos, realizar transferencias y completar procesos de vinculación digital, mediante integraciones seguras con sistemas bancarios y proveedores externos.
+> **Plataforma de Banca Digital.** Plataforma de canales digitales web y móvil que permite a clientes de una institución financiera consultar información, visualizar movimientos, realizar transferencias y completar procesos de vinculación digital, mediante integraciones seguras con sistemas bancarios y proveedores externos.
 
 Se representa como **un único sistema de software**. La SPA web y la app móvil son **contenedores** de este sistema (Fase 3), no sistemas separados. La razón es que comparten propietario, ciclo de evolución y frontera de responsabilidad.
 
@@ -116,7 +115,7 @@ El solicitante se modela como un actor distinto del cliente porque **todavía no
 | **B. Mediante la infraestructura de pagos existente de la institución** | La plataforma solicita la transferencia al Core o al componente de pagos que la institución ya opera, y este se comunica con el sistema de pagos | Que la infraestructura actual exponga una interfaz usable por el canal digital | Reutiliza los controles existentes. Para la plataforma, la transferencia interbancaria podría ser una operación más del Core |
 | **C. Mediante un intermediario autorizado o un servicio bancario** | Un tercero autorizado procesa la transferencia en nombre de la institución | Que exista un acuerdo contractual y una autorización regulatoria | Agrega un proveedor crítico con su propio SLA y su propio riesgo |
 
-La topología final es la **pregunta abierta Q-01** y la **decisión diferida DD-16**. Su resolución afecta a la máquina de estados (el estado conceptual `SPI_PROCESSING` de [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md)) y al catálogo de integraciones.
+La topología final es la **pregunta abierta Q-01** y la **decisión diferida DD-16**. Su resolución afecta a la máquina de estados (los estados `DEBIT_CONFIRMED` y `PENDING_EXTERNAL_CONFIRMATION` de [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), este último antes llamado `SPI_PROCESSING`) y al catálogo de integraciones.
 
 ### 4.2 Proveedor de Identidad: frontera por decidir
 
@@ -147,7 +146,7 @@ En la vista ampliada, la relación se dibuja desde la plataforma. Es igualmente 
 | REL-02 | Solicitante de vinculación | Plataforma | Inicia su vinculación digital y completa la verificación de identidad y biométrica desde la app móvil | Captación de nuevos clientes por el canal digital | Confirmada | Principal |
 | REL-03 | Plataforma | Core Bancario | Consulta datos del cliente, cuentas y movimientos, y solicita la ejecución de transferencias y la creación de clientes | Acceder a la fuente autoritativa y registrar las operaciones donde residen las cuentas | Confirmada (consultas); ADR-0009 (creación) | Principal |
 | REL-04 | Plataforma | Sistema Complementario | Consulta información extendida del cliente | Completar la vista del cliente | Confirmada | Principal |
-| REL-05 | Plataforma | Sistema Externo de Transferencias | Solicita el procesamiento de transferencias interbancarias y consulta su resultado (topología por validar) | Transferir fondos a otras instituciones | Confirmada (dependencia); topología por validar | Principal |
+| REL-05 | Plataforma | Sistema Externo de Transferencias | Solicita el procesamiento de transferencias interbancarias y consulta su resultado (dependencia lógica; ruta por validar) | Transferir fondos a otras instituciones | Dependencia confirmada; ruta por validar | Principal |
 | REL-06 | Plataforma | Proveedor KYC/Biométrico | Verifica la identidad del solicitante mediante reconocimiento facial, prueba de vida y validación de documento | Conocimiento del cliente y prevención de suplantación | Supuesta (S16) | Principal |
 | REL-07 | Plataforma | Proveedores de Notificaciones | Solicita el envío de notificaciones de movimientos y del estado de la vinculación | Notificar cada movimiento (R4) e informar el avance de la vinculación | Supuesta (S17) | Principal |
 | REL-08 | Proveedores de Notificaciones | Cliente bancario | Entrega notificaciones de cada movimiento | Cumplir R4 | Supuesta (S17) | Principal |
@@ -251,7 +250,7 @@ La matriz completa está en [09 — Trazabilidad de requisitos](09-trazabilidad-
 | 10 | ¿La frontera del IdP está documentada? | Sí (sección 4.2, DD-03) | — |
 | 11 | ¿KYC y biometría están sin selección prematura de proveedor? | Sí | — |
 | 12 | ¿Se distinguen los límites de confianza de las fronteras de software? | Sí. Hay una vista conceptual separada en [14](14-limites-de-confianza.md) | — |
-| 13 | ¿El modelo contradice algún ADR de la Fase 0–1? | No. Se verificó ADR-0001, ADR-0002 (Gateway ausente en el nivel 1), ADR-0009 (Core autoritativo; el Sistema Complementario no lo es) y S12. Se detectó que el estado `SPI_PROCESSING` de ADR-0005 presupone el SPI | Registrado en Q-01; no se modifica el ADR en esta fase |
+| 13 | ¿El modelo contradice algún ADR de la Fase 0–1? | No. Se verificó ADR-0001, ADR-0002 (Gateway ausente en el nivel 1), ADR-0009 (Core autoritativo; el Sistema Complementario no lo es) y S12. Se detectó que el estado `SPI_PROCESSING` de ADR-0005 presupone el SPI | Registrado en Q-01. **Actualización ARG-01:** renombrado a `PENDING_EXTERNAL_CONFIRMATION` en la remediación (ARG01-H02) |
 | 14 | ¿El diagrama se puede explicar a un CTO en menos de tres minutos? | Sí, la vista principal: 2 actores, 1 sistema, 5 sistemas externos y 9 relaciones | La complejidad candidata quedó en la vista ampliada |
 | 15 | ¿Es defendible ante una institución financiera ecuatoriana? | Sí. Separa lo confirmado, lo supuesto y lo por validar. No afirma integraciones con entidades oficiales ni cumplimiento normativo | — |
 

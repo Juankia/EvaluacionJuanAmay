@@ -1,0 +1,6 @@
+{
+  // ARG-01-revision-arquitectonica.md se conserva sin cambios como evidencia
+  // histórica de la revisión (no se modifica tras su emisión). Se excluye del
+  // lint para no alterar su contenido; ver ARG01-L05 en el informe de remediación.
+  "ignores": ["docs/reviews/ARG-01-revision-arquitectonica.md"]
+}

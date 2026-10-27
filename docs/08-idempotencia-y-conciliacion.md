@@ -2,89 +2,105 @@
 
 | Campo | Valor |
 |---|---|
-| Fase | 1. Modelo conceptual |
-| Estado | Adoptado |
-| ADR principal | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) |
+| Fase | 1. Modelo conceptual. Versión 2: remediación ARG-01 (ARG01-C01, ARG01-M01) |
+| Estado | Adoptado. Pendiente de verificación en ARG-01-R2 |
+| ADR principal | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) (contrato normativo IC-01 a IC-14) |
 
 ## 1. Problema
 
-Se asume que el Core no ofrece idempotencia nativa ni consulta por clave de idempotencia (S3). En ese caso, un reintento de una operación crítica después de un timeout puede **duplicar el efecto financiero**. A la vez, un timeout no prueba que la operación haya fallado ([05](05-frontera-de-integracion-core.md)). La plataforma necesita:
+Se asume que el Core no ofrece idempotencia nativa ni consulta por referencia (S3). Un timeout no prueba que la operación haya fallado. La plataforma necesita:
 
-1. evitar que ella misma procese dos veces la misma intención del cliente;
-2. determinar el resultado real de las operaciones con resultado desconocido.
+1. que **cada intención transaccional** del cliente produzca **como máximo una operación y una invocación de ejecución**, incluso ante reenvíos, concurrencia y reinicios;
+2. determinar el resultado real de las operaciones inciertas;
+3. **declarar con honestidad** lo que no puede garantizar.
+
+La versión 1 no cumplía el punto 1: la clave nacía en el dominio y cada reenvío del cliente podía crear otra operación (ARG01-C01).
 
 ## 2. Conceptos
 
 | Concepto | Definición |
 |---|---|
-| **Idempotencia** | Propiedad de una operación por la cual ejecutarla varias veces produce el mismo efecto que ejecutarla una vez |
-| **Clave de idempotencia** (*Idempotency Key*) | Identificador único de una intención de operación. Permite reconocer las repeticiones |
-| **Clave de solicitud del canal** | Clave que el canal envía para protegerse del doble envío (doble clic, reintento de red del dispositivo). Su formato y su validación se definen en la fase de contenedores y de API |
-| **Clave de operación del dominio** | Clave que **genera el dominio o la aplicación** al aceptar la operación. Es la que se persiste, se propaga y se usa en la conciliación |
-| **Conciliación** | Proceso para determinar el resultado real de una operación comparando el registro de la plataforma con el del sistema externo |
+| **Intención transaccional** | La decisión del usuario de ejecutar una operación concreta, expresada al confirmarla en el canal |
+| **Clave de idempotencia** (*Idempotency Key*) | Identificador aleatorio que el **canal** genera una vez por intención, persiste y reutiliza en todo reenvío. **Obligatoria** en las operaciones críticas |
+| **Ámbito** | (Identidad autenticada o sesión de vinculación; tipo de operación). La clave solo tiene sentido dentro de su ámbito |
+| **Huella canónica** (*fingerprint*) | Hash criptográfico de la representación canónica de los campos semánticos de la operación |
+| **Identificador interno de operación** | Asignado por la plataforma, vinculado 1:1 con (ámbito, clave). Se propaga al Core como referencia externa si se soporta |
+| **Deduplicación (G1)** | Garantía determinista de la plataforma: una (ámbito, clave) produce como máximo una operación y una invocación por tramo |
+| **Idempotencia del Core (G2)** | El Core reconoce una referencia repetida. **No se asume** (S3) |
+| **Correlación de negocio (G3)** | Inferencia probabilística de que una operación se aplicó |
+| **Conciliación (G4)** | Proceso que resuelve los resultados inciertos o los escala |
+| **Duplicado semántico** | Dos operaciones con **claves distintas** que representan la misma intención financiera |
 
-## 3. Modelo adoptado
+## 3. Contrato de idempotencia (resumen)
 
-La plataforma:
-
-1. **Genera la clave de idempotencia en la frontera del dominio o de la aplicación**, al aceptar la operación crítica. La clave de solicitud del canal se asocia a ella para detectar envíos duplicados.
-2. **Persiste el estado de la operación antes de invocar** un sistema externo crítico (*write-ahead*). Si el proceso falla después de invocar, el registro permite saber que la invocación pudo ocurrir.
-3. **Garantiza la unicidad dentro de la plataforma.** Por ejemplo, con una restricción de unicidad en el almacén de operaciones. Una segunda solicitud con la misma clave devuelve el estado de la operación existente y no inicia otra.
-4. **Propaga la clave a los sistemas externos que la soporten,** como referencia externa o identificador de transacción del cliente. El Core y el sistema de pagos pueden aceptar una referencia única.
-5. **Conserva la clave aunque el Core no la entienda,** como parte del registro y de la auditoría.
-6. **Usa la clave en la conciliación interna** y la vincula con las referencias que devuelvan los sistemas externos.
-7. **Si el Core no permite consultar por clave, concilia con datos de correlación de negocio** (sección 4).
+La definición normativa está en [ADR-0006, sección 2](adr/ADR-0006-idempotencia-y-conciliacion.md#2-contrato-de-idempotencia-para-operaciones-financieras-críticas).
 
 ```text
-Canal ──(clave de solicitud)──► Servicio de transferencias
-                                  │ 1. Genera la clave de operación
-                                  │ 2. Persiste CREATED (unicidad)
-                                  │ 3. Persiste CORE_PROCESSING
-                                  ▼
-                               ACL de transferencias ──(referencia externa, si se soporta)──► Core
-                                  │
-                       Timeout de lectura ──► UNKNOWN ──► Conciliación
+Canal                                      Plataforma
+──────────────────────────────────────    ──────────────────────────────────────────────
+Usuario confirma la operación
+  └─ genera la clave K (una vez)
+  └─ persiste K en el dispositivo
+Envía (K, payload) ─────────────────────► Valida el formato de K (IC-03); ámbito ← identidad autenticada (IC-04)
+                                           Calcula la huella H (IC-05)
+                                           Reserva atómica [(ámbito, K), H, opId, RECEIVED] (IC-06, IC-07)
+                                             ├─ nueva                    → ejecuta según ADR-0005
+                                             ├─ existe y huella = H      → devuelve el estado actual (IC-08)
+                                             └─ existe y huella ≠ H      → conflicto sin efectos (IC-09)
+Sin respuesta (red) ─ reenvía (K, payload) ► Reserva falla por unicidad → devuelve el estado actual (IC-08)
 ```
 
-## 4. Conciliación por correlación de negocio
-
-Si el Core no ofrece consulta por clave o por referencia externa, la conciliación busca en el Core movimientos que coincidan con la operación usando atributos de correlación. Los atributos posibles son:
-
-| Atributo | Uso |
+| Situación | Resultado |
 |---|---|
-| Cuenta de origen y cuenta de destino | Coincidencia obligatoria |
-| Monto y moneda | Coincidencia obligatoria |
-| Tipo de operación | Coincidencia obligatoria |
-| Referencia de negocio o descripción | Si el Core conserva un campo de referencia libre, se inserta en él la clave de operación |
-| Referencia externa devuelta por el Core o por el sistema de pagos | Si se obtuvo en algún paso |
-| Ventana de tiempo | Movimientos dentro de una ventana alrededor del instante de invocación (`VENTANA_CORRELACION`, por acordar) |
-| Identificadores de cliente o de cuenta | Cuando corresponda |
+| Reenvío con la misma clave y el mismo contenido | Estado actual de la operación existente, **sin nueva ejecución** |
+| Misma clave y contenido distinto | **Conflicto**, sin efectos, auditado |
+| Dos solicitudes concurrentes con la misma clave | Una sola reserva; la otra recibe el estado o el conflicto |
+| Operación existente en `*_UNKNOWN` o en `REQUIRES_RECONCILIATION` | «En verificación». La clave **no se libera** (IC-12) |
+| Solicitud sin clave o con clave inválida | Rechazo sin efectos |
+| Clave de otro cliente | Se trata dentro del ámbito de quien la presenta; no revela la operación ajena |
 
-### 4.1 Resultados de la conciliación
+## 4. Duplicado semántico (claves distintas, misma intención)
+
+Una clave distinta **no prueba** que la intención sea distinta. Mitigaciones ([ADR-0006, sección 3](adr/ADR-0006-idempotencia-y-conciliacion.md#3-duplicado-semántico-claves-distintas-para-la-misma-intención-financiera)):
+
+1. **Bloqueo obligatorio:** no se acepta una operación equivalente (misma huella, cualquier clave) mientras otra del mismo cliente esté en clase `UNKNOWN` o en `REQUIRES_RECONCILIATION`.
+2. **Confirmación explícita:** si hay una operación equivalente aceptada dentro de `VENTANA_DUPLICADO_SEMANTICO`, se pide la confirmación del usuario.
+3. **Riesgo residual (RR-13):** los duplicados confirmados por el usuario o los que quedan fuera de la ventana no se previenen; se miden con `TASA_DUPLICADO_SEMANTICO`.
+
+## 5. Conciliación
+
+### 5.1 Fuentes de evidencia
+
+| Fuente | Naturaleza | Disponibilidad |
+|---|---|---|
+| Consulta de estado por referencia externa en el Core (G2) | Determinista | Por validar (Q-02) |
+| Referencia de la operación insertada en un campo libre del Core | Casi determinista | Por validar |
+| Correlación de negocio: cuentas, monto, moneda, tipo, ventana `VENTANA_CORRELACION`, identificadores (G3) | Probabilística | Supuesta |
+| Reportes del Core y de la infraestructura de pagos (conciliación diaria) | Segunda línea | Por validar |
+
+### 5.2 Resultados
 
 | Resultado | Acción |
 |---|---|
-| Exactamente una coincidencia | Se resuelve como `COMPLETED` y se registra la evidencia de la coincidencia |
-| Ninguna coincidencia, después de esperar el tiempo de asentamiento del Core (`T_ASENTAMIENTO_CORE`, por acordar) | Se resuelve como `FAILED` (sin efecto) |
-| Varias coincidencias posibles (por ejemplo, dos transferencias legítimas del mismo monto al mismo destino en la ventana) | **No se resuelve automáticamente**: pasa a `REQUIRES_RECONCILIATION` |
-| Ninguna coincidencia, pero el sistema de pagos indica actividad | `REQUIRES_RECONCILIATION` |
+| Confirmación por G2, o una única coincidencia por G3 tras `T_ASENTAMIENTO_CORE` | Se resuelve hacia el estado confirmado ([07](07-maquina-de-estados-transaccional.md)) con la evidencia registrada |
+| Ausencia demostrada (G2), o ninguna coincidencia tras `T_ASENTAMIENTO_CORE` **sin indicios de actividad** | `FAILED_NO_EFFECT` |
+| Varias coincidencias posibles, o indicios contradictorios | `REQUIRES_RECONCILIATION` (sin resolución automática) |
+| Vencimiento de `T_RESOLUCION_UNKNOWN` | `REQUIRES_RECONCILIATION` |
+| Falla del propio proceso de conciliación (Core no disponible para consultas, error interno) | La operación **permanece** en `*_UNKNOWN`; la conciliación se reprograma con capacidad CL-2 ([ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md)); el plazo `T_RESOLUCION_UNKNOWN` sigue corriendo y garantiza el escalamiento |
 
-### 4.2 Limitación explícita
+### 5.3 Limitación explícita
 
-**La conciliación por correlación de negocio no ofrece las mismas garantías que la idempotencia nativa.**
+**La correlación de negocio no ofrece las mismas garantías que la idempotencia nativa.** Es probabilística, depende del tiempo de asentamiento del Core y no distingue de forma fiable dos operaciones legítimas idénticas. El bloqueo de la sección 4 reduce este último caso, pero no lo elimina. La exactitud se mide con `TASA_ERROR_CONCILIACION` (RR-04).
 
-- Es **probabilística**: dos operaciones legítimas pueden ser indistinguibles.
-- Depende de que el Core **muestre el movimiento a tiempo**. Si el Core lo asienta tarde, una conclusión de «sin coincidencia» puede ser errónea.
-- Su exactitud depende de la calidad de los campos disponibles en el Core.
+## 6. Garantías declaradas
 
-Esta limitación se registra como riesgo residual **RR-04** ([11](11-riesgos-residuales.md)). La mitigación más eficaz es **validar el supuesto S3**: si el Core acepta y permite consultar una referencia externa única, la conciliación pasa a ser determinista.
+| Se garantiza (demostrable) | No se garantiza |
+|---|---|
+| Como máximo una operación por (ámbito, clave) | Ejecución exactamente una vez de extremo a extremo (*exactly-once end-to-end*) sin G2 |
+| Como máximo una invocación de ejecución por tramo y operación | Ausencia de duplicados semánticos con claves distintas |
+| Ningún reintento de ejecución ante un resultado incierto | Resolución automática del 100 % de los resultados inciertos |
+| Ninguna liberación de clave durante la incertidumbre | — |
 
-## 5. Mitigaciones complementarias
+## 7. Vinculación digital
 
-- **Inhibir operaciones equivalentes mientras otra está en `UNKNOWN`:** mientras una operación del cliente está en `UNKNOWN`, la plataforma puede bloquear o advertir antes de aceptar otra operación con la misma cuenta de destino y el mismo monto. Así se reduce la ambigüedad en la conciliación. Es una decisión de experiencia de usuario y de negocio, por acordar.
-- **Conciliación diaria** frente a los reportes del Core y del sistema de pagos, como control de segunda línea.
-- **Monitoreo** del número de operaciones en `UNKNOWN` y en `REQUIRES_RECONCILIATION`, y de su antigüedad.
-
-## 6. Onboarding
-
-En la creación del cliente en el Core, la idempotencia es **obligatoria**. La conciliación se basa en el identificador de persona: antes de cualquier reintento se verifica si el cliente ya existe en el Core ([07, sección 4](07-maquina-de-estados-transaccional.md#4-máquina-de-estados-de-onboarding-conceptual)).
+La solicitud de vinculación aplica el mismo contrato. La creación del cliente en el Core se protege además con la búsqueda previa y la **evidencia de creación** ([ADR-0009](adr/ADR-0009-core-autoritativo.md), VD-05 y VD-06; [07, sección 5](07-maquina-de-estados-transaccional.md#5-máquina-de-estados-de-vinculación-digital)).

@@ -110,6 +110,15 @@ hide stereotype
     FontSize: 20;
     MaximumWidth: 200;
   }
+  // Relationship,Ruta por validar
+  .Relationship-UmVsYXRpb25zaGlwLFJ1dGEgcG9yIHZhbGlkYXI= {
+    LineThickness: 3;
+    LineStyle: 15-15;
+    LineColor: #7a5c2e;
+    FontColor: #7a5c2e;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
   // Relationship,Supuesta
   .Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh {
     LineThickness: 2;
@@ -148,6 +157,9 @@ rectangle "." <<.Element-Transparent>> as 2
 2 --> 2 <<Relationship-UmVsYXRpb25zaGlwLFBvciB2YWxpZGFy>> : "Por validar"
 
 rectangle "." <<.Element-Transparent>> as 3
-3 --> 3 <<Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh>> : "Supuesta"
+3 --> 3 <<Relationship-UmVsYXRpb25zaGlwLFJ1dGEgcG9yIHZhbGlkYXI=>> : "Ruta por validar"
+
+rectangle "." <<.Element-Transparent>> as 4
+4 --> 4 <<Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh>> : "Supuesta"
 
 @enduml

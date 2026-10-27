@@ -2,11 +2,11 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | **Aceptada** (Fase 1, sujeta a revisión del comité) |
+| Estado | **Aceptada** (Fase 1). **Complementada** en la remediación ARG-01 por [ADR-0011](ADR-0011-presupuesto-de-capacidad-del-core.md) (ARG01-H04) |
 | Fecha | 2026-10-27 |
 | Requisitos | R1, C2, C5 |
 | Drivers y supuestos | S1, S2, S3, S4, S6, S7, S11, S12; QA1, QA7 |
-| Relacionados | [ADR-0002](ADR-0002-frontera-api-gateway.md), [ADR-0003](ADR-0003-integration-platform-sdk.md), [05 — Frontera de integración](../05-frontera-de-integracion-core.md) |
+| Relacionados | [ADR-0002](ADR-0002-frontera-api-gateway.md), [ADR-0003](ADR-0003-integration-platform-sdk.md), [ADR-0011](ADR-0011-presupuesto-de-capacidad-del-core.md), [05 — Frontera de integración](../05-frontera-de-integracion-core.md) |
 
 ## Contexto
 
@@ -28,8 +28,9 @@ Cada dominio que se integra con el Core (clientes, movimientos, transferencias) 
 1. traduce el contrato externo o heredado al modelo de dominio de la banca digital y viceversa; **el modelo del Core no se filtra al dominio**;
 2. traduce los errores propietarios a errores de dominio con semántica explícita, incluido el resultado desconocido;
 3. aplica las **políticas de resiliencia locales de cada operación**: timeouts, Circuit Breaker, Bulkhead y reintento solo cuando es semánticamente seguro;
-4. acota la concurrencia hacia el Core con un pool de conexiones dedicado;
-5. se verifica con pruebas de contrato.
+4. acota la concurrencia hacia el Core con un pool de conexiones dedicado, dentro de la cuota de su clase de operación definida en [ADR-0011](ADR-0011-presupuesto-de-capacidad-del-core.md);
+5. clasifica cada resultado de invocación según la taxonomía cerrada de [ADR-0005](ADR-0005-maquina-de-estados-transaccional.md) y mantiene la tabla de clasificación de su contrato;
+6. se verifica con pruebas de contrato.
 
 **No se crea una capa de integración centralizada** como servicio en tiempo de ejecución por defecto. Las preocupaciones técnicas comunes se proveen mediante el Integration Platform SDK ([ADR-0003](ADR-0003-integration-platform-sdk.md)).
 
@@ -65,10 +66,15 @@ El SDK mitiga la duplicación; **no elimina el costo arquitectónico**.
 - La consulta de datos del cliente combina el Core y el sistema complementario detrás de la misma frontera de traducción. La regla de autoridad del dato se define en [ADR-0009](ADR-0009-core-autoritativo.md).
 - Debe existir un responsable identificado de cada ACL.
 
+### Aislamiento lógico frente a aislamiento de capacidad (enmienda ARG-01)
+
+Las ACL proporcionan **aislamiento lógico**: del modelo, del código, del ciclo de liberación y de los recursos de la plataforma. **No** aíslan la capacidad del Core físico, que todas comparten. Sin una medida adicional, la saturación de consultas puede degradar las escrituras críticas en el propio Core, y los límites por instancia se multiplican con las réplicas. Esta es una ventaja natural de la opción B que la opción C debe compensar de forma explícita. Lo hace [ADR-0011](ADR-0011-presupuesto-de-capacidad-del-core.md): presupuesto global, cuotas por clase de operación con escrituras y conciliación reservadas, asignación estática derivada del máximo de réplicas y control de admisión con comportamiento seguro.
+
 ## Riesgos
 
 - RR-01: lógica de integración duplicada.
 - RR-03: cambios en el contrato del Core.
 - RR-07: enrutamiento futuro entre varios Core.
+- RR-14: cuotas de capacidad del Core mal dimensionadas ([ADR-0011](ADR-0011-presupuesto-de-capacidad-del-core.md)).
 
 Ver [11 — Riesgos residuales](../11-riesgos-residuales.md).

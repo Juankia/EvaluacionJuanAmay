@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Fase | 0–2 |
+| Fase | 0–2 (actualizado en la remediación ARG-01) |
 | Estado | Vigente. Se actualiza al cierre de cada fase |
 | Fuente | `Reto Técnico Arquitecto Jardín Azuayo.pdf`. El texto de los requisitos se reproduce literalmente |
 
@@ -61,6 +61,7 @@
 | [ADR-0008](adr/ADR-0008-invalidacion-por-eventos.md) | R4, R5, C5 |
 | [ADR-0009](adr/ADR-0009-core-autoritativo.md) | R3, contexto del reto (fuentes de información) |
 | [ADR-0010](adr/ADR-0010-residencia-de-datos.md) | C1, C6 |
+| [ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md) | R1, C2, C5 |
 
 ## 6. Representación en el contexto del sistema (Fase 2)
 
@@ -80,3 +81,17 @@ Esta sección indica cómo aparece cada requisito en el diagrama de contexto (C4
 | C4 | Cruces de límites de confianza X-1 a X-6 | — | — | — | Controles concretos (fase de seguridad). SIEM institucional (Q-13) |
 | C5 | Sistemas externos aislados detrás de la plataforma; nuevas integraciones como nuevas relaciones del contexto | — | ADR-0001 | S7 | Detalle en la Fase 3 |
 | C6 | — | — | ADR-0010 | S8 | Infraestructura cloud (DD-15) |
+
+## 7. Trazabilidad de la remediación ARG-01
+
+Los cambios de la remediación no agregan requisitos. Precisan las decisiones que responden a los requisitos existentes. Detalle completo en el [informe de remediación](reviews/ARG-01-informe-de-remediacion.md).
+
+| Hallazgo | Requisitos afectados | Decisión enmendada o creada | Escenarios de calidad | Riesgos |
+|---|---|---|---|---|
+| ARG01-C01, ARG01-M01 | R1, R3; AQ-02 | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) (versión 2) | QA3 (reformulado), QA9 (nuevo) | RR-04, RR-13 |
+| ARG01-H01 | R1; AQ-02 | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), sección 2 | QA5 | — |
+| ARG01-H02 | R1, R4; AQ-02 | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), secciones 3 a 5 | QA5 | RR-16 |
+| ARG01-H03 | R1; AQ-02, AQ-04 | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), sección 6 | QA5 | RR-16 |
+| ARG01-H04 | R1, C2, C5 | [ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md) (nuevo); [ADR-0001](adr/ADR-0001-acl-por-dominio.md) (complementado) | QA8, QA10 (nuevo) | RR-14 |
+| ARG01-H05 | R2, R3; AQ-01 | [ADR-0009](adr/ADR-0009-core-autoritativo.md) (versión 2) | QA11 (nuevo) | RR-15 |
+| ARG01-M02 | R1, R3 | ADR-0005 (INV-T4, INV-T5), ADR-0009 (VD-09) | QA5 | RR-08 |

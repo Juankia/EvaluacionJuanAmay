@@ -81,6 +81,15 @@ hide stereotype
     FontSize: 20;
     MaximumWidth: 200;
   }
+  // Relationship,Ruta por validar
+  .Relationship-UmVsYXRpb25zaGlwLFJ1dGEgcG9yIHZhbGlkYXI= {
+    LineThickness: 3;
+    LineStyle: 15-15;
+    LineColor: #7a5c2e;
+    FontColor: #7a5c2e;
+    FontSize: 20;
+    MaximumWidth: 200;
+  }
   // Relationship,Supuesta
   .Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh {
     LineThickness: 2;
@@ -105,7 +114,7 @@ Clientebancario --> PlataformadeBancaDigital <<Relationship-UmVsYXRpb25zaGlwLENv
 Solicitantedevinculación --> PlataformadeBancaDigital <<Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE=>> : "Inicia su vinculación digital y completa la verificación de identidad y biométrica desde la app móvil"
 PlataformadeBancaDigital --> CoreBancario <<Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE=>> : "Consulta datos del cliente, cuentas y movimientos, y solicita la ejecución de transferencias y la creación de clientes"
 PlataformadeBancaDigital --> SistemaComplementariodeClientes <<Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE=>> : "Consulta información extendida del cliente"
-PlataformadeBancaDigital --> SistemaExternodeTransferencias <<Relationship-UmVsYXRpb25zaGlwLENvbmZpcm1hZGE=>> : "Solicita el procesamiento de transferencias interbancarias y consulta su resultado (topología por validar)"
+PlataformadeBancaDigital --> SistemaExternodeTransferencias <<Relationship-UmVsYXRpb25zaGlwLFJ1dGEgcG9yIHZhbGlkYXI=>> : "Solicita el procesamiento de transferencias interbancarias y consulta su resultado (dependencia lógica; ruta por validar)"
 PlataformadeBancaDigital --> ProveedorKYCBiométrico <<Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh>> : "Verifica la identidad del solicitante mediante reconocimiento facial, prueba de vida y validación de documento"
 PlataformadeBancaDigital --> ProveedoresdeNotificaciones <<Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh>> : "Solicita el envío de notificaciones de movimientos y del estado de la vinculación"
 ProveedoresdeNotificaciones --> Clientebancario <<Relationship-UmVsYXRpb25zaGlwLFN1cHVlc3Rh>> : "Entrega notificaciones de cada movimiento"

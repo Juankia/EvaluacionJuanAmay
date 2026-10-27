@@ -3,7 +3,7 @@
 | Campo | Valor |
 |---|---|
 | Fase | 0 — Drivers, supuestos y escenarios de calidad |
-| Estado | Cerrado. Los valores numéricos son parámetros por acordar |
+| Estado | Vigente. Los valores numéricos son parámetros por acordar. QA3 y QA5 se reformularon y QA9 a QA11 se agregaron en la remediación ARG-01 |
 | Documentos relacionados | [03 — Atributos de calidad](03-atributos-de-calidad.md), [02 — Supuestos (S10)](02-supuestos.md) |
 
 ## 1. Formato
@@ -57,8 +57,8 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Artefacto | ACL de clientes, movimientos y transferencias; máquina de estados transaccional |
 | Entorno | Operación normal; indisponibilidad de duración desconocida |
 | Respuesta (lecturas) | Las lecturas pueden degradarse a datos de caché o de proyección **aprobados**, solo para las categorías cuya política de frescura lo permite. La respuesta indica al canal que los datos pueden no estar actualizados |
-| Respuesta (escrituras) | Las operaciones transaccionales **fallan de forma segura**: si no se invocó el Core, se rechazan sin efectos; no se encolan a ciegas para ejecutarlas más tarde. Si la invocación ya se realizó y no hubo respuesta, la operación pasa a `UNKNOWN` y luego a conciliación. **Nunca** se reintenta a ciegas |
-| Medida | 0 operaciones financieras duplicadas. 0 operaciones financieras en estado no determinado sin un caso de conciliación abierto en `T_APERTURA_CONCILIACION` (objetivo propuesto). El 100 % de las respuestas degradadas lleva un indicador de frescura |
+| Respuesta (escrituras) | Las operaciones transaccionales **fallan de forma segura**. Si la falla es de clase `NOT_SENT`, terminan en `FAILED_NO_EFFECT`, sin encolarse para después. Si la invocación pudo enviarse, la clase es `UNKNOWN`: la operación pasa a `CORE_UNKNOWN` y luego a conciliación ([ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md)). **Nunca** se reintenta la ejecución |
+| Medida (reformulada en la remediación ARG-01, ARG01-M01) | **(a)** 0 invocaciones de ejecución duplicadas hacia el Core por operación y tramo, verificable por auditoría: cada identificador de operación registra como máximo una invocación por tramo. **(b)** 0 operaciones nuevas creadas con una (ámbito, clave) existente. **(c)** El 100 % de las operaciones en clase `UNKNOWN` tiene un caso de conciliación abierto en `T_APERTURA_CONCILIACION`. **(d)** Exactitud de la conciliación automática: proporción de resoluciones automáticas corregidas después por revisión ≤ `TASA_ERROR_CONCILIACION` (por acordar), medida por muestreo. **(e)** El 100 % de las respuestas degradadas lleva un indicador de frescura. **No se mide ni se promete «0 duplicados» de extremo a extremo:** sin idempotencia nativa del Core no es demostrable (RR-04), y los duplicados semánticos con claves distintas se miden aparte (`TASA_DUPLICADO_SEMANTICO`, RR-13) |
 | Decisiones | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), [ADR-0004](adr/ADR-0004-cache-aside.md) |
 
 ### QA4 — Seguridad: token de acceso robado
@@ -81,8 +81,8 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Estímulo | Se envía al Core una transferencia, el Core la confirma internamente y la respuesta se pierde. La plataforma recibe un timeout |
 | Artefacto | ACL de transferencias y máquina de estados transaccional |
 | Entorno | Operación normal o degradada |
-| Respuesta | La operación pasa a `UNKNOWN`. **No se reintenta automáticamente.** Se consulta el estado (si el Core lo permite) o se concilia por correlación de negocio. El cliente recibe un estado «en verificación», no un error definitivo |
-| Medida | 0 débitos duplicados por reintento. El 100 % de las operaciones `UNKNOWN` se resuelve (`COMPLETED` o `FAILED`) o se escala a revisión manual en `T_RESOLUCION_UNKNOWN` (por acordar) |
+| Respuesta | Clase `UNKNOWN`: la operación pasa a `CORE_UNKNOWN`. **No se reintenta la ejecución.** Se consulta el estado (si el Core lo permite) o se concilia por correlación de negocio. El cliente recibe «en verificación», no un error definitivo. Una operación equivalente del mismo cliente se bloquea mientras dure la incertidumbre ([ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), sección 3) |
+| Medida | 0 débitos duplicados por reintento de la plataforma. El 100 % de las operaciones en `CORE_UNKNOWN` se resuelve (`COMPLETED`, `DEBIT_CONFIRMED` o `FAILED_NO_EFFECT`) o se escala a `REQUIRES_RECONCILIATION` en `T_RESOLUCION_UNKNOWN` (por acordar). El 100 % de los casos en `REQUIRES_RECONCILIATION` tiene un responsable asignado y se resuelve o se escala en `T_RESOLUCION_MANUAL` |
 | Decisiones | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) |
 
 ### QA6 — Auditabilidad: reconstrucción de las acciones de un cliente
@@ -117,8 +117,47 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Estímulo | Pico de consultas de `FACTOR_PICO` × el tráfico normal (por acordar; S10) |
 | Artefacto | Servicios de consulta, caché y ACL |
 | Entorno | Pico estacional |
-| Respuesta | Los servicios de la plataforma escalan horizontalmente. La carga adicional sobre el Core se limita con caché, limitación de concurrencia en la ACL y control de tasa en el borde |
-| Medida | La latencia p95 se mantiene ≤ `T_CONSULTA_P95`. La concurrencia hacia el Core no supera `MAX_CONCURRENCIA_CORE`. Si el escenario no se cumple con Cache-Aside y optimización de lectura, se evalúa CQRS ([ADR-0007](adr/ADR-0007-cqrs-diferido.md)) |
+| Respuesta | Los servicios de la plataforma escalan horizontalmente hasta `N_MAX_REPLICAS`. La carga adicional sobre el Core se limita con caché, cuotas por clase de operación y control de admisión ([ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md)), y con control de tasa en el borde |
+| Medida | La latencia p95 se mantiene ≤ `T_CONSULTA_P95`. La concurrencia total hacia el Core no supera `MAX_CONCURRENCIA_CORE` **para cualquier número de réplicas ≤ `N_MAX_REPLICAS`**. Si el escenario no se cumple con Cache-Aside y optimización de lectura, se evalúa CQRS ([ADR-0007](adr/ADR-0007-cqrs-diferido.md)) |
+
+### QA9 — Integridad transaccional: reenvío de la misma intención por el cliente
+
+*Agregado en la remediación ARG-01 (ARG01-C01).*
+
+| Parte | Descripción |
+|---|---|
+| Fuente | Canal web o móvil del cliente |
+| Estímulo | El cliente confirma una transferencia y no recibe respuesta (pérdida de red o reinicio de la app). El canal reenvía la **misma intención** con la **misma clave**, una o varias veces, incluso en paralelo. Variante: reenvío con la misma clave y **otro contenido** |
+| Artefacto | Contrato de idempotencia del servicio de transferencias; almacén durable de operaciones |
+| Entorno | Operación normal o degradada; cualquier estado de la operación original, incluido `CORE_UNKNOWN` |
+| Respuesta | Los reenvíos con la misma huella devuelven el estado de la operación original sin nueva ejecución. El contenido distinto produce un conflicto sin efectos. Las solicitudes concurrentes producen una sola reserva ([ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), IC-08 a IC-10) |
+| Medida | Para N reenvíos (secuenciales o concurrentes) de una misma (ámbito, clave): exactamente **1** operación y **≤ 1** invocación de ejecución por tramo. El 100 % de los reenvíos con huella distinta produce un conflicto auditado sin efectos. El 100 % de las solicitudes sin clave se rechaza sin efectos |
+
+### QA10 — Disponibilidad y protección del Core: escalado de réplicas
+
+*Agregado en la remediación ARG-01 (ARG01-H04).*
+
+| Parte | Descripción |
+|---|---|
+| Fuente | Escalado automático ante un pico de consultas |
+| Estímulo | El servicio de consultas pasa de 2 a `N_MAX_REPLICAS` réplicas mientras continúan las transferencias |
+| Artefacto | ACL, control de admisión y cuotas por clase ([ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md)) |
+| Entorno | Pico estacional; mecanismo de coordinación dinámica (si existe) disponible o no disponible |
+| Respuesta | La concurrencia por réplica se limita a su cuota derivada. Las consultas excedentes se degradan o se rechazan. Las escrituras críticas y las consultas de integridad conservan su cuota reservada. Si la coordinación falla, se vuelve a la cuota estática |
+| Medida | Concurrencia total hacia el Core ≤ `MAX_CONCURRENCIA_CORE` en todo momento. Tasa de éxito de CL-1 ≥ `EXITO_MIN_CL1` (por acordar) durante el pico. 0 casos de funcionamiento sin límite por falla del mecanismo de control |
+
+### QA11 — Seguridad: vinculación digital de un cliente preexistente
+
+*Agregado en la remediación ARG-01 (ARG01-H05).*
+
+| Parte | Descripción |
+|---|---|
+| Fuente | Persona que supera la verificación de identidad con el documento de un cliente existente (titular legítimo o suplantador) |
+| Estímulo | Solicita vincular su dispositivo y su acceso digital a ese cliente |
+| Artefacto | Máquina de estados de vinculación ([07, sección 5](07-maquina-de-estados-transaccional.md#5-máquina-de-estados-de-vinculación-digital)); [ADR-0009](adr/ADR-0009-core-autoritativo.md) |
+| Entorno | Operación normal |
+| Respuesta | El cliente se identifica como `PRE_EXISTING`, la vinculación queda en `LINK_PENDING` y solo se autoriza tras una prueba de control con un factor previamente registrado e independiente del dispositivo solicitante. Las respuestas previas no revelan la condición de cliente |
+| Medida | 0 vinculaciones autorizadas de clientes preexistentes sin prueba de control (verificable en auditoría y en pruebas). 0 respuestas que revelen la condición de cliente antes de la prueba de control. Mecanismo de prueba: DD-21 |
 
 ## 3. Registro de parámetros
 
@@ -131,6 +170,15 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | `RATIO_LECTURA_CORE` | Proporción de consultas que llegan al Core | Objetivo propuesto | Ingeniería y capacidad del Core (S4) |
 | `MAX_CONCURRENCIA_CORE` | Concurrencia máxima permitida hacia el Core | Por acordar | Propietario del Core (S4) |
 | `T_APERTURA_CONCILIACION` | Tiempo hasta abrir un caso de conciliación | Objetivo propuesto | Operaciones |
-| `T_RESOLUCION_UNKNOWN` | Tiempo máximo en `UNKNOWN` antes de escalar | Por acordar | Operaciones y riesgo operativo |
+| `T_RESOLUCION_UNKNOWN` | Tiempo máximo en clase `UNKNOWN` antes de escalar | Por acordar | Operaciones y riesgo operativo |
+| `T_RESOLUCION_MANUAL` | Tiempo máximo de un caso en `REQUIRES_RECONCILIATION` antes de escalar | Por acordar | Operaciones y riesgo operativo (ARG01-H03) |
+| `T_ASENTAMIENTO_CORE`, `VENTANA_CORRELACION` | Tiempo de asentamiento y ventana de correlación de la conciliación | Por acordar | Propietario del Core |
+| `TASA_ERROR_CONCILIACION` | Proporción máxima de resoluciones automáticas corregidas después | Por acordar | Riesgo operativo (ARG01-M01) |
+| `TASA_DUPLICADO_SEMANTICO` | Indicador de duplicados semánticos (se mide, no se garantiza) | Indicador | Negocio (RR-13) |
+| `VENTANA_REINTENTO_CANAL`, `RETENCION_CLAVE` | Ventana de reenvío del canal y retención de las claves de idempotencia | Por acordar | Canales e ingeniería (ARG01-C01) |
+| `VENTANA_DUPLICADO_SEMANTICO` | Ventana para pedir la confirmación de un posible duplicado | Por acordar | Negocio |
+| `EVENTO_CONFIRMACION_EXTERNA` | Evento que el contrato externo define como definitivo para `COMPLETED` interbancario | Por acordar | Q-01 |
+| `TASA_MAX_CORE`, `CUOTA_CL1` a `CUOTA_CL4`, `MARGEN_CORE`, `N_MAX_REPLICAS`, `EXITO_MIN_CL1` | Presupuesto de capacidad del Core y cuotas por clase | Por acordar | Propietario del Core y operaciones (ARG01-H04, Q-16) |
+| `VIGENCIA_VERIFICACION_IDENTIDAD` | Vigencia del resultado de la verificación de identidad | Por acordar | Cumplimiento y seguridad (ARG01-H05) |
 | `T_CONSULTA_AUDITORIA` | Tiempo de respuesta de una consulta de auditoría | Por acordar | Auditoría y cumplimiento |
 | RTO, RPO | Objetivos de recuperación | Por acordar | BIA (DD-09) |

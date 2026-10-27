@@ -111,7 +111,7 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
   - **B.** mediante la infraestructura de pagos existente de la institución (Core o componente de pagos);
   - **C.** mediante un intermediario autorizado o un servicio bancario.
 - **Base:** el reto indica que las transferencias invocan «servicios externos según el tipo». El mecanismo exacto no se especifica.
-- **Decisiones afectadas:** [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) (el nombre del estado conceptual `SPI_PROCESSING` presupone el SPI y se revisará cuando se resuelva Q-01) y DD-16.
+- **Decisiones afectadas:** [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) y DD-16. En la remediación ARG-01 (ARG01-H02), el estado `SPI_PROCESSING` se renombró a `PENDING_EXTERNAL_CONFIRMATION`, agnóstico de la topología.
 - **Validación:** confirmar con la institución el modelo de integración, el mecanismo de participación en el sistema de pagos, los horarios y ciclos de compensación, y quién origina el mensaje de pago (Q-01).
 
 ### S14 — El fundamento normativo de la notificación no está verificado
@@ -144,6 +144,14 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 - **Decisiones afectadas:** contexto del sistema (Proveedores de Notificaciones), DD-12.
 - **Validación:** confirmar los canales y los proveedores actuales de la institución (Q-10).
 
+### S18 — La transferencia propia es una operación atómica en el Core
+
+- **Enunciado:** el Core ejecuta una transferencia entre cuentas de la institución (débito y crédito) como **una única operación atómica**. No quedan estados intermedios con el débito aplicado y el crédito pendiente.
+- **Base:** comportamiento habitual de los Core Bancarios para movimientos internos. **El reto no lo indica.**
+- **Decisiones afectadas:** [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) (la transferencia propia pasa de `CORE_IN_PROGRESS` a `COMPLETED` sin estados intermedios).
+- **Si el supuesto es falso:** la transferencia propia necesitaría las dimensiones de débito y crédito por separado, como la interbancaria.
+- **Validación:** Q-02.
+
 ## 3. Resumen
 
 | ID | Supuesto | Criticidad si es falso | Decisiones afectadas |
@@ -165,3 +173,4 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 | S15 | Tipo de institución por confirmar | Media | Todas las referencias regulatorias |
 | S16 | KYC y biometría provistos por un tercero | Media | Contexto, DD-14, ADR-0010 |
 | S17 | Notificaciones mediante proveedores externos | Baja | Contexto, DD-12 |
+| S18 | Transferencia propia atómica en el Core | Media | ADR-0005 |

@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Fase | 0–2 |
+| Fase | 0–2 (actualizado en la remediación ARG-01) |
 | Estado | Vigente |
 
 ## 1. Propósito
@@ -53,7 +53,7 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Riesgo | Si el Core no permite consultar por clave o por referencia externa (S3), la conciliación de las operaciones `UNKNOWN` depende de la correlación de negocio, que es probabilística |
 | Origen | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) |
 | Impacto | Alto. Una conciliación errónea puede marcar como fallida una operación aplicada (riesgo de duplicación si el cliente la repite) o al revés |
-| Mitigación | Las coincidencias ambiguas no se resuelven automáticamente (`REQUIRES_RECONCILIATION`). Tiempo de asentamiento antes de concluir «sin coincidencia». Inhibición de operaciones equivalentes mientras otra está en `UNKNOWN`. Conciliación diaria de segunda línea. **Validación prioritaria del supuesto S3** |
+| Mitigación | Las coincidencias ambiguas no se resuelven automáticamente (`REQUIRES_RECONCILIATION`). Tiempo de asentamiento antes de concluir «sin coincidencia». **Bloqueo obligatorio** de operaciones equivalentes mientras otra está en clase `UNKNOWN` ([ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), sección 3; remediación ARG-01). Exactitud medida (`TASA_ERROR_CONCILIACION`). Conciliación diaria de segunda línea. **Validación prioritaria del supuesto S3** |
 | Riesgo residual | Medio. **La correlación de negocio no ofrece las mismas garantías que la idempotencia nativa** |
 | Disparador de reevaluación | Resultado de la validación de S3. Tasa de casos en `REQUIRES_RECONCILIATION` por encima de lo tolerable para operaciones |
 
@@ -145,6 +145,50 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Riesgo residual | Medio |
 | Disparador de reevaluación | Respuesta a Q-04 |
 
+### RR-13 — Duplicado semántico con claves distintas
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Dos operaciones con claves de idempotencia distintas representan la misma intención financiera: reinstalación de la app, dos dispositivos, repetición por error o un canal defectuoso |
+| Origen | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), sección 3 (remediación ARG01-C01) |
+| Impacto | Alto. Débito duplicado que la deduplicación G1 no puede detectar |
+| Mitigación | Bloqueo obligatorio durante la incertidumbre. Confirmación explícita dentro de `VENTANA_DUPLICADO_SEMANTICO`. Requisito del canal de persistir y reutilizar la clave (IC-02). Métrica `TASA_DUPLICADO_SEMANTICO` |
+| Riesgo residual | Medio. Los duplicados confirmados por el usuario o fuera de la ventana no se previenen |
+| Disparador de reevaluación | `TASA_DUPLICADO_SEMANTICO` o reclamos por duplicados por encima de lo tolerable |
+
+### RR-14 — Cuotas de capacidad del Core mal dimensionadas
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Cuotas demasiado bajas (rechazos artificiales), demasiado altas o con un `N_MAX_REPLICAS` desactualizado (no protegen). Si se activa la coordinación dinámica, esta puede convertirse en un punto de falla |
+| Origen | [ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md) (remediación ARG01-H04) |
+| Impacto | Medio-alto |
+| Mitigación | Presupuesto acordado con el propietario del Core (Q-16). Asignación estática M1 sin dependencias en tiempo de ejecución. Respaldo a M1 ante la falla de la coordinación. Métricas de rechazo por clase. Revisión de cuotas en cada cambio de `N_MAX_REPLICAS` |
+| Riesgo residual | Medio, hasta conocer la capacidad real del Core |
+| Disparador de reevaluación | Rechazos de CL-1 o CL-2; saturación del Core; cambio de capacidad del Core |
+
+### RR-15 — Vinculación indebida de clientes preexistentes
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Un suplantador que supera la verificación de identidad intenta vincular su dispositivo a un cliente existente |
+| Origen | [ADR-0009](adr/ADR-0009-core-autoritativo.md) (remediación ARG01-H05) |
+| Impacto | Alto. Acceso a productos financieros existentes |
+| Mitigación | La coincidencia de identificación no autoriza la vinculación (VD-01). Prueba de control con un factor independiente previamente registrado (VD-03). No enumeración (VD-07). Restricciones iniciales (VD-10). Escenario QA11 |
+| Riesgo residual | Medio, hasta que la fase de seguridad defina el mecanismo (DD-21) y se valide la calidad de los factores registrados en el Core (Q-15) |
+| Disparador de reevaluación | Definición de DD-21; incidentes de fraude en la vinculación |
+
+### RR-16 — Reverso no posible por la vía automática
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Tras un rechazo externo posterior al débito, el reverso no puede ejecutarse automáticamente (por ejemplo, porque la devolución sigue un procedimiento interinstitucional). La obligación con el cliente queda pendiente |
+| Origen | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), INV-T6 (remediación ARG01-H02) |
+| Impacto | Alto para el cliente afectado (fondos debitados) |
+| Mitigación | Estado `REQUIRES_RECONCILIATION` con la obligación registrada en la dimensión de reverso. Responsable, plazo y escalamiento (sección 6 de ADR-0005). Comunicación al cliente |
+| Riesgo residual | Medio, hasta conocer la topología y los procedimientos de devolución (Q-01) |
+| Disparador de reevaluación | Respuesta a Q-01; antigüedad de los casos con reverso pendiente |
+
 ## 3. Resumen
 
 | ID | Riesgo | Impacto | Riesgo residual |
@@ -161,3 +205,7 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | RR-10 | Topología de transferencias no validada | Alto | Medio |
 | RR-11 | Datos sensibles tratados por terceros | Alto | Medio-alto |
 | RR-12 | Alcance incompleto de la notificación de movimientos | Medio-alto | Medio |
+| RR-13 | Duplicado semántico con claves distintas | Alto | Medio |
+| RR-14 | Cuotas de capacidad del Core mal dimensionadas | Medio-alto | Medio |
+| RR-15 | Vinculación indebida de clientes preexistentes | Alto | Medio |
+| RR-16 | Reverso no posible por la vía automática | Alto | Medio |

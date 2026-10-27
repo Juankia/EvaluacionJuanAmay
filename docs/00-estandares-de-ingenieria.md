@@ -42,7 +42,7 @@ Este documento fija los estándares que debe cumplir el código de la plataforma
 | Clases, interfaces, métodos, variables, DTOs, enumeraciones | Inglés | Nombres descriptivos y consistentes con el glosario de dominio (sección 4) |
 | API: rutas, campos de contratos, códigos de error | Inglés | Ejemplo: `POST /v1/transfers`, `INSUFFICIENT_FUNDS` |
 | Eventos de dominio | Inglés, en pasado | Ejemplo: `TransferCompleted`, `AccountBalanceChanged` |
-| Estados de las máquinas de estado | Inglés, `UPPER_SNAKE_CASE` | Los definidos en [07](07-maquina-de-estados-transaccional.md) (`CORE_PROCESSING`, `UNKNOWN`, …) |
+| Estados de las máquinas de estado | Inglés, `UPPER_SNAKE_CASE` | Los definidos en [07](07-maquina-de-estados-transaccional.md) (`CORE_IN_PROGRESS`, `CORE_UNKNOWN`, `REVERSAL_PENDING`, …) |
 | Esquemas de base de datos **propios** de la plataforma | Inglés, `snake_case` | Ejemplo: `transfer_operation`, `idempotency_key` |
 | Identificadores de bases de datos **existentes** (Core, Sistema Complementario) | **Nomenclatura original** | No se renombran ni se «corrigen». La traducción al vocabulario del dominio ocurre **solo** en la ACL correspondiente ([ADR-0001](adr/ADR-0001-acl-por-dominio.md)) |
 | Comentarios de código | Inglés | Explican el **porqué**, no el qué |
@@ -189,8 +189,8 @@ El glosario se amplía en cada fase. Un término nuevo se agrega **antes** de us
 | Tipo | Objetivo | Obligatoriedad | Relación |
 |---|---|---|---|
 | **Unitarias** | Dominio y casos de uso aislados, sin contenedor ni red | Obligatorias para el dominio y la aplicación | — |
-| **De la máquina de estados** | Transiciones válidas e inválidas; estados `UNKNOWN` y `REQUIRES_RECONCILIATION` | Obligatorias | RR-08, QA5 |
-| **De idempotencia y resultado desconocido** | Solicitud duplicada, timeout de lectura, respuesta perdida: sin duplicación | Obligatorias para las operaciones críticas | QA3, QA5, ADR-0006 |
+| **De la máquina de estados** | Transiciones válidas y **prohibidas**; invariantes INV-T1 a INV-T8 e INV-O1 a INV-O6; estados `*_UNKNOWN` y `REQUIRES_RECONCILIATION`; recuperación tras reinicio | Obligatorias | RR-08, QA5 |
+| **De idempotencia y resultado desconocido** | Reenvío con la misma clave, misma clave con otro contenido, solicitudes concurrentes, timeout de lectura, respuesta perdida | Obligatorias para las operaciones críticas | QA3, QA5, QA9, ADR-0006 |
 | **De integración** | Adaptadores contra dependencias reales o emuladas (persistencia, caché) | Obligatorias para los adaptadores de salida | — |
 | **De contrato** | Cada ACL frente al contrato del Core o del tercero; API públicas frente a su especificación | Obligatorias para cada ACL y cada API pública | QA7, ADR-0001, RR-03 |
 | **De arquitectura** | Regla de dependencia de la sección 5.2; el SDK sin tipos de dominio; los tipos del Core solo en la ACL | Obligatorias en CI | ADR-0003, RR-02, S6 |

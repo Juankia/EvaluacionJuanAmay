@@ -15,7 +15,8 @@ Requisito → Driver / Supuesto → Decisión → Trade-off → Consecuencia
 | Fase 0 | Drivers arquitectónicos, supuestos y escenarios de calidad | Cerrada (pendiente de revisión del comité) |
 | Fase 1 | Decisión sobre la frontera de integración con el Core Bancario | Cerrada (pendiente de revisión del comité) |
 | Fase 2 | C4 Nivel 1: Contexto del sistema, catálogo de integraciones y límites de confianza | Cerrada (pendiente de aprobación del comité) |
-| Fase 3 | C4 Nivel 2: Contenedores | Siguiente fase. No iniciada |
+| Revisión ARG-01 | Architecture Review Gate de las Fases 0–2 | **NO-GO** (1 CRITICAL, 5 HIGH). Remediación completada; **pendiente de la revisión ARG-01-R2** ([informe](docs/reviews/ARG-01-informe-de-remediacion.md)) |
+| Fase 3 | C4 Nivel 2: Contenedores | Bloqueada hasta la decisión de ARG-01-R2 |
 | Fases posteriores | C4 de Componentes, seguridad e identidad, infraestructura cloud, DR, justificaciones de frontend y notificaciones | No iniciadas |
 
 > Este repositorio no anticipa decisiones de fases posteriores. Lo que todavía no se ha decidido figura como **decisión diferida**, con su disparador explícito.
@@ -69,7 +70,8 @@ Documentos:
 │   ├── 13-catalogo-de-integraciones.md         Catálogo de integraciones
 │   ├── 14-limites-de-confianza.md              Límites de confianza (vista conceptual)
 │   ├── 15-preguntas-abiertas-fase-2.md         Preguntas abiertas priorizadas
-│   └── adr/                                    Registros de decisiones arquitectónicas
+│   ├── adr/                                    Registros de decisiones arquitectónicas
+│   └── reviews/                                Revisiones de arquitectura (ARG) y remediaciones
 ├── c4/
 │   └── workspace.dsl                           Modelo C4 en Structurizr DSL (fuente autoritativa)
 └── diagrams/
@@ -80,16 +82,17 @@ Documentos:
 
 | ADR | Título | Estado |
 |---|---|---|
-| [ADR-0001](docs/adr/ADR-0001-acl-por-dominio.md) | Capas anticorrupción por dominio para la integración con el Core | Aceptada |
+| [ADR-0001](docs/adr/ADR-0001-acl-por-dominio.md) | Capas anticorrupción por dominio para la integración con el Core | Aceptada — complementada por ADR-0011 |
 | [ADR-0002](docs/adr/ADR-0002-frontera-api-gateway.md) | API Gateway como frontera de fachada y composición, no como orquestador de negocio | Aceptada |
 | [ADR-0003](docs/adr/ADR-0003-integration-platform-sdk.md) | Integration Platform SDK: capacidad compartida, política local | Aceptada |
 | [ADR-0004](docs/adr/ADR-0004-cache-aside.md) | Cache-Aside con estrategia de frescura por categoría de dato | Aceptada |
-| [ADR-0005](docs/adr/ADR-0005-maquina-de-estados-transaccional.md) | Máquina de estados transaccional durable para operaciones financieras | Aceptada (modelo conceptual) |
-| [ADR-0006](docs/adr/ADR-0006-idempotencia-y-conciliacion.md) | Idempotencia generada en el dominio y conciliación | Aceptada |
+| [ADR-0005](docs/adr/ADR-0005-maquina-de-estados-transaccional.md) | Máquina de estados transaccional durable para operaciones financieras | Aceptada — enmendada en ARG-01 (modelo conceptual) |
+| [ADR-0006](docs/adr/ADR-0006-idempotencia-y-conciliacion.md) | Contrato de idempotencia, deduplicación y conciliación de operaciones financieras | Aceptada — enmendada en ARG-01 |
 | [ADR-0007](docs/adr/ADR-0007-cqrs-diferido.md) | CQRS diferido hasta que se cumplan disparadores medibles | Diferida |
 | [ADR-0008](docs/adr/ADR-0008-invalidacion-por-eventos.md) | Invalidación de caché dirigida por eventos; la tecnología de plataforma se difiere | Aceptada (estrategia); tecnología diferida |
-| [ADR-0009](docs/adr/ADR-0009-core-autoritativo.md) | El Core Bancario es autoritativo para la identidad del cliente | Aceptada |
+| [ADR-0009](docs/adr/ADR-0009-core-autoritativo.md) | El Core es autoritativo para la identidad del cliente; la vinculación digital requiere autorización explícita | Aceptada — enmendada en ARG-01 |
 | [ADR-0010](docs/adr/ADR-0010-residencia-de-datos.md) | Región cloud y residencia de datos sujetas a validación legal y de cumplimiento | Propuesta. Pendiente de validación |
+| [ADR-0011](docs/adr/ADR-0011-presupuesto-de-capacidad-del-core.md) | Presupuesto global de capacidad del Core y control de admisión por clase de operación | Aceptada (ARG-01) |
 
 ## Fuente del reto
 
