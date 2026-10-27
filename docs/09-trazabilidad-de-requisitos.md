@@ -95,3 +95,6 @@ Los cambios de la remediación no agregan requisitos. Precisan las decisiones qu
 | ARG01-H04 | R1, C2, C5 | [ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md) (nuevo); [ADR-0001](adr/ADR-0001-acl-por-dominio.md) (complementado) | QA8, QA10 (nuevo) | RR-14 |
 | ARG01-H05 | R2, R3; AQ-01 | [ADR-0009](adr/ADR-0009-core-autoritativo.md) (versión 2) | QA11 (nuevo) | RR-15 |
 | ARG01-M02 | R1, R3 | ADR-0005 (INV-T4, INV-T5), ADR-0009 (VD-09) | QA5 | RR-08 |
+| R2-N01 (CF-01) | R1, R3; AQ-02 | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) v3 §3, §7 y §8; [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) v3 (IC-12); [ADR-0009](adr/ADR-0009-core-autoritativo.md) (VD-06) | QA5 (revisado), QA13 (nuevo) | RR-04, RR-17 |
+| R2-N02 (CF-02) | R1, C2; AQ-02 | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) v3 §4; [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) v3 (IC-14) | QA12 (nuevo) | RR-18 |
+| R2-N04 | R1; AQ-02 | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) v3 (IC-15) | QA9 | RR-13 |

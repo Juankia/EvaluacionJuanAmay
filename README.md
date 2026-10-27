@@ -16,7 +16,8 @@ Requisito → Driver / Supuesto → Decisión → Trade-off → Consecuencia
 | Fase 1 | Decisión sobre la frontera de integración con el Core Bancario | Cerrada (pendiente de revisión del comité) |
 | Fase 2 | C4 Nivel 1: Contexto del sistema, catálogo de integraciones y límites de confianza | Cerrada (pendiente de aprobación del comité) |
 | Revisión ARG-01 | Architecture Review Gate de las Fases 0–2 | **NO-GO** (1 CRITICAL, 5 HIGH). Remediación completada; **pendiente de la revisión ARG-01-R2** ([informe](docs/reviews/ARG-01-informe-de-remediacion.md)) |
-| Fase 3 | C4 Nivel 2: Contenedores | Bloqueada hasta la decisión de ARG-01-R2 |
+| Verificación ARG-01-R2 | Verificación independiente de la remediación | **CONDITIONAL GO**. CF-01 y CF-02 remediados en diseño; **pendientes de verificación independiente** ([remediación](docs/reviews/ARG-01-R2-remediacion-CF01-CF02.md)) |
+| Fase 3 | C4 Nivel 2: Contenedores | Puede iniciarse bajo CONDITIONAL GO. El contenedor del orquestador de transferencias espera la verificación de CF-01 y CF-02. No iniciada |
 | Fases posteriores | C4 de Componentes, seguridad e identidad, infraestructura cloud, DR, justificaciones de frontend y notificaciones | No iniciadas |
 
 > Este repositorio no anticipa decisiones de fases posteriores. Lo que todavía no se ha decidido figura como **decisión diferida**, con su disparador explícito.
@@ -86,8 +87,8 @@ Documentos:
 | [ADR-0002](docs/adr/ADR-0002-frontera-api-gateway.md) | API Gateway como frontera de fachada y composición, no como orquestador de negocio | Aceptada |
 | [ADR-0003](docs/adr/ADR-0003-integration-platform-sdk.md) | Integration Platform SDK: capacidad compartida, política local | Aceptada |
 | [ADR-0004](docs/adr/ADR-0004-cache-aside.md) | Cache-Aside con estrategia de frescura por categoría de dato | Aceptada |
-| [ADR-0005](docs/adr/ADR-0005-maquina-de-estados-transaccional.md) | Máquina de estados transaccional durable para operaciones financieras | Aceptada — enmendada en ARG-01 (modelo conceptual) |
-| [ADR-0006](docs/adr/ADR-0006-idempotencia-y-conciliacion.md) | Contrato de idempotencia, deduplicación y conciliación de operaciones financieras | Aceptada — enmendada en ARG-01 |
+| [ADR-0005](docs/adr/ADR-0005-maquina-de-estados-transaccional.md) | Máquina de estados transaccional durable para operaciones financieras | Aceptada — versión 3 (CF-01 y CF-02 de ARG-01-R2) |
+| [ADR-0006](docs/adr/ADR-0006-idempotencia-y-conciliacion.md) | Contrato de idempotencia, deduplicación y conciliación de operaciones financieras | Aceptada — versión 3 (CF-01 de ARG-01-R2) |
 | [ADR-0007](docs/adr/ADR-0007-cqrs-diferido.md) | CQRS diferido hasta que se cumplan disparadores medibles | Diferida |
 | [ADR-0008](docs/adr/ADR-0008-invalidacion-por-eventos.md) | Invalidación de caché dirigida por eventos; la tecnología de plataforma se difiere | Aceptada (estrategia); tecnología diferida |
 | [ADR-0009](docs/adr/ADR-0009-core-autoritativo.md) | El Core es autoritativo para la identidad del cliente; la vinculación digital requiere autorización explícita | Aceptada — enmendada en ARG-01 |

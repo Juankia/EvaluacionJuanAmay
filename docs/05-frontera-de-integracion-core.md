@@ -194,7 +194,7 @@ En este punto la plataforma **no sabe** si la transferencia se aplicó. El resul
 Reglas:
 
 1. Las operaciones financieras críticas **no se reintentan automáticamente** tras un timeout de lectura. Esto es especialmente importante porque se asume que el Core no ofrece idempotencia nativa (S3): un reintento podría duplicar el débito.
-2. Solo una falla con **evidencia local de que ningún byte salió** hacia el destino ni hacia un intermediario es de clase `NOT_SENT`. Cualquier otra falla, incluidas las desconexiones durante o después de la escritura, las conexiones reutilizadas del pool y los errores de intermediarios, es `UNKNOWN`. La taxonomía cerrada está en [ADR-0005, sección 2](adr/ADR-0005-maquina-de-estados-transaccional.md#2-taxonomía-cerrada-del-resultado-de-una-invocación-externa-h01) (remediación ARG01-H01). En caso de duda, `UNKNOWN`.
+2. Solo una falla con **evidencia local de que ningún byte salió** hacia el destino ni hacia un intermediario es de clase `NOT_SENT`. Cualquier otra falla, incluidas las desconexiones durante o después de la escritura, las conexiones reutilizadas del pool y los errores de intermediarios, es `UNKNOWN`. La taxonomía cerrada está en [ADR-0005, sección 2](adr/ADR-0005-maquina-de-estados-transaccional.md#2-taxonomía-del-resultado-de-una-invocación) (remediación ARG01-H01). En caso de duda, `UNKNOWN`.
 3. La clase `UNKNOWN` se resuelve solo por **conciliación**: consulta de estado si el Core la ofrece, o correlación de negocio ([08](08-idempotencia-y-conciliacion.md)).
 4. Al cliente se le comunica un estado «en verificación», no un error definitivo ni un éxito.
 

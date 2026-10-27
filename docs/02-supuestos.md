@@ -152,6 +152,19 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 - **Si el supuesto es falso:** la transferencia propia necesitaría las dimensiones de débito y crédito por separado, como la interbancaria.
 - **Validación:** Q-02.
 
+### S19 — La red y los intermediarios no duplican solicitudes
+
+- **Enunciado:** entre la plataforma y el Core, ni la red ni los intermediarios (balanceadores, proxies, ESB) **reenvían por su cuenta** una solicitud de escritura.
+- **Base:** supuesto externo indispensable para la garantía G-EXT-1 de [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) §4.3. **El reto no lo indica.**
+- **Si es falso:** un intermediario con reintentos automáticos podría producir dos solicitudes a partir de un único envío de la plataforma.
+- **Validación:** configuración de los intermediarios frente al Core (Q-17).
+
+### S20 — El Core ejecuta cada solicitud recibida como máximo una vez
+
+- **Enunciado:** el Core no aplica dos veces una misma solicitud que recibió una sola vez.
+- **Base:** supuesto externo (G-EXT-3 de ADR-0005). **No lo garantiza la plataforma.**
+- **Validación:** propietario del Core (Q-17).
+
 ## 3. Resumen
 
 | ID | Supuesto | Criticidad si es falso | Decisiones afectadas |
@@ -174,3 +187,5 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 | S16 | KYC y biometría provistos por un tercero | Media | Contexto, DD-14, ADR-0010 |
 | S17 | Notificaciones mediante proveedores externos | Baja | Contexto, DD-12 |
 | S18 | Transferencia propia atómica en el Core | Media | ADR-0005 |
+| S19 | La red y los intermediarios no duplican solicitudes | Alta | ADR-0005 (G-EXT-1) |
+| S20 | El Core ejecuta cada solicitud como máximo una vez | Alta | ADR-0005 (G-EXT-3) |

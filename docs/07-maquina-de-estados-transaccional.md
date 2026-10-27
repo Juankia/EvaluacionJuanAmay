@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Fase | 1. Modelo conceptual; **la implementación se diseña en fases posteriores**. Versión 2: remediación ARG-01 |
+| Fase | 1. Modelo conceptual; **la implementación se diseña en fases posteriores**. Versión 2: remediación ARG-01. Versión 3: remediación de CF-01 y CF-02 (ARG-01-R2) |
 | Estado | Modelo conceptual adoptado. Pendiente de verificación en ARG-01-R2 |
 | ADR principales | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), [ADR-0009](adr/ADR-0009-core-autoritativo.md), [ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md) |
 
@@ -22,6 +22,15 @@ Las transferencias y la vinculación digital tienen pasos con sistemas externos 
 | ARG01-M02 | Recuperación, concurrencia e indisponibilidad del proveedor de identidad (secciones 3.4 y 5) |
 | ARG01-H05 | Vinculación digital en etapas, con autorización explícita (sección 5) |
 
+### 1.2 Cambios de la versión 3 (remediación de CF-01 y CF-02)
+
+| Hallazgo | Cambio |
+|---|---|
+| R2-N01 (CF-01) | La evidencia negativa no cierra ni reenvía. Se eliminan las transiciones `CORE_UNKNOWN → FAILED_NO_EFFECT` por coincidencia nula y `REVERSAL_UNKNOWN → REVERSAL_PENDING` por evidencia negativa. Se agrega `CLOSED_BY_EXCEPTION`. El alta de cliente no se reenvía por una búsqueda negativa |
+| R2-N02 (CF-02) | Protocolo de titularidad: arrendamiento, token de cercado, **permiso de envío único por tramo**, evidencia huérfana (sección 3.4) |
+| R2-N03 | La intención vence: sin permiso de envío después de `PLAZO_VALIDEZ_INTENCION` |
+| R2-N05 | El estado global es la única máquina autoritativa; las dimensiones son atributos |
+
 ## 2. Por qué no se usa «Saga» como nombre genérico
 
 El patrón Saga coordina una secuencia de transacciones locales con **acciones compensatorias**. No se adopta como modelo genérico porque:
@@ -34,11 +43,11 @@ Las compensaciones se modelan como **estados y operaciones explícitas, idempote
 
 ### 2.1 Taxonomía del resultado de una invocación
 
-Resumen; la definición normativa está en [ADR-0005, sección 2](adr/ADR-0005-maquina-de-estados-transaccional.md#2-taxonomía-cerrada-del-resultado-de-una-invocación-externa-h01).
+Resumen; la definición normativa está en [ADR-0005, sección 2](adr/ADR-0005-maquina-de-estados-transaccional.md#2-taxonomía-del-resultado-de-una-invocación).
 
 | Clase | Regla | ¿Nueva ejecución? |
 |---|---|---|
-| `NOT_SENT` | Evidencia local de que **ningún byte** salió hacia el destino ni hacia un intermediario | Sí, dentro del plazo y según la política de la ACL |
+| `NOT_SENT` | Evidencia local de que **ningún byte** salió hacia el destino ni hacia un intermediario | **No** (versión 3): permiso de envío único; la operación termina `FAILED_NO_EFFECT` y el cliente puede iniciar una nueva intención |
 | `REJECTED_CONFIRMED` | Rechazo que el contrato externo define como «sin efecto» | No aplica |
 | `UNKNOWN` | Cualquier otra falla, incluidos timeouts, desconexiones, errores de intermediarios y códigos no mapeados | **No.** Solo consultas y conciliación |
 | `CONFIRMED` | Éxito definitivo según el contrato | No aplica |
@@ -47,7 +56,9 @@ Resumen; la definición normativa está en [ADR-0005, sección 2](adr/ADR-0005-m
 
 ## 3. Máquina de estados de transferencias
 
-### 3.1 Dimensiones
+### 3.1 Atributos (antes «dimensiones»)
+
+*Versión 3:* el **estado global** (sección 3.2) es la única máquina autoritativa. Los valores siguientes son **atributos registrados** que solo cambian dentro de una transición global; «obligación pendiente» es una función de ellos ([ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) §1).
 
 | Dimensión | Estados |
 |---|---|
@@ -70,6 +81,7 @@ Resumen; la definición normativa está en [ADR-0005, sección 2](adr/ADR-0005-m
 | `REJECTED` | **Sí** | No (sin efecto) |
 | `FAILED_NO_EFFECT` | **Sí** | No (ausencia de efecto demostrada) |
 | `REVERSED` | **Sí** | No (débito devuelto y conciliado) |
+| `CLOSED_BY_EXCEPTION` | **Sí** | **Incertidumbre residual declarada**; vigilancia de efecto tardío (sección 4.1) |
 
 ### 3.3 Transiciones válidas
 
@@ -78,15 +90,17 @@ Resumen; la definición normativa está en [ADR-0005, sección 2](adr/ADR-0005-m
 | — | `RECEIVED` | Reserva atómica de (ámbito, clave) y huella ([ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), IC-06) |
 | `RECEIVED` | `VALIDATING` | — |
 | `VALIDATING` | `REJECTED` | Validación de dominio o de seguridad fallida. Sin efectos externos |
-| `VALIDATING` | `CORE_IN_PROGRESS` | Validación correcta. **Persistido antes de invocar** |
-| `CORE_IN_PROGRESS` | `FAILED_NO_EFFECT` | Clase `NOT_SENT` agotada dentro del plazo de negocio (incluido el rechazo del control de admisión, [ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md)) |
+| `VALIDATING` | `FAILED_NO_EFFECT` | Sin cupo de capacidad dentro del plazo ([ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md)) o intención vencida (INV-T10). **Nunca se concedió el permiso de envío** |
+| `VALIDATING` | `CORE_IN_PROGRESS` | **Concesión del permiso de envío único** mediante una escritura cercada con intención vigente ([ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) §4.2). El envío ocurre solo tras la confirmación durable |
+| `CORE_IN_PROGRESS` | `FAILED_NO_EFFECT` | Clase `NOT_SENT` registrada por el titular vigente. **Sin nuevo envío** |
 | `CORE_IN_PROGRESS` | `REJECTED` | Clase `REJECTED_CONFIRMED` del Core |
-| `CORE_IN_PROGRESS` | `CORE_UNKNOWN` | Clase `UNKNOWN`, o recuperación tras un reinicio (INV-T5) |
+| `CORE_IN_PROGRESS` | `CORE_UNKNOWN` | Clase `UNKNOWN`, o toma de titularidad por un nuevo ejecutor (INV-T5): **el nuevo titular nunca envía** |
 | `CORE_IN_PROGRESS` | `COMPLETED` | Transferencia **propia** con clase `CONFIRMED` (S18) |
 | `CORE_IN_PROGRESS` | `DEBIT_CONFIRMED` | Transferencia **interbancaria** con débito `CONFIRMED` |
-| `CORE_UNKNOWN` | `COMPLETED` o `DEBIT_CONFIRMED` | La conciliación confirma la ejecución (según el tipo) |
-| `CORE_UNKNOWN` | `FAILED_NO_EFFECT` | La conciliación **demuestra** la ausencia de efecto (G2, o coincidencia nula tras `T_ASENTAMIENTO_CORE` sin indicios de actividad) |
-| `CORE_UNKNOWN` | `REQUIRES_RECONCILIATION` | Conciliación no concluyente o vencimiento de `T_RESOLUCION_UNKNOWN` |
+| `CORE_UNKNOWN` | `COMPLETED` o `DEBIT_CONFIRMED` | EV-POS, o EV-POS-CORR con sus condiciones; incluida la evidencia huérfana ([ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) §3) |
+| `CORE_UNKNOWN` | `REJECTED` | EV-REJ: respuesta correlacionada recibida como evidencia huérfana |
+| `CORE_UNKNOWN` | `FAILED_NO_EFFECT` | **Solo con EV-NOEXEC** (cierre por referencia o expiración en el Core con consulta de consistencia fuerte). **Requiere capacidades del Core no validadas (DD-22).** Nunca por coincidencia nula ni por plazos |
+| `CORE_UNKNOWN` | `REQUIRES_RECONCILIATION` | EV-INC al vencer `T_RESOLUCION_UNKNOWN` |
 | `DEBIT_CONFIRMED` | `PENDING_EXTERNAL_CONFIRMATION` | Tramo externo **persistido antes de invocar** |
 | `PENDING_EXTERNAL_CONFIRMATION` | `COMPLETED` | `EVENTO_CONFIRMACION_EXTERNA` recibido (definitivo según el contrato) |
 | `PENDING_EXTERNAL_CONFIRMATION` | `REVERSAL_PENDING` | Rechazo externo **confirmado** después del débito |
@@ -97,20 +111,27 @@ Resumen; la definición normativa está en [ADR-0005, sección 2](adr/ADR-0005-m
 | `REVERSAL_PENDING` | `REVERSAL_UNKNOWN` | Clase `UNKNOWN` del reverso |
 | `REVERSAL_PENDING` | `REQUIRES_RECONCILIATION` | Reverso `NOT_POSSIBLE` por la vía automática (obligación registrada) |
 | `REVERSAL_UNKNOWN` | `REVERSED` | La conciliación confirma el reverso |
-| `REVERSAL_UNKNOWN` | `REVERSAL_PENDING` | La conciliación **demuestra** que el reverso no se aplicó. Se habilita un nuevo intento con la **misma** clave derivada |
+| `REVERSAL_UNKNOWN` | `REQUIRES_RECONCILIATION` | *Versión 3:* **nunca hay un segundo reverso automático.** Ni siquiera con EV-NOEXEC del reverso se concede un nuevo permiso de envío de forma automática: un nuevo reverso es una operación explícita y autorizada desde la revisión manual |
 | `REVERSAL_UNKNOWN` | `REQUIRES_RECONCILIATION` | Conciliación no concluyente |
-| `REQUIRES_RECONCILIATION` | `COMPLETED`, `REVERSED`, `FAILED_NO_EFFECT` | **Solo** por resolución manual con cuatro ojos, coherente con la evidencia de cada dimensión (sección 4). Si se requiere un movimiento, primero se ejecuta como operación explícita |
+| `REQUIRES_RECONCILIATION` | `COMPLETED`, `DEBIT_CONFIRMED`, `REVERSED`, `REJECTED`, `FAILED_NO_EFFECT` | **Solo** por resolución manual con cuatro ojos **y con la evidencia que exige INV-T2** (sección 4). Si se requiere un movimiento, primero se ejecuta como operación explícita |
+| `REQUIRES_RECONCILIATION` | `CLOSED_BY_EXCEPTION` | Sin evidencia concluyente al vencer `PLAZO_CIERRE_EXCEPCIONAL`; cuatro ojos y autoridad superior; expediente; decisión sobre el cliente (sección 4.1) |
 
 **Transiciones prohibidas** (violan INV-T1 o INV-T2):
 
 - de cualquier estado con obligación pendiente a `REJECTED` o a `FAILED_NO_EFFECT` sin evidencia de ausencia de efecto;
 - de `DEBIT_CONFIRMED`, `PENDING_EXTERNAL_CONFIRMATION`, `EXTERNAL_UNKNOWN`, `REVERSAL_*` a `FAILED_NO_EFFECT` o a `REJECTED`;
-- de cualquier `*_UNKNOWN` a una nueva invocación de ejecución.
+- de cualquier `*_UNKNOWN` a una nueva invocación de ejecución;
+- **cualquier transición motivada solo por evidencia negativa o incompleta** (timeout, ausencia en consultas, falta de movimientos, plazo vencido, conciliación incompleta) hacia un estado terminal o hacia un nuevo envío (INV-T9);
+- **cualquier segundo permiso de envío** para un mismo tramo (INV-T3).
 
-### 3.4 Recuperación y concurrencia (ARG01-M02)
+### 3.4 Titularidad, recuperación y concurrencia (CF-02)
 
-- **Recuperación (INV-T5):** al reiniciar o retomar, todo `CORE_IN_PROGRESS` o `PENDING_EXTERNAL_CONFIRMATION` sin resultado registrado pasa al `*_UNKNOWN` correspondiente, **nunca** a una nueva invocación. Lo mismo vale para el reverso.
-- **Concurrencia (INV-T4):** toda transición se aplica de forma condicional sobre el estado y la versión previos. Si dos procesos intentan avanzar la misma operación (por ejemplo, el conciliador y una consulta del cliente), solo uno lo consigue y el otro relee el estado.
+Definición normativa en [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) §4.
+
+- **Titularidad cercada:** cada operación no terminal tiene un titular con arrendamiento (`LEASE_DURACION`, medido con el reloj del almacén) y un token de cercado monotónico. Toda escritura de estado es condicional sobre el estado, la versión y el token (INV-T4).
+- **Permiso de envío único** por tramo (INV-T3): se concede una sola vez, con una escritura cercada que exige la intención vigente. El envío ocurre solo después de la confirmación durable del permiso y dentro de `MAX_DESFASE_ENVIO`.
+- **Recuperación (INV-T5):** un nuevo titular que encuentra un tramo en `*_IN_PROGRESS` solo puede pasarlo a `*_UNKNOWN`. **Jamás envía.** Los estados previos al permiso (`RECEIVED`, `VALIDATING`) pueden retomarse si la intención sigue vigente; si venció, pasan a `FAILED_NO_EFFECT` (INV-T10).
+- **Ejecutor zombi:** el cercado **no impide** que un ejecutor antiguo escriba en el socket una solicitud cuyo permiso obtuvo antes de perder la titularidad. Ese envío tardío es **el único** del tramo, así que no hay duplicación. Su respuesta, si llega, se registra como **evidencia huérfana** y la conciliación la usa (ADR-0005 §4.4).
 - **Reenvíos del cliente:** devuelven el estado actual ([ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), IC-08); nunca crean una transición.
 
 ### 3.5 Notificaciones (R4)
@@ -124,7 +145,7 @@ Resumen; la definición normativa está en [ADR-0005, sección 2](adr/ADR-0005-m
 - `EVENTO_CONFIRMACION_EXTERNA` se fija con el contrato de la infraestructura externa.
 - Las devoluciones posteriores a un `COMPLETED` (por ejemplo, devoluciones iniciadas por la institución destino) se modelarán como operaciones relacionadas, no reabriendo el estado terminal.
 
-## 4. Resolución operativa de `REQUIRES_RECONCILIATION` (ARG01-H03)
+## 4. Resolución operativa de `REQUIRES_RECONCILIATION` (ARG01-H03; versión 3)
 
 | Aspecto | Regla |
 |---|---|
@@ -134,7 +155,14 @@ Resumen; la definición normativa está en [ADR-0005, sección 2](adr/ADR-0005-m
 | Movimientos | La resolución no mueve fondos por sí misma. Todo movimiento es una operación explícita e idempotente |
 | Coherencia | El estado final debe ser coherente con la evidencia de cada dimensión (INV-T1, INV-T2) |
 | Cliente | «En verificación», notificación de la entrada en revisión con plazo estimado y canal de reclamo, y notificación de la resolución |
+| Evidencia | Toda resolución distinta de `CLOSED_BY_EXCEPTION` exige la evidencia de INV-T2. La ausencia de evidencia nunca basta |
 | Monitoreo | Antigüedad por estado, vencimientos, volumen y causa raíz |
+
+### 4.1 Cierre excepcional y efecto tardío
+
+- **`CLOSED_BY_EXCEPTION`:** cuando no hay evidencia concluyente al vencer `PLAZO_CIERRE_EXCEPCIONAL`. Requiere cuatro ojos y una autoridad superior, un expediente con la evidencia y una decisión explícita sobre el cliente: comunicación y, si corresponde, una compensación institucional como operación explícita y autorizada (R2-N10).
+- **Nueva intención del cliente:** tras `CLOSED_BY_EXCEPTION`, solo mediante una acción explícita con aviso de la incertidumbre residual ([ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) IC-12). Nunca de forma automática.
+- **Efecto tardío:** durante `VENTANA_VIGILANCIA_EFECTO_TARDIO`, la conciliación de segunda línea busca efectos de las operaciones `FAILED_NO_EFFECT` y `CLOSED_BY_EXCEPTION`. Un efecto encontrado **no reabre** el estado: abre un **caso de efecto tardío** vinculado, de resolución manual con cuatro ojos, sin corrección automática de fondos (INV-T11).
 
 ## 5. Máquina de estados de vinculación digital
 
@@ -178,7 +206,7 @@ Detalle de [ADR-0009](adr/ADR-0009-core-autoritativo.md) (reglas VD-01 a VD-10).
 | `CORE_CREATION_IN_PROGRESS` | `CORE_CREATION_REJECTED` | `REJECTED_CONFIRMED` |
 | `CORE_CREATION_IN_PROGRESS` | `CORE_CREATION_UNKNOWN` | Clase `UNKNOWN` o recuperación (INV-T5) |
 | `CORE_CREATION_UNKNOWN` | `CUSTOMER_IDENTIFIED` (`CREATED_BY_THIS_REQUEST`) | **Solo con evidencia de creación** (VD-05) |
-| `CORE_CREATION_UNKNOWN` | `CORE_CREATION_IN_PROGRESS` | Se repite E2 y se **demuestra** que no existe el cliente. Nuevo intento con la **misma** clave (VD-06) |
+| `CORE_CREATION_UNKNOWN` | `CORE_CREATION_IN_PROGRESS` | **Solo con EV-NOEXEC** del alta (ADR-0005 §3). *Versión 3:* una búsqueda que no encuentra al cliente es evidencia negativa y **no** habilita un nuevo envío (VD-06) |
 | `CORE_CREATION_UNKNOWN` | `MANUAL_REVIEW` | Sin evidencia concluyente |
 | `CUSTOMER_IDENTIFIED` (`CREATED_BY_THIS_REQUEST`) | `LINK_AUTHORIZED` | VD-02 |
 | `CUSTOMER_IDENTIFIED` (`PRE_EXISTING`) | `LINK_PENDING` | VD-01, VD-03 |

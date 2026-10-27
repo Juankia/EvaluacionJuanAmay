@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | **Aceptada — enmendada** en la remediación ARG-01 (resuelve ARG01-H05 y, en el onboarding, ARG01-M02). Pendiente de verificación en ARG-01-R2 |
+| Estado | **Aceptada — enmendada** en la remediación ARG-01 (resuelve ARG01-H05 y, en el onboarding, ARG01-M02). VD-06 se ajustó en la remediación de CF-01 (la evidencia negativa no habilita un nuevo envío del alta). Pendiente de verificación independiente |
 | Fecha | 2026-10-27 (versión 1); 2026-10-27 (versión 2, enmienda) |
 | Requisitos | R2, R3; contexto del reto («La información del cliente proviene de dos fuentes […]») |
 | Drivers y supuestos | S1, S2, S5, S12, S16; AQ-01, AQ-02, AQ-04; QA11 |
@@ -53,7 +53,7 @@ La revisión ARG-01 demostró que la versión 1 permitía concluir `CORE_CREATED
 | **VD-03** | **Cliente preexistente:** la vinculación requiere una **prueba de control** mediante un factor o canal **registrado previamente** ante la institución e **independiente** de la sesión y del dispositivo que solicitan la vinculación. Ejemplos de categoría: contacto registrado previamente en el Core, credencial existente o validación presencial. **El mecanismo concreto se decide en la fase de seguridad (DD-21); el requisito queda aprobado ahora** |
 | **VD-04** | **Coincidencia ambigua** (varios registros) o datos inconsistentes entre E1 y el Core: `MANUAL_REVIEW` |
 | **VD-05** | **Conciliación de la creación con resultado desconocido:** se concluye que **esta** solicitud creó al cliente **solo con evidencia de creación**. La evidencia es una de estas: (a) la referencia de la solicitud conservada en el Core (G2 de [ADR-0006](ADR-0006-idempotencia-y-conciliacion.md)); o (b) la conjunción de que E2 registró «no existe» antes de invocar, el cliente aparece con fecha de creación dentro de la ventana de la invocación y sus datos coinciden con la solicitud. **Sin esa evidencia: `MANUAL_REVIEW`**. Nunca se concluye la creación por la sola existencia de un cliente con esa identificación |
-| **VD-06** | Tras un resultado desconocido de la creación, **nunca se reintenta** la creación sin repetir E2 y aplicar VD-05 |
+| **VD-06** | Tras un resultado desconocido de la creación, **nunca se reintenta** la creación de forma automática. *Enmienda CF-01:* una búsqueda que no encuentra al cliente es **evidencia negativa** y no prueba que el alta no se aplicó (puede seguir en curso dentro del Core). Un nuevo envío del alta solo es posible con **evidencia de no ejecución** según [ADR-0005](ADR-0005-maquina-de-estados-transaccional.md) §3 (EV-NOEXEC); si no la hay, la solicitud pasa a `MANUAL_REVIEW`. El permiso de envío del alta es único (ADR-0005 INV-T3) |
 | **VD-07** | **No enumeración:** antes de completar la prueba de control, las respuestas al solicitante no revelan si su identificación corresponde a un cliente existente |
 | **VD-08** | **Vigencia de la verificación:** el resultado de E1 caduca en `VIGENCIA_VERIFICACION_IDENTIDAD`. Una vinculación que no se completa en ese plazo exige repetir E1 |
 | **VD-09** | **Indisponibilidad del proveedor de identidad** (sin respuesta, error técnico): estado `IDENTITY_VERIFICATION_UNAVAILABLE`, distinto del rechazo. Nunca se trata como rechazo ni como aprobación |

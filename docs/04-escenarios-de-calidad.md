@@ -82,7 +82,7 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Artefacto | ACL de transferencias y máquina de estados transaccional |
 | Entorno | Operación normal o degradada |
 | Respuesta | Clase `UNKNOWN`: la operación pasa a `CORE_UNKNOWN`. **No se reintenta la ejecución.** Se consulta el estado (si el Core lo permite) o se concilia por correlación de negocio. El cliente recibe «en verificación», no un error definitivo. Una operación equivalente del mismo cliente se bloquea mientras dure la incertidumbre ([ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), sección 3) |
-| Medida | 0 débitos duplicados por reintento de la plataforma. El 100 % de las operaciones en `CORE_UNKNOWN` se resuelve (`COMPLETED`, `DEBIT_CONFIRMED` o `FAILED_NO_EFFECT`) o se escala a `REQUIRES_RECONCILIATION` en `T_RESOLUCION_UNKNOWN` (por acordar). El 100 % de los casos en `REQUIRES_RECONCILIATION` tiene un responsable asignado y se resuelve o se escala en `T_RESOLUCION_MANUAL` |
+| Medida | 0 débitos duplicados por reintento de la plataforma. **0 transiciones a `FAILED_NO_EFFECT` o `REJECTED` sustentadas solo en evidencia negativa o incompleta (EV-INC)**, verificable por auditoría de la evidencia registrada en cada transición (versión 3, CF-01). El 100 % de las operaciones en `CORE_UNKNOWN` se resuelve con la evidencia que exige INV-T2 o se escala a `REQUIRES_RECONCILIATION` en `T_RESOLUCION_UNKNOWN` (por acordar). El 100 % de los casos en `REQUIRES_RECONCILIATION` tiene un responsable asignado y se resuelve o se escala en `T_RESOLUCION_MANUAL` |
 | Decisiones | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) |
 
 ### QA6 — Auditabilidad: reconstrucción de las acciones de un cliente
@@ -159,6 +159,32 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Respuesta | El cliente se identifica como `PRE_EXISTING`, la vinculación queda en `LINK_PENDING` y solo se autoriza tras una prueba de control con un factor previamente registrado e independiente del dispositivo solicitante. Las respuestas previas no revelan la condición de cliente |
 | Medida | 0 vinculaciones autorizadas de clientes preexistentes sin prueba de control (verificable en auditoría y en pruebas). 0 respuestas que revelen la condición de cliente antes de la prueba de control. Mecanismo de prueba: DD-21 |
 
+### QA12 — Integridad transaccional: ejecutor zombi y toma de titularidad
+
+*Agregado en la remediación de CF-02 (ARG-01-R2, R2-N02).*
+
+| Parte | Descripción |
+|---|---|
+| Fuente | Proceso ejecutor del orquestador |
+| Estímulo | Un ejecutor obtiene el permiso de envío y se pausa. Su arrendamiento vence, otro ejecutor toma la operación y el primero reanuda y envía |
+| Artefacto | Protocolo de titularidad y permiso de envío ([ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) §4) |
+| Entorno | Pausas de proceso, particiones de red, reinicios |
+| Respuesta | El nuevo titular nunca envía: solo pasa el tramo a `*_UNKNOWN`. El envío tardío es el único del tramo. La respuesta tardía se registra como evidencia huérfana y la conciliación la usa |
+| Medida | Para cualquier intercalación: **≤ 1 permiso de envío** y **≤ 1 solicitud originada en la plataforma** por tramo (esta última, bajo el supuesto S19). 0 transiciones registradas con un token vencido. El 100 % de las respuestas recibidas por ejecutores cercados queda registrado como evidencia huérfana |
+
+### QA13 — Integridad transaccional: evidencia negativa y efecto tardío
+
+*Agregado en la remediación de CF-01 (ARG-01-R2, R2-N01).*
+
+| Parte | Descripción |
+|---|---|
+| Fuente | Core Bancario (asentamiento tardío) |
+| Estímulo | La conciliación no encuentra una operación potencialmente enviada; días después, la operación aparece en el Core |
+| Artefacto | Clases de evidencia, cierre excepcional y vigilancia de efecto tardío ([ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) §3 y §7) |
+| Entorno | Core sin idempotencia nativa ni cierre por referencia (S3) |
+| Respuesta | La operación permanece en `CORE_UNKNOWN` o `REQUIRES_RECONCILIATION`, con las operaciones equivalentes bloqueadas. Si aparece antes del cierre, se resuelve con EV-POS. Si aparece después de `CLOSED_BY_EXCEPTION`, se abre un caso de efecto tardío |
+| Medida | 0 cierres o reenvíos basados en EV-INC. El 100 % de los efectos tardíos detectados en `VENTANA_VIGILANCIA_EFECTO_TARDIO` genera un caso vinculado. **No se mide ni se garantiza el tiempo de resolución** (depende del Core y de la revisión manual), pero sí que el caso llegue a un responsable en `T_RESOLUCION_UNKNOWN` + `T_RESOLUCION_MANUAL` |
+
 ## 3. Registro de parámetros
 
 | Parámetro | Descripción | Estado | Fuente para fijarlo |
@@ -180,5 +206,8 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | `EVENTO_CONFIRMACION_EXTERNA` | Evento que el contrato externo define como definitivo para `COMPLETED` interbancario | Por acordar | Q-01 |
 | `TASA_MAX_CORE`, `CUOTA_CL1` a `CUOTA_CL4`, `MARGEN_CORE`, `N_MAX_REPLICAS`, `EXITO_MIN_CL1` | Presupuesto de capacidad del Core y cuotas por clase | Por acordar | Propietario del Core y operaciones (ARG01-H04, Q-16) |
 | `VIGENCIA_VERIFICACION_IDENTIDAD` | Vigencia del resultado de la verificación de identidad | Por acordar | Cumplimiento y seguridad (ARG01-H05) |
+| `LEASE_DURACION`, `MAX_DESFASE_ENVIO` | Duración del arrendamiento de titularidad y desfase máximo entre el permiso y el envío | Objetivo propuesto (se calibra en pruebas) | Ingeniería (CF-02) |
+| `PLAZO_VALIDEZ_INTENCION` | Vigencia de la intención del cliente para conceder el permiso de envío | Por acordar | Negocio y experiencia de usuario (CF-02, R2-N03) |
+| `PLAZO_CIERRE_EXCEPCIONAL`, `VENTANA_VIGILANCIA_EFECTO_TARDIO` | Plazo mínimo antes del cierre excepcional y ventana de vigilancia de efectos tardíos | Por acordar | Operaciones, riesgo operativo y propietario del Core (CF-01) |
 | `T_CONSULTA_AUDITORIA` | Tiempo de respuesta de una consulta de auditoría | Por acordar | Auditoría y cumplimiento |
 | RTO, RPO | Objetivos de recuperación | Por acordar | BIA (DD-09) |

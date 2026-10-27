@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Fase | 1. Modelo conceptual. Versión 2: remediación ARG-01 (ARG01-C01, ARG01-M01) |
+| Fase | 1. Modelo conceptual. Versión 2: remediación ARG-01 (ARG01-C01, ARG01-M01). Versión 3: remediación de CF-01 y CF-02 (ARG-01-R2) |
 | Estado | Adoptado. Pendiente de verificación en ARG-01-R2 |
 | ADR principal | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) (contrato normativo IC-01 a IC-14) |
 
@@ -63,7 +63,7 @@ Sin respuesta (red) ─ reenvía (K, payload) ► Reserva falla por unicidad →
 
 Una clave distinta **no prueba** que la intención sea distinta. Mitigaciones ([ADR-0006, sección 3](adr/ADR-0006-idempotencia-y-conciliacion.md#3-duplicado-semántico-claves-distintas-para-la-misma-intención-financiera)):
 
-1. **Bloqueo obligatorio:** no se acepta una operación equivalente (misma huella, cualquier clave) mientras otra del mismo cliente esté en clase `UNKNOWN` o en `REQUIRES_RECONCILIATION`.
+1. **Bloqueo obligatorio (IC-15, versión 3):** no puede existir más de una operación **no terminal** equivalente (misma huella sin clave) por cliente, en ningún estado. Se garantiza de forma **atómica** con la reserva.
 2. **Confirmación explícita:** si hay una operación equivalente aceptada dentro de `VENTANA_DUPLICADO_SEMANTICO`, se pide la confirmación del usuario.
 3. **Riesgo residual (RR-13):** los duplicados confirmados por el usuario o los que quedan fuera de la ventana no se previenen; se miden con `TASA_DUPLICADO_SEMANTICO`.
 
@@ -82,8 +82,9 @@ Una clave distinta **no prueba** que la intención sea distinta. Mitigaciones ([
 
 | Resultado | Acción |
 |---|---|
-| Confirmación por G2, o una única coincidencia por G3 tras `T_ASENTAMIENTO_CORE` | Se resuelve hacia el estado confirmado ([07](07-maquina-de-estados-transaccional.md)) con la evidencia registrada |
-| Ausencia demostrada (G2), o ninguna coincidencia tras `T_ASENTAMIENTO_CORE` **sin indicios de actividad** | `FAILED_NO_EFFECT` |
+| EV-POS (respuesta a la invocación, consulta por referencia única o evidencia huérfana), o EV-POS-CORR con sus condiciones ([ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) §3) | Se resuelve hacia el estado confirmado ([07](07-maquina-de-estados-transaccional.md)) con la evidencia registrada |
+| **EV-NOEXEC** únicamente: `NOT_SENT` registrado por el titular, cierre por referencia o expiración en el Core con consulta de consistencia fuerte (estas dos últimas requieren capacidades no validadas, DD-22) | `FAILED_NO_EFFECT` |
+| Ninguna coincidencia, consultas vacías, falta de movimientos, plazo vencido, conciliación incompleta (**EV-INC**) | **No resuelve.** Permanece en `*_UNKNOWN`; escala a `REQUIRES_RECONCILIATION` (versión 3, R2-N01) |
 | Varias coincidencias posibles, o indicios contradictorios | `REQUIRES_RECONCILIATION` (sin resolución automática) |
 | Vencimiento de `T_RESOLUCION_UNKNOWN` | `REQUIRES_RECONCILIATION` |
 | Falla del propio proceso de conciliación (Core no disponible para consultas, error interno) | La operación **permanece** en `*_UNKNOWN`; la conciliación se reprograma con capacidad CL-2 ([ADR-0011](adr/ADR-0011-presupuesto-de-capacidad-del-core.md)); el plazo `T_RESOLUCION_UNKNOWN` sigue corriendo y garantiza el escalamiento |
@@ -97,9 +98,10 @@ Una clave distinta **no prueba** que la intención sea distinta. Mitigaciones ([
 | Se garantiza (demostrable) | No se garantiza |
 |---|---|
 | Como máximo una operación por (ámbito, clave) | Ejecución exactamente una vez de extremo a extremo (*exactly-once end-to-end*) sin G2 |
-| Como máximo una invocación de ejecución por tramo y operación | Ausencia de duplicados semánticos con claves distintas |
+| **Un único permiso de envío** por tramo y operación (ADR-0005 INV-T3); un envío tardío de un ejecutor zombi es ese único envío | Ausencia de duplicados semánticos con claves distintas |
 | Ningún reintento de ejecución ante un resultado incierto | Resolución automática del 100 % de los resultados inciertos |
-| Ninguna liberación de clave durante la incertidumbre | — |
+| Ninguna liberación de clave durante la incertidumbre | Que el Core no ejecute una solicitud tardía (requiere DD-22) |
+| Ningún cierre ni reenvío por evidencia negativa | Resolución de toda operación sin intervención humana (vivacidad) |
 
 ## 7. Vinculación digital
 

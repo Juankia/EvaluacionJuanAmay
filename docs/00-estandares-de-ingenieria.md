@@ -189,7 +189,7 @@ El glosario se amplía en cada fase. Un término nuevo se agrega **antes** de us
 | Tipo | Objetivo | Obligatoriedad | Relación |
 |---|---|---|---|
 | **Unitarias** | Dominio y casos de uso aislados, sin contenedor ni red | Obligatorias para el dominio y la aplicación | — |
-| **De la máquina de estados** | Transiciones válidas y **prohibidas**; invariantes INV-T1 a INV-T8 e INV-O1 a INV-O6; estados `*_UNKNOWN` y `REQUIRES_RECONCILIATION`; recuperación tras reinicio | Obligatorias | RR-08, QA5 |
+| **De la máquina de estados** | Transiciones válidas y **prohibidas**; invariantes INV-T1 a INV-T11 e INV-O1 a INV-O6; titularidad cercada y permiso de envío único (incluidas las intercalaciones con ejecutores pausados); estados `*_UNKNOWN` y `REQUIRES_RECONCILIATION`; recuperación tras reinicio | Obligatorias | RR-08, QA5 |
 | **De idempotencia y resultado desconocido** | Reenvío con la misma clave, misma clave con otro contenido, solicitudes concurrentes, timeout de lectura, respuesta perdida | Obligatorias para las operaciones críticas | QA3, QA5, QA9, ADR-0006 |
 | **De integración** | Adaptadores contra dependencias reales o emuladas (persistencia, caché) | Obligatorias para los adaptadores de salida | — |
 | **De contrato** | Cada ACL frente al contrato del Core o del tercero; API públicas frente a su especificación | Obligatorias para cada ACL y cada API pública | QA7, ADR-0001, RR-03 |

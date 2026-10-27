@@ -54,7 +54,7 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Origen | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) |
 | Impacto | Alto. Una conciliación errónea puede marcar como fallida una operación aplicada (riesgo de duplicación si el cliente la repite) o al revés |
 | Mitigación | Las coincidencias ambiguas no se resuelven automáticamente (`REQUIRES_RECONCILIATION`). Tiempo de asentamiento antes de concluir «sin coincidencia». **Bloqueo obligatorio** de operaciones equivalentes mientras otra está en clase `UNKNOWN` ([ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), sección 3; remediación ARG-01). Exactitud medida (`TASA_ERROR_CONCILIACION`). Conciliación diaria de segunda línea. **Validación prioritaria del supuesto S3** |
-| Riesgo residual | Medio. **La correlación de negocio no ofrece las mismas garantías que la idempotencia nativa** |
+| Riesgo residual | Medio. **La correlación de negocio no ofrece las mismas garantías que la idempotencia nativa.** *Actualización CF-01:* como la evidencia negativa ya no cierra ni reenvía, el riesgo pasa de la **duplicación** a la **vivacidad** (RR-17). Persiste el riesgo de una confirmación errónea por EV-POS-CORR |
 | Disparador de reevaluación | Resultado de la validación de S3. Tasa de casos en `REQUIRES_RECONCILIATION` por encima de lo tolerable para operaciones |
 
 ### RR-05 — Fallas en la invalidación de caché o en la entrega de eventos
@@ -189,6 +189,28 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Riesgo residual | Medio, hasta conocer la topología y los procedimientos de devolución (Q-01) |
 | Disparador de reevaluación | Respuesta a Q-01; antigüedad de los casos con reverso pendiente |
 
+### RR-17 — Operaciones sin resolución concluyente
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Sin evidencia de no ejecución (EV-NOEXEC) del Core, las operaciones potencialmente enviadas y no encontradas no pueden cerrarse automáticamente: quedan en `REQUIRES_RECONCILIATION` y bloquean las operaciones equivalentes del cliente |
+| Origen | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) v3 §3 y §8 (CF-01): se prioriza la seguridad sobre la vivacidad |
+| Impacto | Medio-alto. Clientes bloqueados para una operación equivalente; carga operativa; reclamos |
+| Mitigación | Escalamiento acotado; cierre excepcional con autoridad; validación prioritaria de las capacidades del Core (Q-17, DD-22); dimensionamiento del rol de conciliación |
+| Riesgo residual | Medio-alto hasta conocer las capacidades del Core |
+| Disparador de reevaluación | Volumen o antigüedad de `REQUIRES_RECONCILIATION`; respuesta a Q-17 |
+
+### RR-18 — Ejecución tardía única de un ejecutor zombi
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Un ejecutor que perdió la titularidad envía tarde la **única** solicitud del tramo; el Core la ejecuta fuera del tiempo que el cliente esperaba |
+| Origen | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) v3 §4.4 (CF-02) |
+| Impacto | Medio. No hay duplicación, pero sí una ejecución tardía; si ocurre después de `CLOSED_BY_EXCEPTION`, genera un caso de efecto tardío |
+| Mitigación | `MAX_DESFASE_ENVIO`; operaciones equivalentes bloqueadas mientras la operación no sea terminal; evidencia huérfana; vigilancia de efecto tardío; expiración de solicitudes en el Core si existe (DD-22) |
+| Riesgo residual | Bajo-medio |
+| Disparador de reevaluación | Casos de efecto tardío; respuesta a Q-17 |
+
 ## 3. Resumen
 
 | ID | Riesgo | Impacto | Riesgo residual |
@@ -209,3 +231,5 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | RR-14 | Cuotas de capacidad del Core mal dimensionadas | Medio-alto | Medio |
 | RR-15 | Vinculación indebida de clientes preexistentes | Alto | Medio |
 | RR-16 | Reverso no posible por la vía automática | Alto | Medio |
+| RR-17 | Operaciones sin resolución concluyente | Medio-alto | Medio-alto |
+| RR-18 | Ejecución tardía única de un ejecutor zombi | Medio | Bajo-medio |
