@@ -6,7 +6,7 @@
 | Fecha | 2026-10-27 |
 | Requisitos | R3; contexto del reto («La información del cliente proviene de dos fuentes […]») |
 | Drivers y supuestos | S1, S2, S5, S12; AQ-02, AQ-04 |
-| Relacionados | [ADR-0001](ADR-0001-domain-acl.md), [ADR-0005](ADR-0005-transaction-state-machine.md), [ADR-0006](ADR-0006-idempotency-reconciliation.md), [07 — Máquina de estados, sección 4](../07-transaction-state-machine.md#4-máquina-de-estados-de-onboarding-conceptual) |
+| Relacionados | [ADR-0001](ADR-0001-acl-por-dominio.md), [ADR-0005](ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](ADR-0006-idempotencia-y-conciliacion.md), [07 — Máquina de estados, sección 4](../07-maquina-de-estados-transaccional.md#4-máquina-de-estados-de-onboarding-conceptual) |
 
 ## Contexto
 
@@ -21,7 +21,7 @@ El reto indica que la información del cliente proviene del Core Bancario (datos
 1. **El Core Bancario es autoritativo** para la identidad del cliente y para sus datos transaccionales (productos, cuentas, saldos, movimientos).
 2. **El sistema complementario es autoritativo solo para los datos extendidos** que la institución le asigne explícitamente. Ese inventario debe validarse (S5).
 3. Una persona **no es cliente** de la plataforma hasta que el Core confirma su creación (`CORE_CREATED`).
-4. El onboarding usa un **estado durable** ([ADR-0005](ADR-0005-transaction-state-machine.md)). La creación en el Core es **idempotente** ([ADR-0006](ADR-0006-idempotency-reconciliation.md)).
+4. El onboarding usa un **estado durable** ([ADR-0005](ADR-0005-maquina-de-estados-transaccional.md)). La creación en el Core es **idempotente** ([ADR-0006](ADR-0006-idempotencia-y-conciliacion.md)).
 5. El sistema complementario **puede almacenar la información pendiente** del onboarding, pero **no debe convertirse silenciosamente en autoritativo** para la identidad del cliente.
 6. Se exige una **conciliación** periódica entre las solicitudes pendientes, los datos del sistema complementario y los clientes del Core.
 7. La plataforma accede al Core y al sistema complementario solo mediante sus interfaces y las ACL, nunca mediante la base de datos principal (S12).
@@ -46,7 +46,7 @@ El reto indica que la información del cliente proviene del Core Bancario (datos
 
 - La experiencia del onboarding debe comunicar los estados intermedios (`PENDING_CORE`, `MANUAL_REVIEW`).
 - Se requiere poder buscar en el Core por identificador de persona para la conciliación y la idempotencia. Esto debe validarse.
-- Los datos biométricos y de KYC tienen un tratamiento propio, que se define en la fase de seguridad y en [ADR-0010](ADR-0010-data-residency.md).
+- Los datos biométricos y de KYC tienen un tratamiento propio, que se define en la fase de seguridad y en [ADR-0010](ADR-0010-residencia-de-datos.md).
 
 ## Riesgos
 

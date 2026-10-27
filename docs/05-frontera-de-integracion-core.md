@@ -4,7 +4,7 @@
 |---|---|
 | Fase | 1 — Decisión sobre la frontera de integración con el Core |
 | Estado | Decisión adoptada: **Opción C**. Pendiente de revisión del comité |
-| ADR principales | [ADR-0001](adr/ADR-0001-domain-acl.md), [ADR-0002](adr/ADR-0002-api-gateway-boundary.md), [ADR-0003](adr/ADR-0003-integration-platform-sdk.md), [ADR-0009](adr/ADR-0009-core-authoritative.md) |
+| ADR principales | [ADR-0001](adr/ADR-0001-acl-por-dominio.md), [ADR-0002](adr/ADR-0002-frontera-api-gateway.md), [ADR-0003](adr/ADR-0003-integration-platform-sdk.md), [ADR-0009](adr/ADR-0009-core-autoritativo.md) |
 
 ## 1. Problema
 
@@ -85,7 +85,7 @@ Cada dominio tiene su propia **capa anticorrupción** (*Anti-Corruption Layer*, 
 
 ## 3. Decisión
 
-Se adopta la **Opción C**, documentada en [ADR-0001](adr/ADR-0001-domain-acl.md).
+Se adopta la **Opción C**, documentada en [ADR-0001](adr/ADR-0001-acl-por-dominio.md).
 
 ### 3.1 Responsabilidades de cada ACL
 
@@ -101,7 +101,7 @@ Se adopta la **Opción C**, documentada en [ADR-0001](adr/ADR-0001-domain-acl.md
 ### 3.2 Lo que la ACL no hace
 
 - No contiene reglas de negocio del dominio (por ejemplo, límites de transferencia o validación de beneficiarios).
-- No orquesta procesos de varios pasos. Esa responsabilidad es del servicio de dominio y de la máquina de estados ([07](07-transaction-state-machine.md)).
+- No orquesta procesos de varios pasos. Esa responsabilidad es del servicio de dominio y de la máquina de estados ([07](07-maquina-de-estados-transaccional.md)).
 - No decide el enrutamiento entre varios Core (ver RR-07). Si llega a necesitarse, se diseñará como una decisión explícita en el dominio.
 
 ## 4. Integration Platform SDK
@@ -129,8 +129,8 @@ El SDK **ofrece mecanismos**. Cada ACL **declara su política**:
 | Reintento | Limitado, solo para lecturas seguras e idempotentes, con *backoff* y *jitter* | **Ningún reintento a ciegas.** Ante un resultado incierto: `UNKNOWN` y conciliación |
 | Circuit Breaker | Sí | Sí |
 | Bulkhead y pool de conexiones | Dedicados | Dedicados y separados de los de lectura |
-| Comportamiento si el Core no está disponible | Datos degradados aprobados ([06](06-cache-strategy.md)) | Falla segura ([07](07-transaction-state-machine.md)) |
-| Idempotencia | No aplica (lectura) | Clave generada en el dominio y conciliación ([08](08-idempotency-and-reconciliation.md)) |
+| Comportamiento si el Core no está disponible | Datos degradados aprobados ([06](06-estrategia-de-cache.md)) | Falla segura ([07](07-maquina-de-estados-transaccional.md)) |
+| Idempotencia | No aplica (lectura) | Clave generada en el dominio y conciliación ([08](08-idempotencia-y-conciliacion.md)) |
 
 > El SDK mitiga la duplicación entre las ACL; **no elimina el costo arquitectónico** de la Opción C.
 
@@ -195,14 +195,14 @@ Reglas:
 
 1. Las operaciones financieras críticas **no se reintentan automáticamente** tras un timeout de lectura. Esto es especialmente importante porque se asume que el Core no ofrece idempotencia nativa (S3): un reintento podría duplicar el débito.
 2. Un timeout de **conexión** (la solicitud no salió) puede clasificarse como «no enviada». Aun así, el reintento lo decide la máquina de estados y no la ACL por su cuenta.
-3. El estado `UNKNOWN` se resuelve solo por **conciliación**: consulta de estado si el Core la ofrece, o correlación de negocio ([08](08-idempotency-and-reconciliation.md)).
+3. El estado `UNKNOWN` se resuelve solo por **conciliación**: consulta de estado si el Core la ofrece, o correlación de negocio ([08](08-idempotencia-y-conciliacion.md)).
 4. Al cliente se le comunica un estado «en verificación», no un error definitivo ni un éxito.
 
 ## 7. Comportamiento ante la indisponibilidad del Core
 
 | Tipo de operación | Comportamiento |
 |---|---|
-| **Lecturas** | Pueden degradarse a datos de caché o de proyección **aprobados**, solo si la política de frescura de la categoría lo permite ([06](06-cache-strategy.md)). La respuesta indica la frescura |
+| **Lecturas** | Pueden degradarse a datos de caché o de proyección **aprobados**, solo si la política de frescura de la categoría lo permite ([06](06-estrategia-de-cache.md)). La respuesta indica la frescura |
 | **Escrituras transaccionales** | **Falla segura.** Si el Core no se invocó, la operación se rechaza sin efectos. **No se encola una transacción financiera solo porque el Core no está disponible**: ejecutarla más tarde, con saldos y condiciones distintas y sin que el cliente lo espere, crea riesgos de integridad y de experiencia |
 | **Resultado desconocido** | `UNKNOWN` → conciliación |
 
@@ -212,7 +212,7 @@ Una eventual funcionalidad de «transferencias programadas» sería una **capaci
 
 El requisito R1 pide «un API Gateway que **orqueste** al menos 3 servicios».
 
-**Interpretación arquitectónica explícita:** el término «orquestar» se interpreta como **exponer, enrutar y proteger** los servicios, y no como orquestación de negocio dentro del Gateway. Detalle en [ADR-0002](adr/ADR-0002-api-gateway-boundary.md).
+**Interpretación arquitectónica explícita:** el término «orquestar» se interpreta como **exponer, enrutar y proteger** los servicios, y no como orquestación de negocio dentro del Gateway. Detalle en [ADR-0002](adr/ADR-0002-frontera-api-gateway.md).
 
 | El API Gateway sí hace | El API Gateway no hace |
 |---|---|
@@ -254,7 +254,7 @@ Si el equipo tuviera solo 1–2 ingenieros y la complejidad de integración fuer
 
 | Requisito | Driver o supuesto | Decisión | Trade-off | Consecuencia |
 |---|---|---|---|---|
-| R1, C5 | S1, S4, S6, S7, QA1, QA7 | ACL por dominio ([ADR-0001](adr/ADR-0001-domain-acl.md)) | Duplicación y más superficies | Aislamiento de fallas y del modelo; reemplazo del Core acotado |
-| R1 | Interpretación de «orquestar» | Gateway como fachada ([ADR-0002](adr/ADR-0002-api-gateway-boundary.md)) | Requiere servicios de aplicación explícitos | Lógica de negocio fuera del borde; el Gateway es reemplazable |
+| R1, C5 | S1, S4, S6, S7, QA1, QA7 | ACL por dominio ([ADR-0001](adr/ADR-0001-acl-por-dominio.md)) | Duplicación y más superficies | Aislamiento de fallas y del modelo; reemplazo del Core acotado |
+| R1 | Interpretación de «orquestar» | Gateway como fachada ([ADR-0002](adr/ADR-0002-frontera-api-gateway.md)) | Requiere servicios de aplicación explícitos | Lógica de negocio fuera del borde; el Gateway es reemplazable |
 | C2 | QA1, QA3 | Resiliencia en la ACL y plazo propagado | Más configuración por ACL | Fallas acotadas por operación |
 | C2 | QA5, S3 | Timeout ≠ falla; `UNKNOWN` | Requiere conciliación y operación | Sin duplicación de débitos por reintento |

@@ -4,7 +4,7 @@
 |---|---|
 | Fase | 0 — Drivers, supuestos y escenarios de calidad |
 | Estado | Cerrado. Los valores numéricos son parámetros por acordar |
-| Documentos relacionados | [03 — Atributos de calidad](03-quality-attributes.md), [02 — Supuestos (S10)](02-assumptions.md) |
+| Documentos relacionados | [03 — Atributos de calidad](03-atributos-de-calidad.md), [02 — Supuestos (S10)](02-supuestos.md) |
 
 ## 1. Formato
 
@@ -34,7 +34,7 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Entorno | Operación normal en horario de alta demanda |
 | Respuesta | Las funciones no relacionadas con el componente afectado siguen operativas. Por ejemplo, si falla la ruta de movimientos, la consulta de datos del cliente sigue funcionando. La función afectada responde con un error controlado o con datos degradados aprobados, y nunca con un bloqueo prolongado. Se generan alertas |
 | Medida | Las funciones no relacionadas mantienen su tasa de éxito dentro de `DISP_FUNC_NO_AFECTADAS` (por acordar). El circuito de la ruta afectada se abre en `T_DETECCION_FALLA` como máximo (objetivo propuesto). Ningún hilo ni conexión de otro dominio se agota por la falla (aislamiento con Bulkhead) |
-| Decisiones | [ADR-0001](adr/ADR-0001-domain-acl.md), [ADR-0003](adr/ADR-0003-integration-platform-sdk.md) |
+| Decisiones | [ADR-0001](adr/ADR-0001-acl-por-dominio.md), [ADR-0003](adr/ADR-0003-integration-platform-sdk.md) |
 
 ### QA2 — Rendimiento: consultas responsivas sin saturar el Core
 
@@ -44,9 +44,9 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Estímulo | Consultas de datos del cliente y de movimientos a volumen normal y en pico (`TPS_NORMAL`, `TPS_PICO`; por acordar) |
 | Artefacto | Servicios de consulta, caché y ACL de lectura |
 | Entorno | Operación normal y pico estacional (quincena, fin de mes) |
-| Respuesta | Las consultas se atienden desde la caché cuando la categoría del dato lo permite ([06](06-cache-strategy.md)). Las demás llegan al Core con paginación y con concurrencia acotada por la ACL |
+| Respuesta | Las consultas se atienden desde la caché cuando la categoría del dato lo permite ([06](06-estrategia-de-cache.md)). Las demás llegan al Core con paginación y con concurrencia acotada por la ACL |
 | Medida | Latencia p95 de la consulta de movimientos ≤ `T_CONSULTA_P95` (por acordar). La tasa de llamadas al Core por consulta del canal se mantiene ≤ `RATIO_LECTURA_CORE` (objetivo propuesto). La concurrencia hacia el Core nunca supera `MAX_CONCURRENCIA_CORE` (depende de S4) |
-| Decisiones | [ADR-0004](adr/ADR-0004-cache-aside.md), [ADR-0007](adr/ADR-0007-cqrs-deferred.md) |
+| Decisiones | [ADR-0004](adr/ADR-0004-cache-aside.md), [ADR-0007](adr/ADR-0007-cqrs-diferido.md) |
 
 ### QA3 — Resiliencia: el Core no está disponible
 
@@ -59,7 +59,7 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Respuesta (lecturas) | Las lecturas pueden degradarse a datos de caché o de proyección **aprobados**, solo para las categorías cuya política de frescura lo permite. La respuesta indica al canal que los datos pueden no estar actualizados |
 | Respuesta (escrituras) | Las operaciones transaccionales **fallan de forma segura**: si no se invocó el Core, se rechazan sin efectos; no se encolan a ciegas para ejecutarlas más tarde. Si la invocación ya se realizó y no hubo respuesta, la operación pasa a `UNKNOWN` y luego a conciliación. **Nunca** se reintenta a ciegas |
 | Medida | 0 operaciones financieras duplicadas. 0 operaciones financieras en estado no determinado sin un caso de conciliación abierto en `T_APERTURA_CONCILIACION` (objetivo propuesto). El 100 % de las respuestas degradadas lleva un indicador de frescura |
-| Decisiones | [ADR-0005](adr/ADR-0005-transaction-state-machine.md), [ADR-0006](adr/ADR-0006-idempotency-reconciliation.md), [ADR-0004](adr/ADR-0004-cache-aside.md) |
+| Decisiones | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), [ADR-0004](adr/ADR-0004-cache-aside.md) |
 
 ### QA4 — Seguridad: token de acceso robado
 
@@ -83,7 +83,7 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Entorno | Operación normal o degradada |
 | Respuesta | La operación pasa a `UNKNOWN`. **No se reintenta automáticamente.** Se consulta el estado (si el Core lo permite) o se concilia por correlación de negocio. El cliente recibe un estado «en verificación», no un error definitivo |
 | Medida | 0 débitos duplicados por reintento. El 100 % de las operaciones `UNKNOWN` se resuelve (`COMPLETED` o `FAILED`) o se escala a revisión manual en `T_RESOLUCION_UNKNOWN` (por acordar) |
-| Decisiones | [ADR-0005](adr/ADR-0005-transaction-state-machine.md), [ADR-0006](adr/ADR-0006-idempotency-reconciliation.md) |
+| Decisiones | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) |
 
 ### QA6 — Auditabilidad: reconstrucción de las acciones de un cliente
 
@@ -107,7 +107,7 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Entorno | Ciclo de cambio planificado |
 | Respuesta | El cambio se absorbe en la ACL del dominio afectado. El modelo de dominio, las API públicas y los demás dominios no cambian |
 | Medida | Componentes modificados fuera de la ACL afectada = 0. Pruebas de contrato de la ACL actualizadas antes del despliegue |
-| Decisiones | [ADR-0001](adr/ADR-0001-domain-acl.md) |
+| Decisiones | [ADR-0001](adr/ADR-0001-acl-por-dominio.md) |
 
 ### QA8 — Escalabilidad: pico de demanda
 
@@ -118,7 +118,7 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Artefacto | Servicios de consulta, caché y ACL |
 | Entorno | Pico estacional |
 | Respuesta | Los servicios de la plataforma escalan horizontalmente. La carga adicional sobre el Core se limita con caché, limitación de concurrencia en la ACL y control de tasa en el borde |
-| Medida | La latencia p95 se mantiene ≤ `T_CONSULTA_P95`. La concurrencia hacia el Core no supera `MAX_CONCURRENCIA_CORE`. Si el escenario no se cumple con Cache-Aside y optimización de lectura, se evalúa CQRS ([ADR-0007](adr/ADR-0007-cqrs-deferred.md)) |
+| Medida | La latencia p95 se mantiene ≤ `T_CONSULTA_P95`. La concurrencia hacia el Core no supera `MAX_CONCURRENCIA_CORE`. Si el escenario no se cumple con Cache-Aside y optimización de lectura, se evalúa CQRS ([ADR-0007](adr/ADR-0007-cqrs-diferido.md)) |
 
 ## 3. Registro de parámetros
 

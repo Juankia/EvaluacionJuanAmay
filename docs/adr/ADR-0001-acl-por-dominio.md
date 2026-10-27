@@ -6,7 +6,7 @@
 | Fecha | 2026-10-27 |
 | Requisitos | R1, C2, C5 |
 | Drivers y supuestos | S1, S2, S3, S4, S6, S7, S11, S12; QA1, QA7 |
-| Relacionados | [ADR-0002](ADR-0002-api-gateway-boundary.md), [ADR-0003](ADR-0003-integration-platform-sdk.md), [05 — Frontera de integración](../05-core-integration-boundary.md) |
+| Relacionados | [ADR-0002](ADR-0002-frontera-api-gateway.md), [ADR-0003](ADR-0003-integration-platform-sdk.md), [05 — Frontera de integración](../05-frontera-de-integracion-core.md) |
 
 ## Contexto
 
@@ -62,7 +62,7 @@ El SDK mitiga la duplicación; **no elimina el costo arquitectónico**.
 - Los servicios de dominio dependen de interfaces propias (puertos), no de contratos del Core.
 - Un cambio de contrato del Core se absorbe en la ACL afectada (QA7).
 - Cada ACL documenta su catálogo de políticas de resiliencia, que se revisa en el gobierno de arquitectura.
-- La consulta de datos del cliente combina el Core y el sistema complementario detrás de la misma frontera de traducción. La regla de autoridad del dato se define en [ADR-0009](ADR-0009-core-authoritative.md).
+- La consulta de datos del cliente combina el Core y el sistema complementario detrás de la misma frontera de traducción. La regla de autoridad del dato se define en [ADR-0009](ADR-0009-core-autoritativo.md).
 - Debe existir un responsable identificado de cada ACL.
 
 ## Riesgos
@@ -71,4 +71,4 @@ El SDK mitiga la duplicación; **no elimina el costo arquitectónico**.
 - RR-03: cambios en el contrato del Core.
 - RR-07: enrutamiento futuro entre varios Core.
 
-Ver [11 — Riesgos residuales](../11-residual-risks.md).
+Ver [11 — Riesgos residuales](../11-riesgos-residuales.md).

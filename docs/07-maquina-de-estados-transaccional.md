@@ -4,11 +4,11 @@
 |---|---|
 | Fase | 1. Modelo conceptual. **La implementación se diseña en fases posteriores** |
 | Estado | Modelo conceptual adoptado |
-| ADR principales | [ADR-0005](adr/ADR-0005-transaction-state-machine.md), [ADR-0006](adr/ADR-0006-idempotency-reconciliation.md), [ADR-0009](adr/ADR-0009-core-authoritative.md) |
+| ADR principales | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md), [ADR-0009](adr/ADR-0009-core-autoritativo.md) |
 
 ## 1. Propósito
 
-Las operaciones financieras (transferencias propias e interbancarias) y el onboarding digital tienen pasos con sistemas externos y fallas parciales. Además, un timeout no siempre significa falla ([05, sección 6](05-core-integration-boundary.md#6-regla-crítica-un-timeout-no-equivale-a-una-falla)). Para controlarlos se adopta una **máquina de estados transaccional durable** (*Durable Transaction State Machine*), también llamada **orquestador de transacciones de transferencia** (*Transfer Transaction Orchestrator*).
+Las operaciones financieras (transferencias propias e interbancarias) y el onboarding digital tienen pasos con sistemas externos y fallas parciales. Además, un timeout no siempre significa falla ([05, sección 6](05-frontera-de-integracion-core.md#6-regla-crítica-un-timeout-no-equivale-a-una-falla)). Para controlarlos se adopta una **máquina de estados transaccional durable** (*Durable Transaction State Machine*), también llamada **orquestador de transacciones de transferencia** (*Transfer Transaction Orchestrator*).
 
 «Durable» significa que el estado de la operación se persiste **antes** de cada interacción con un sistema externo crítico. Si un proceso se reinicia, el estado de la operación no se pierde y la operación puede retomarse o conciliarse.
 
@@ -56,7 +56,7 @@ REQUIRES_RECONCILIATION ──► COMPLETED | FAILED  (resolución manual autori
 
 ### 3.3 Reglas
 
-1. **Se persiste antes de invocar.** La transición a `CORE_PROCESSING` se persiste **antes** de enviar la solicitud al Core (ver [08](08-idempotency-and-reconciliation.md)).
+1. **Se persiste antes de invocar.** La transición a `CORE_PROCESSING` se persiste **antes** de enviar la solicitud al Core (ver [08](08-idempotencia-y-conciliacion.md)).
 2. **No se reintenta a ciegas** desde `CORE_PROCESSING` ni desde `SPI_PROCESSING`.
 3. **Indisponibilidad previa a la invocación:** si el Core no está disponible antes de enviar la solicitud (circuito abierto o error de conexión), la operación pasa a `FAILED` sin efectos y el cliente puede reintentarla de forma explícita. **No se encola** para ejecución diferida.
 4. **Solo los estados terminales confirmados generan la notificación definitiva** al cliente. Los estados `UNKNOWN` y `REQUIRES_RECONCILIATION` se comunican como «en verificación».
@@ -72,7 +72,7 @@ REQUIRES_RECONCILIATION ──► COMPLETED | FAILED  (resolución manual autori
 
 ### 4.1 Principio
 
-**El Core es autoritativo para la creación del cliente** ([ADR-0009](adr/ADR-0009-core-authoritative.md)). La plataforma no considera «cliente» a una persona hasta que el Core confirma su creación.
+**El Core es autoritativo para la creación del cliente** ([ADR-0009](adr/ADR-0009-core-autoritativo.md)). La plataforma no considera «cliente» a una persona hasta que el Core confirma su creación.
 
 ### 4.2 Estados
 
@@ -107,7 +107,7 @@ PENDING_CORE ──► CORE_UNKNOWN ──► (conciliación) CORE_CREATED | PEN
    - los datos guardados en el sistema complementario frente a la identidad del Core.
 
    El objetivo es detectar registros huérfanos o duplicados.
-5. **Los datos biométricos y de KYC** se tratan según la política de datos sensibles. Su almacenamiento, retención y ubicación se deciden en la fase de seguridad y en [ADR-0010](adr/ADR-0010-data-residency.md).
+5. **Los datos biométricos y de KYC** se tratan según la política de datos sensibles. Su almacenamiento, retención y ubicación se deciden en la fase de seguridad y en [ADR-0010](adr/ADR-0010-residencia-de-datos.md).
 
 ## 5. Lo que este documento no decide
 

@@ -6,7 +6,7 @@
 | Fecha | 2026-10-27 |
 | Requisitos | R4, R5, C5 |
 | Drivers y supuestos | S2, S4; AQ-06, AQ-08; QA2 |
-| Relacionados | [ADR-0004](ADR-0004-cache-aside.md), [ADR-0007](ADR-0007-cqrs-deferred.md), [06 — Estrategia de caché, sección 4](../06-cache-strategy.md#4-invalidación-de-caché) |
+| Relacionados | [ADR-0004](ADR-0004-cache-aside.md), [ADR-0007](ADR-0007-cqrs-diferido.md), [06 — Estrategia de caché, sección 4](../06-estrategia-de-cache.md#4-invalidación-de-caché) |
 
 ## Contexto
 
@@ -36,7 +36,7 @@ Con Cache-Aside ([ADR-0004](ADR-0004-cache-aside.md)), un TTL por sí solo deja 
   - integración con el patrón Outbox para la publicación consistente;
   - operación gestionada en el proveedor cloud elegido;
   - costo;
-  - residencia de datos ([ADR-0010](ADR-0010-data-residency.md)).
+  - residencia de datos ([ADR-0010](ADR-0010-residencia-de-datos.md)).
 
 ## Alternativas consideradas
 

@@ -6,7 +6,7 @@
 | Fecha | 2026-10-27 |
 | Requisitos | R1 (consulta de movimientos), C5 |
 | Drivers y supuestos | S2, S4, S10; AQ-06, AQ-07; QA2, QA8 |
-| Relacionados | [ADR-0004](ADR-0004-cache-aside.md), [ADR-0008](ADR-0008-event-driven-invalidation.md) |
+| Relacionados | [ADR-0004](ADR-0004-cache-aside.md), [ADR-0008](ADR-0008-invalidacion-por-eventos.md) |
 
 ## Contexto
 
@@ -36,7 +36,7 @@ CQRS se justifica **solo si la evidencia medida demuestra la necesidad**.
 
 ### Disparadores de activación
 
-Los umbrales son **disparadores de ingeniería propuestos**, no requisitos. Sus valores se acuerdan cuando se validen los objetivos de [04](../04-qa-scenarios.md).
+Los umbrales son **disparadores de ingeniería propuestos**, no requisitos. Sus valores se acuerdan cuando se validen los objetivos de [04](../04-escenarios-de-calidad.md).
 
 | Disparador | Evidencia requerida |
 |---|---|

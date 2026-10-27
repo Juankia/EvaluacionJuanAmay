@@ -6,7 +6,7 @@
 | Fecha | 2026-10-27 |
 | Requisitos | C1, C6 |
 | Drivers y supuestos | S8, S15; AQ-01, AQ-06 |
-| Relacionados | [ADR-0008](ADR-0008-event-driven-invalidation.md), [Política de documentación, sección 5](../00-politica-de-documentacion.md#5-diferenciación-entre-requisitos-supuestos-y-obligaciones-regulatorias) |
+| Relacionados | [ADR-0008](ADR-0008-invalidacion-por-eventos.md), [Política de documentación, sección 5](../00-politica-de-documentacion.md#5-diferenciación-entre-requisitos-supuestos-y-obligaciones-regulatorias) |
 
 ## Contexto
 

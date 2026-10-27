@@ -106,7 +106,7 @@ Se usa la terminología del sistema financiero ecuatoriano:
 | Auditoría | Registro y revisión de las operaciones para control interno y externo |
 | Conciliación | Cuadre de saldos y movimientos entre sistemas o instituciones |
 
-**Socio y cliente:** el enunciado del reto se refiere a la institución como «Banco Ecuador» y usa el término «cliente», pero la evaluadora puede ser una cooperativa de ahorro y crédito. Por eso los documentos usan «cliente», el término del reto, y lo entienden como «socio» en el contexto cooperativo (supuesto S15 en [02 — Supuestos](02-assumptions.md)).
+**Socio y cliente:** el enunciado del reto se refiere a la institución como «Banco Ecuador» y usa el término «cliente», pero la evaluadora puede ser una cooperativa de ahorro y crédito. Por eso los documentos usan «cliente», el término del reto, y lo entienden como «socio» en el contexto cooperativo (supuesto S15 en [02 — Supuestos](02-supuestos.md)).
 
 ## 5. Diferenciación entre requisitos, supuestos y obligaciones regulatorias
 
@@ -169,6 +169,30 @@ docs: add documentation and language policy
 - No se traduce un término técnico de forma literal si la traducción pierde precisión.
 - Las fechas siguen el formato ISO 8601 (`AAAA-MM-DD`).
 
-## 9. Aplicación
+## 9. Convención de nomenclatura de archivos y directorios
+
+### 9.1 Reglas
+
+| Elemento | Convención | Ejemplos |
+|---|---|---|
+| Directorios técnicos | En inglés, en minúsculas | `docs/`, `docs/adr/`, `c4/`, `diagrams/` |
+| Archivos estándar de herramientas o de la industria | Nombre convencional en inglés | `README.md`, `workspace.dsl`, `.gitignore`, `.markdownlint.json` |
+| Documentos arquitectónicos | Prefijo numérico de dos dígitos + nombre en español | `05-frontera-de-integracion-core.md` |
+| ADR | `ADR-` + número de cuatro dígitos + nombre en español | `ADR-0009-core-autoritativo.md` |
+
+Además, todos los nombres de archivo de documentos y ADR:
+
+- usan **kebab-case**, en minúsculas y con palabras separadas por guiones (excepto el prefijo `ADR-`);
+- usan solo **caracteres ASCII**: sin tildes, sin `ñ` (se escribe `n`) y sin espacios;
+- **conservan los términos técnicos internacionales** cuando son el nombre del concepto: `ADR-0003-integration-platform-sdk.md`, `ADR-0004-cache-aside.md`;
+- son **estables**: un renombramiento obliga a actualizar todos los enlaces internos y debe hacerse con `git mv`, para preservar el historial.
+
+### 9.2 Numeración
+
+- **Prefijo de los documentos:** indica el orden de lectura. Un número no se reutiliza.
+- **Número de ADR:** es un **identificador permanente**. No se renumera ni se reutiliza, aunque el ADR se reemplace o se deje sin efecto. Un ADR nuevo toma el siguiente número disponible.
+- **Títulos:** los títulos de los documentos (encabezado `#`) se escriben en español con tildes. La restricción ASCII aplica solo a los nombres de archivo.
+
+## 10. Aplicación
 
 Esta política aplica a todos los archivos existentes y futuros del repositorio. Cualquier excepción se documenta y se justifica en el propio artefacto.

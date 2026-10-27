@@ -4,7 +4,7 @@
 |---|---|
 | Fase | 0 — Drivers, supuestos y escenarios de calidad |
 | Estado | Cerrado. La priorización es una propuesta del equipo de arquitectura |
-| Documentos relacionados | [01 — Drivers](01-architecture-drivers.md), [04 — Escenarios de calidad](04-qa-scenarios.md) |
+| Documentos relacionados | [01 — Drivers](01-drivers-arquitectonicos.md), [04 — Escenarios de calidad](04-escenarios-de-calidad.md) |
 
 ## 1. Naturaleza de esta priorización
 
@@ -31,9 +31,9 @@ La prioridad sirve para resolver conflictos. Cuando dos atributos compiten, prev
 
 | Tensión | Resolución propuesta | Referencia |
 |---|---|---|
-| **Disponibilidad vs. integridad transaccional** | En las escrituras financieras prevalece la integridad: si el Core no está disponible, la operación falla de forma segura y no se encola a ciegas. En las lecturas puede prevalecer la disponibilidad, con datos de caché aprobados | [ADR-0005](adr/ADR-0005-transaction-state-machine.md), QA3 |
+| **Disponibilidad vs. integridad transaccional** | En las escrituras financieras prevalece la integridad: si el Core no está disponible, la operación falla de forma segura y no se encola a ciegas. En las lecturas puede prevalecer la disponibilidad, con datos de caché aprobados | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), QA3 |
 | **Rendimiento vs. consistencia** | La caché se define por categoría de dato. Los datos sensibles a la consistencia (saldo disponible, estado de una transacción) no se sirven desde la caché para decisiones transaccionales | [ADR-0004](adr/ADR-0004-cache-aside.md) |
-| **Mantenibilidad vs. duplicación** | Las ACL por dominio duplican parte de la lógica de integración. El Integration Platform SDK mitiga esa duplicación sin centralizar el comportamiento | [ADR-0001](adr/ADR-0001-domain-acl.md), [ADR-0003](adr/ADR-0003-integration-platform-sdk.md) |
+| **Mantenibilidad vs. duplicación** | Las ACL por dominio duplican parte de la lógica de integración. El Integration Platform SDK mitiga esa duplicación sin centralizar el comportamiento | [ADR-0001](adr/ADR-0001-acl-por-dominio.md), [ADR-0003](adr/ADR-0003-integration-platform-sdk.md) |
 | **Seguridad vs. experiencia de usuario** | Autenticación reforzada (*step-up*) solo en operaciones de alto riesgo. El mecanismo se decide en la fase de seguridad | QA4, DD-04 |
 | **Resiliencia vs. costo** | La estrategia de DR (activo-pasivo, activo-activo) se decide según los RTO y RPO validados, no por defecto | DD-09 |
 | **Auditabilidad vs. latencia** | La auditoría no debe bloquear la ruta crítica sin necesidad, pero tampoco puede perder eventos. El mecanismo se decide en la fase de contenedores | DD-01 |

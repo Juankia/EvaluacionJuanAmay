@@ -6,11 +6,11 @@
 | Fecha | 2026-10-27 |
 | Requisitos | R1, C2, C4, C5 |
 | Drivers y supuestos | S11; QA1; RR-01, RR-02 |
-| Relacionados | [ADR-0001](ADR-0001-domain-acl.md), [05 — Frontera de integración, sección 4](../05-core-integration-boundary.md#4-integration-platform-sdk) |
+| Relacionados | [ADR-0001](ADR-0001-acl-por-dominio.md), [05 — Frontera de integración, sección 4](../05-frontera-de-integracion-core.md#4-integration-platform-sdk) |
 
 ## Contexto
 
-La selección de ACL por dominio ([ADR-0001](ADR-0001-domain-acl.md)) genera duplicación de preocupaciones técnicas: correlación, trazas, manejo de errores técnicos, primitivas de resiliencia y clientes seguros. Una propuesta anterior las agrupaba en un «integration kernel». Ese nombre sugería un componente central con comportamiento propio.
+La selección de ACL por dominio ([ADR-0001](ADR-0001-acl-por-dominio.md)) genera duplicación de preocupaciones técnicas: correlación, trazas, manejo de errores técnicos, primitivas de resiliencia y clientes seguros. Una propuesta anterior las agrupaba en un «integration kernel». Ese nombre sugería un componente central con comportamiento propio.
 
 ## Problema
 
@@ -66,7 +66,7 @@ La selección de ACL por dominio ([ADR-0001](ADR-0001-domain-acl.md)) genera dup
 |---|---|---|
 | Sin elementos compartidos (cada ACL implementa todo) | Descartada | Máxima duplicación e inconsistencia en la observabilidad y en el manejo de errores |
 | «Integration kernel» con comportamiento y valores por defecto centralizados | Descartada | Tiende a convertirse en una «God Library» y en un acoplamiento central encubierto |
-| Servicio de integración centralizado | Descartada en este contexto | Ver [ADR-0001](ADR-0001-domain-acl.md), alternativa B |
+| Servicio de integración centralizado | Descartada en este contexto | Ver [ADR-0001](ADR-0001-acl-por-dominio.md), alternativa B |
 | *Sidecar* o *service mesh* para las preocupaciones de red | No decidida | Puede complementar al SDK (mTLS, reintentos de red), pero no conoce la semántica de las operaciones. Se evaluará en la fase de infraestructura. **No** debe aplicar reintentos sobre operaciones financieras |
 | **SDK con mecanismos y políticas locales** | **Seleccionada** | Reduce la duplicación y conserva la autonomía |
 
@@ -91,4 +91,4 @@ El SDK **mitiga** la duplicación; **no elimina** el costo arquitectónico de la
 - RR-02: el SDK se convierte en una «God Library».
 - RR-01: duplicación residual.
 
-Ver [11 — Riesgos residuales](../11-residual-risks.md).
+Ver [11 — Riesgos residuales](../11-riesgos-residuales.md).

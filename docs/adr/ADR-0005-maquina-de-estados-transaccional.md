@@ -6,11 +6,11 @@
 | Fecha | 2026-10-27 |
 | Requisitos | R1 (transferencias), R3, R4, C2 |
 | Drivers y supuestos | S3, S4, S13; AQ-02, AQ-05; QA3, QA5 |
-| Relacionados | [ADR-0006](ADR-0006-idempotency-reconciliation.md), [ADR-0009](ADR-0009-core-authoritative.md), [07 — Máquina de estados](../07-transaction-state-machine.md) |
+| Relacionados | [ADR-0006](ADR-0006-idempotencia-y-conciliacion.md), [ADR-0009](ADR-0009-core-autoritativo.md), [07 — Máquina de estados](../07-maquina-de-estados-transaccional.md) |
 
 ## Contexto
 
-Las transferencias propias e interbancarias implican invocaciones a sistemas externos: el Core y, para las interbancarias, el sistema de pagos (S13). Se asume que el Core no ofrece idempotencia nativa (S3). Un timeout no prueba que la operación haya fallado ([05, sección 6](../05-core-integration-boundary.md#6-regla-crítica-un-timeout-no-equivale-a-una-falla)). El onboarding también tiene pasos externos y un paso crítico: la creación del cliente en el Core.
+Las transferencias propias e interbancarias implican invocaciones a sistemas externos: el Core y, para las interbancarias, el sistema de pagos (S13). Se asume que el Core no ofrece idempotencia nativa (S3). Un timeout no prueba que la operación haya fallado ([05, sección 6](../05-frontera-de-integracion-core.md#6-regla-crítica-un-timeout-no-equivale-a-una-falla)). El onboarding también tiene pasos externos y un paso crítico: la creación del cliente en el Core.
 
 ## Problema
 
@@ -28,7 +28,7 @@ Las transferencias propias e interbancarias implican invocaciones a sistemas ext
    - **flujo principal:** `CREATED` → `VALIDATING` → `CORE_PROCESSING` → `SPI_PROCESSING` (solo interbancarias) → `COMPLETED`;
    - **estados de falla o excepción:** `FAILED`, `UNKNOWN`, `REQUIRES_RECONCILIATION`.
 3. El estado se **persiste antes** de cada invocación a un sistema externo crítico.
-4. **No se reintenta a ciegas** desde los estados con posible efecto financiero. El resultado incierto pasa a `UNKNOWN` y se resuelve por conciliación ([ADR-0006](ADR-0006-idempotency-reconciliation.md)).
+4. **No se reintenta a ciegas** desde los estados con posible efecto financiero. El resultado incierto pasa a `UNKNOWN` y se resuelve por conciliación ([ADR-0006](ADR-0006-idempotencia-y-conciliacion.md)).
 5. Si el Core no está disponible **antes** de la invocación, la operación **falla de forma segura**. **No se encola** una transacción financiera para ejecutarla después solo porque el Core no está disponible.
 6. Las compensaciones (por ejemplo, un reverso contable) se modelan como **estados explícitos, auditados y autorizados**, nunca como efectos implícitos.
 7. Toda transición se audita.
@@ -61,7 +61,7 @@ Las transferencias propias e interbancarias implican invocaciones a sistemas ext
 
 ## Consecuencias
 
-- El servicio de transferencias es el dueño de la orquestación de negocio, no el Gateway ([ADR-0002](ADR-0002-api-gateway-boundary.md)).
+- El servicio de transferencias es el dueño de la orquestación de negocio, no el Gateway ([ADR-0002](ADR-0002-frontera-api-gateway.md)).
 - La notificación definitiva al cliente solo se emite en estados terminales confirmados (R4).
 - Se requiere monitoreo de la antigüedad por estado y alertas para `UNKNOWN` y `REQUIRES_RECONCILIATION`.
 - La secuencia exacta de la transferencia interbancaria se define cuando se valide S13.

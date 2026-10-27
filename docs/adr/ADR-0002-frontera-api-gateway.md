@@ -6,7 +6,7 @@
 | Fecha | 2026-10-27 |
 | Requisitos | R1 |
 | Drivers y supuestos | AQ-01, AQ-03, AQ-08; QA1, QA4 |
-| Relacionados | [ADR-0001](ADR-0001-domain-acl.md), [ADR-0005](ADR-0005-transaction-state-machine.md), [05 — Frontera de integración, sección 8](../05-core-integration-boundary.md#8-interpretación-del-api-gateway) |
+| Relacionados | [ADR-0001](ADR-0001-acl-por-dominio.md), [ADR-0005](ADR-0005-maquina-de-estados-transaccional.md), [05 — Frontera de integración, sección 8](../05-frontera-de-integracion-core.md#8-interpretación-del-api-gateway) |
 
 ## Contexto
 
@@ -36,9 +36,9 @@ El API Gateway es una **frontera de tráfico y de fachada**. Provee:
 - protección de las API (validación de esquemas, límites de tamaño);
 - opcionalmente, composición liviana mediante un BFF (*Backend for Frontend*), si se justifica en la fase de contenedores (DD-10).
 
-La **orquestación de negocio** pertenece a los servicios de dominio y de aplicación. Por ejemplo, el servicio de transferencias decide según el tipo de transferencia qué sistema externo se invoca, mediante su máquina de estados ([ADR-0005](ADR-0005-transaction-state-machine.md)).
+La **orquestación de negocio** pertenece a los servicios de dominio y de aplicación. Por ejemplo, el servicio de transferencias decide según el tipo de transferencia qué sistema externo se invoca, mediante su máquina de estados ([ADR-0005](ADR-0005-maquina-de-estados-transaccional.md)).
 
-El Gateway puede tener **timeouts de infraestructura y de solicitud**. Los **plazos de negocio** pertenecen a la capa de dominio y se propagan ([05, sección 5](../05-core-integration-boundary.md#5-frontera-de-resiliencia)).
+El Gateway puede tener **timeouts de infraestructura y de solicitud**. Los **plazos de negocio** pertenecen a la capa de dominio y se propagan ([05, sección 5](../05-frontera-de-integracion-core.md#5-frontera-de-resiliencia)).
 
 ## Alternativas consideradas
 

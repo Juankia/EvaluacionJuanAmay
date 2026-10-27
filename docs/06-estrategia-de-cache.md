@@ -4,7 +4,7 @@
 |---|---|
 | Fase | 1. Se decide ahora porque el reto exige explícitamente un mecanismo de caché (R5) |
 | Estado | Patrón adoptado: **Cache-Aside**. La tecnología de caché se difiere (DD-07) |
-| ADR principales | [ADR-0004](adr/ADR-0004-cache-aside.md), [ADR-0008](adr/ADR-0008-event-driven-invalidation.md) |
+| ADR principales | [ADR-0004](adr/ADR-0004-cache-aside.md), [ADR-0008](adr/ADR-0008-invalidacion-por-eventos.md) |
 
 ## 1. Requisito del reto
 
@@ -59,7 +59,7 @@ Los valores de TTL **no se fijan en esta fase**. El TTL de seguridad de cada cat
 | **Saldo disponible** | Core | **Muy alta** | **Solo para visualización, con condiciones**; nunca para decisiones | Lectura desde el Core cuando es posible. Si se cachea para visualización: invalidación tras cualquier operación del cliente y garantía de «leer lo propio» (*read-your-writes*) en la sesión | `AccountBalanceChanged` (conceptual) e invalidación inmediata tras una transferencia propia | Decisión de negocio: mostrar el último saldo conocido con fecha y hora, o no mostrarlo. Por defecto, no mostrarlo como saldo disponible actual |
 | Movimientos recientes | Core | Alta: el cliente espera ver su última operación | **Condicional** | Cache-Aside paginado con TTL de seguridad `TTL_SEG_MOVIMIENTOS` e invalidación tras operaciones propias (*read-your-writes*) | Evento de nuevo movimiento en la cuenta | Sí, con indicador de frescura explícito |
 | Movimientos históricos (periodos cerrados) | Core | Baja: los periodos cerrados no deberían cambiar, salvo reversos | **Sí** | Cache-Aside con TTL de seguridad más amplio `TTL_SEG_HISTORICO` | Evento de reverso o ajuste, si existe | Sí |
-| **Estado de una transacción** | Máquina de estados de la plataforma y Core | **Muy alta** | **No** en la caché de consulta | Se lee desde el almacén durable de la máquina de estados ([07](07-transaction-state-machine.md)) | No aplica | Se lee del almacén propio de la plataforma |
+| **Estado de una transacción** | Máquina de estados de la plataforma y Core | **Muy alta** | **No** en la caché de consulta | Se lee desde el almacén durable de la máquina de estados ([07](07-maquina-de-estados-transaccional.md)) | No aplica | Se lee del almacén propio de la plataforma |
 | **Credenciales, OTP, códigos de verificación, secretos de sesión** | IdP o servicio de autenticación | Seguridad | **Nunca** en esta caché | No aplica | No aplica | No aplica |
 | **Plantillas o secretos biométricos** | Proveedor biométrico o almacén seguro designado | Seguridad (dato sensible) | **Nunca** en esta capa | No aplica | No aplica | No aplica |
 | Tokens de acceso | IdP | Seguridad | **No** en la caché de datos de negocio. Una caché de validación de tokens en el Gateway, si existe, es una decisión de la fase de seguridad | No aplica | No aplica | No aplica |
@@ -87,7 +87,7 @@ Se invalidan las entradas de caché afectadas (saldo y movimientos de esa cuenta
 
 ### 4.3 Lo que no se decide en esta fase
 
-- **No se selecciona la tecnología del bus de eventos.** Kafka, Amazon MSK, Azure Service Bus, Event Hubs u otras alternativas se evaluarán en la fase de infraestructura y plataforma, solo si los requisitos asíncronos se confirman (DD-01, [ADR-0008](adr/ADR-0008-event-driven-invalidation.md)).
+- **No se selecciona la tecnología del bus de eventos.** Kafka, Amazon MSK, Azure Service Bus, Event Hubs u otras alternativas se evaluarán en la fase de infraestructura y plataforma, solo si los requisitos asíncronos se confirman (DD-01, [ADR-0008](adr/ADR-0008-invalidacion-por-eventos.md)).
 - **No se asume que el Core emite eventos.** Si el Core no publica cambios (por ejemplo, depósitos en ventanilla), la plataforma solo puede invalidar con certeza lo que ella misma origina. Para los cambios externos, el TTL de seguridad es el mecanismo principal (RR-05).
 
 ### 4.4 Estrategias de respaldo

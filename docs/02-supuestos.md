@@ -4,7 +4,7 @@
 |---|---|
 | Fase | 0 — Drivers, supuestos y escenarios de calidad |
 | Estado | Cerrado. Cada supuesto está pendiente de validación con la institución |
-| Documentos relacionados | [01 — Drivers](01-architecture-drivers.md), [11 — Riesgos residuales](11-residual-risks.md) |
+| Documentos relacionados | [01 — Drivers](01-drivers-arquitectonicos.md), [11 — Riesgos residuales](11-riesgos-residuales.md) |
 
 ## 1. Propósito
 
@@ -16,21 +16,21 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 
 - **Enunciado:** el Core Bancario es un sistema heredado o existente. Desde la perspectiva de la Plataforma de Banca Digital es un **sistema externo**: la plataforma no lo diseña, no lo modifica y no controla su ciclo de liberaciones.
 - **Base:** el reto describe el Core como una fuente de información existente y no pide rediseñarlo.
-- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-domain-acl.md), [ADR-0009](adr/ADR-0009-core-authoritative.md).
+- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-acl-por-dominio.md), [ADR-0009](adr/ADR-0009-core-autoritativo.md).
 - **Validación:** confirmar con la institución el producto y la versión del Core, su propietario y su proceso de cambio.
 
 ### S2 — El Core es la fuente autoritativa del dato transaccional
 
 - **Enunciado:** el Core es la **fuente autoritativa** (*source of truth*) de los datos transaccionales de clientes, cuentas, saldos y movimientos. Cualquier copia en la plataforma digital (caché o proyección) es derivada y prevalece siempre el Core.
 - **Base:** el reto indica que el Core contiene los «datos básicos, productos, cuentas, movimientos».
-- **Decisiones afectadas:** [ADR-0004](adr/ADR-0004-cache-aside.md), [ADR-0007](adr/ADR-0007-cqrs-deferred.md), [ADR-0009](adr/ADR-0009-core-authoritative.md).
+- **Decisiones afectadas:** [ADR-0004](adr/ADR-0004-cache-aside.md), [ADR-0007](adr/ADR-0007-cqrs-diferido.md), [ADR-0009](adr/ADR-0009-core-autoritativo.md).
 - **Validación:** confirmar que no existen otros sistemas autoritativos para alguno de esos datos (por ejemplo, un sistema separado de tarjetas o de créditos).
 
 ### S3 — Interfaces heredadas del Core y ausencia de idempotencia nativa
 
 - **Enunciado:** el Core **podría** exponer interfaces heredadas SOAP o REST (u otras: mensajería, archivos, conectores propietarios). También **podría** no ofrecer idempotencia nativa ni búsqueda de operaciones por clave de idempotencia (*idempotency-key lookup*).
 - **Base:** supuesto conservador típico de los Core Bancarios heredados. **El reto no lo menciona.**
-- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-domain-acl.md), [ADR-0005](adr/ADR-0005-transaction-state-machine.md), [ADR-0006](adr/ADR-0006-idempotency-reconciliation.md).
+- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-acl-por-dominio.md), [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md).
 - **Validación:** revisar el catálogo de servicios del Core y confirmar:
   1. el protocolo de cada operación;
   2. si acepta una referencia externa única por transacción;
@@ -42,27 +42,27 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 
 - **Enunciado:** el Core **podría** tener latencia variable, ventanas de mantenimiento, procesos de cierre diario (*batch*) y una capacidad limitada de conexiones concurrentes. Debe protegerse del tráfico no controlado de los canales digitales.
 - **Base:** supuesto conservador. El reto no lo indica.
-- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-domain-acl.md), [ADR-0003](adr/ADR-0003-integration-platform-sdk.md), [ADR-0004](adr/ADR-0004-cache-aside.md), [ADR-0007](adr/ADR-0007-cqrs-deferred.md).
+- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-acl-por-dominio.md), [ADR-0003](adr/ADR-0003-integration-platform-sdk.md), [ADR-0004](adr/ADR-0004-cache-aside.md), [ADR-0007](adr/ADR-0007-cqrs-diferido.md).
 - **Validación:** obtener el SLA del Core, las ventanas de mantenimiento, los límites de concurrencia y la latencia observada por operación.
 
 ### S5 — El sistema complementario es una dependencia externa
 
 - **Enunciado:** el sistema complementario de datos extendidos del cliente es una **dependencia externa**, con su propio propietario y ciclo de vida.
 - **Base:** el reto lo describe como una de las dos fuentes de información del cliente.
-- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-domain-acl.md), [ADR-0009](adr/ADR-0009-core-authoritative.md).
+- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-acl-por-dominio.md), [ADR-0009](adr/ADR-0009-core-autoritativo.md).
 - **Validación:** confirmar sus interfaces, su disponibilidad y qué datos son autoritativos en él y no en el Core.
 
 ### S6 — El modelo interno del Core no se expone a los canales
 
 - **Enunciado:** la plataforma **no debe** exponer a los canales digitales el modelo de datos interno del Core: códigos de producto, estructuras de registros heredadas, códigos de error propietarios. Los canales consumen el modelo de dominio de la banca digital.
 - **Base:** principio arquitectónico de aislamiento. Es un supuesto de diseño, no un requisito del reto.
-- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-domain-acl.md).
+- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-acl-por-dominio.md).
 
 ### S7 — Posible incorporación de otro Core u otra implementación
 
 - **Enunciado:** la institución **podría** necesitar en el futuro otro Core o una implementación alternativa de la misma capacidad de negocio. Por ejemplo: una migración de Core, un Core para una línea de producto o un servicio externo especializado.
 - **Base:** supuesto de evolución. El reto pide que la arquitectura permita «agregar nuevos componentes sin impactar los existentes» (C5).
-- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-domain-acl.md). Riesgo RR-07.
+- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-acl-por-dominio.md). Riesgo RR-07.
 - **Validación:** consultar la hoja de ruta tecnológica de la institución.
 
 ### S8 — La residencia de datos depende de validación legal
@@ -73,7 +73,7 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
   - las políticas de cumplimiento de la institución;
   - la validación del área legal.
 - **Aclaración:** los mecanismos de otras jurisdicciones, como las cláusulas contractuales tipo (*Standard Contractual Clauses*, SCC) del Reglamento General de Protección de Datos de la Unión Europea, **no son por sí mismos un requisito legal ecuatoriano**. Pueden mencionarse solo como referencia comparativa.
-- **Decisiones afectadas:** [ADR-0010](adr/ADR-0010-data-residency.md).
+- **Decisiones afectadas:** [ADR-0010](adr/ADR-0010-residencia-de-datos.md).
 - **Validación:** opinión del área legal y de cumplimiento de la institución.
 
 ### S9 — No existe un proveedor de identidad moderno para clientes
@@ -86,28 +86,28 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 ### S10 — Las cifras de capacidad y continuidad no están especificadas
 
 - **Enunciado:** el reto no indica TPS, número de clientes, perfil de tráfico (picos por quincena, fin de mes o días feriados), objetivos de latencia, RTO (*Recovery Time Objective*, tiempo objetivo de recuperación) ni RPO (*Recovery Point Objective*, punto objetivo de recuperación). Todos estos valores se tratan como **supuestos u objetivos** hasta validarlos.
-- **Decisiones afectadas:** [04 — Escenarios de calidad](04-qa-scenarios.md), [ADR-0007](adr/ADR-0007-cqrs-deferred.md), decisión diferida DD-09.
+- **Decisiones afectadas:** [04 — Escenarios de calidad](04-escenarios-de-calidad.md), [ADR-0007](adr/ADR-0007-cqrs-diferido.md), decisión diferida DD-09.
 - **Validación:** métricas históricas de los canales actuales, proyecciones de negocio y análisis de impacto al negocio (*Business Impact Analysis*, BIA).
 
 ### S11 — Madurez de la organización de ingeniería
 
 - **Enunciado:** la opción arquitectónica seleccionada (ACL por dominio) supone una organización de ingeniería con madurez suficiente. Esa organización tiene equipos o responsables por dominio, y la evolución independiente de cada dominio aporta valor.
 - **Contrapunto explícito:** si el equipo tuviera solo 1–2 ingenieros y la complejidad de integración fuera baja, un servicio de integración centralizado podría ser **económicamente preferible**.
-- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-domain-acl.md), [ADR-0003](adr/ADR-0003-integration-platform-sdk.md).
+- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-acl-por-dominio.md), [ADR-0003](adr/ADR-0003-integration-platform-sdk.md).
 - **Validación:** conocer la estructura y el tamaño del equipo que construirá y operará la plataforma.
 
 ### S12 — La plataforma no accede directamente a la base de datos principal
 
 - **Enunciado:** el reto indica que el Core y el sistema complementario «están conectados a una base de datos principal». Se asume que la plataforma digital **no accede directamente** a esa base de datos y que se integra solo mediante las interfaces de los sistemas.
-- **Base:** supuesto de diseño. El acceso directo a la base de datos de un sistema autoritativo salta sus reglas de negocio y acopla la plataforma a su esquema interno (ver alternativa A en [05](05-core-integration-boundary.md)).
-- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-domain-acl.md), [ADR-0009](adr/ADR-0009-core-authoritative.md).
+- **Base:** supuesto de diseño. El acceso directo a la base de datos de un sistema autoritativo salta sus reglas de negocio y acopla la plataforma a su esquema interno (ver alternativa A en [05](05-frontera-de-integracion-core.md)).
+- **Decisiones afectadas:** [ADR-0001](adr/ADR-0001-acl-por-dominio.md), [ADR-0009](adr/ADR-0009-core-autoritativo.md).
 - **Validación:** confirmar con la institución que existen interfaces de servicio suficientes para todas las consultas requeridas.
 
 ### S13 — Las transferencias interbancarias usan el sistema de pagos nacional
 
 - **Enunciado:** las transferencias interbancarias se liquidan a través del sistema de pagos administrado por el Banco Central del Ecuador. En este documento se le llama de forma genérica **SPI**. La plataforma no se conecta directamente con él: lo hace mediante el Core o mediante el componente que la institución use hoy.
 - **Base:** el reto indica que las transferencias invocan «servicios externos según el tipo». El mecanismo exacto no se especifica.
-- **Decisiones afectadas:** [ADR-0005](adr/ADR-0005-transaction-state-machine.md).
+- **Decisiones afectadas:** [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md).
 - **Validación:** confirmar con la institución el mecanismo de participación en el sistema de pagos, los horarios y ciclos de compensación, y quién origina el mensaje de pago.
 
 ### S14 — El fundamento normativo de la notificación no está verificado

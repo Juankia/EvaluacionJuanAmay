@@ -18,7 +18,7 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Campo | Descripción |
 |---|---|
 | Riesgo | Cada ACL reimplementa preocupaciones similares (mapeo de errores, configuración de clientes, pruebas). Las implementaciones divergen |
-| Origen | [ADR-0001](adr/ADR-0001-domain-acl.md) |
+| Origen | [ADR-0001](adr/ADR-0001-acl-por-dominio.md) |
 | Impacto | Medio. Más esfuerzo de mantenimiento y comportamiento inconsistente ante fallas |
 | Mitigación | Integration Platform SDK para los mecanismos comunes. Catálogo de políticas por ACL revisado en el gobierno de arquitectura. Plantilla de referencia para las nuevas ACL |
 | Riesgo residual | Medio-bajo. El SDK mitiga la duplicación pero no la elimina |
@@ -51,7 +51,7 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Campo | Descripción |
 |---|---|
 | Riesgo | Si el Core no permite consultar por clave o por referencia externa (S3), la conciliación de las operaciones `UNKNOWN` depende de la correlación de negocio, que es probabilística |
-| Origen | [ADR-0006](adr/ADR-0006-idempotency-reconciliation.md) |
+| Origen | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) |
 | Impacto | Alto. Una conciliación errónea puede marcar como fallida una operación aplicada (riesgo de duplicación si el cliente la repite) o al revés |
 | Mitigación | Las coincidencias ambiguas no se resuelven automáticamente (`REQUIRES_RECONCILIATION`). Tiempo de asentamiento antes de concluir «sin coincidencia». Inhibición de operaciones equivalentes mientras otra está en `UNKNOWN`. Conciliación diaria de segunda línea. **Validación prioritaria del supuesto S3** |
 | Riesgo residual | Medio. **La correlación de negocio no ofrece las mismas garantías que la idempotencia nativa** |
@@ -62,7 +62,7 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Campo | Descripción |
 |---|---|
 | Riesgo | Un evento de invalidación se pierde o se retrasa, o el Core no emite eventos de cambios externos a la plataforma. El cliente ve datos desactualizados |
-| Origen | [ADR-0004](adr/ADR-0004-cache-aside.md), [ADR-0008](adr/ADR-0008-event-driven-invalidation.md) |
+| Origen | [ADR-0004](adr/ADR-0004-cache-aside.md), [ADR-0008](adr/ADR-0008-invalidacion-por-eventos.md) |
 | Impacto | Medio. Confusión del cliente y reclamos; no afecta la integridad, porque las decisiones transaccionales no usan la caché |
 | Mitigación | TTL de seguridad por categoría. Invalidación síncrona local tras las operaciones propias. *Read-your-writes* en la sesión. Indicador de frescura. No se cachea el saldo para decisiones |
 | Riesgo residual | Bajo-medio |
@@ -73,7 +73,7 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Campo | Descripción |
 |---|---|
 | Riesgo | La región cloud, los proveedores de KYC y biometría o las transferencias internacionales de datos resultan incompatibles con la legislación o con las políticas de la institución |
-| Origen | [ADR-0010](adr/ADR-0010-data-residency.md), S8 |
+| Origen | [ADR-0010](adr/ADR-0010-residencia-de-datos.md), S8 |
 | Impacto | Alto. Puede invalidar la selección de infraestructura y de proveedores |
 | Mitigación | La arquitectura lógica (Fases 0–2) es independiente de la región. La decisión de región se condiciona a la validación legal |
 | Riesgo residual | Alto hasta obtener la validación legal |
@@ -95,7 +95,7 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Campo | Descripción |
 |---|---|
 | Riesgo | La máquina de estados durable agrega persistencia, procesos de avance, conciliación y operación manual. Pueden aparecer errores de implementación (transiciones inválidas, operaciones atascadas) |
-| Origen | [ADR-0005](adr/ADR-0005-transaction-state-machine.md) |
+| Origen | [ADR-0005](adr/ADR-0005-maquina-de-estados-transaccional.md) |
 | Impacto | Medio |
 | Mitigación | Modelo explícito de estados y transiciones válidas. Pruebas basadas en el modelo. Monitoreo de la antigüedad por estado. Procedimientos operativos para `REQUIRES_RECONCILIATION` |
 | Riesgo residual | Bajo-medio. Es el costo aceptado frente al riesgo mayor de no modelar `UNKNOWN` |

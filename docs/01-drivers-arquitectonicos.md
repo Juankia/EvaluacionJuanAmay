@@ -4,7 +4,7 @@
 |---|---|
 | Fase | 0 — Drivers, supuestos y escenarios de calidad |
 | Estado | Cerrado. Pendiente de revisión del comité |
-| Documentos relacionados | [02 — Supuestos](02-assumptions.md), [03 — Atributos de calidad](03-quality-attributes.md), [09 — Trazabilidad](09-requirement-traceability.md) |
+| Documentos relacionados | [02 — Supuestos](02-supuestos.md), [03 — Atributos de calidad](03-atributos-de-calidad.md), [09 — Trazabilidad](09-trazabilidad-de-requisitos.md) |
 
 ## 1. Propósito
 
@@ -49,7 +49,7 @@ La información del cliente proviene de dos fuentes, ambas conectadas a una base
 
 ## 4. Drivers de calidad
 
-El reto no prioriza los atributos de calidad. La siguiente priorización es una **propuesta del equipo de arquitectura**, y su justificación detallada está en [03 — Atributos de calidad](03-quality-attributes.md).
+El reto no prioriza los atributos de calidad. La siguiente priorización es una **propuesta del equipo de arquitectura**, y su justificación detallada está en [03 — Atributos de calidad](03-atributos-de-calidad.md).
 
 | Atributo | Prioridad propuesta | Vínculo con el reto |
 |---|---|---|
@@ -79,4 +79,4 @@ El reto no prioriza los atributos de calidad. La siguiente priorización es una 
 
 ## 6. Drivers que todavía no se pueden cuantificar
 
-El reto no especifica volumen de transacciones por segundo (TPS), número de clientes, perfil de tráfico, objetivos de latencia, RTO ni RPO. Estos valores se tratan como **supuestos u objetivos por validar** (S10) y aparecen parametrizados en los [escenarios de calidad](04-qa-scenarios.md). Ningún documento de este repositorio los presenta como requisitos confirmados.
+El reto no especifica volumen de transacciones por segundo (TPS), número de clientes, perfil de tráfico, objetivos de latencia, RTO ni RPO. Estos valores se tratan como **supuestos u objetivos por validar** (S10) y aparecen parametrizados en los [escenarios de calidad](04-escenarios-de-calidad.md). Ningún documento de este repositorio los presenta como requisitos confirmados.

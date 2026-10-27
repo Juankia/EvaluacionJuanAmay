@@ -4,11 +4,11 @@
 |---|---|
 | Fase | 1. Modelo conceptual |
 | Estado | Adoptado |
-| ADR principal | [ADR-0006](adr/ADR-0006-idempotency-reconciliation.md) |
+| ADR principal | [ADR-0006](adr/ADR-0006-idempotencia-y-conciliacion.md) |
 
 ## 1. Problema
 
-Se asume que el Core no ofrece idempotencia nativa ni consulta por clave de idempotencia (S3). En ese caso, un reintento de una operación crítica después de un timeout puede **duplicar el efecto financiero**. A la vez, un timeout no prueba que la operación haya fallado ([05](05-core-integration-boundary.md)). La plataforma necesita:
+Se asume que el Core no ofrece idempotencia nativa ni consulta por clave de idempotencia (S3). En ese caso, un reintento de una operación crítica después de un timeout puede **duplicar el efecto financiero**. A la vez, un timeout no prueba que la operación haya fallado ([05](05-frontera-de-integracion-core.md)). La plataforma necesita:
 
 1. evitar que ella misma procese dos veces la misma intención del cliente;
 2. determinar el resultado real de las operaciones con resultado desconocido.
@@ -77,7 +77,7 @@ Si el Core no ofrece consulta por clave o por referencia externa, la conciliaci�
 - Depende de que el Core **muestre el movimiento a tiempo**. Si el Core lo asienta tarde, una conclusión de «sin coincidencia» puede ser errónea.
 - Su exactitud depende de la calidad de los campos disponibles en el Core.
 
-Esta limitación se registra como riesgo residual **RR-04** ([11](11-residual-risks.md)). La mitigación más eficaz es **validar el supuesto S3**: si el Core acepta y permite consultar una referencia externa única, la conciliación pasa a ser determinista.
+Esta limitación se registra como riesgo residual **RR-04** ([11](11-riesgos-residuales.md)). La mitigación más eficaz es **validar el supuesto S3**: si el Core acepta y permite consultar una referencia externa única, la conciliación pasa a ser determinista.
 
 ## 5. Mitigaciones complementarias
 
@@ -87,4 +87,4 @@ Esta limitación se registra como riesgo residual **RR-04** ([11](11-residual-ri
 
 ## 6. Onboarding
 
-En la creación del cliente en el Core, la idempotencia es **obligatoria**. La conciliación se basa en el identificador de persona: antes de cualquier reintento se verifica si el cliente ya existe en el Core ([07, sección 4](07-transaction-state-machine.md#4-máquina-de-estados-de-onboarding-conceptual)).
+En la creación del cliente en el Core, la idempotencia es **obligatoria**. La conciliación se basa en el identificador de persona: antes de cualquier reintento se verifica si el cliente ya existe en el Core ([07, sección 4](07-maquina-de-estados-transaccional.md#4-máquina-de-estados-de-onboarding-conceptual)).

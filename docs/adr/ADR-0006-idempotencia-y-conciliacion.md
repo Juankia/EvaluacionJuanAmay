@@ -6,7 +6,7 @@
 | Fecha | 2026-10-27 |
 | Requisitos | R1 (transferencias), R3, C2 |
 | Drivers y supuestos | S3; AQ-02; QA3, QA5 |
-| Relacionados | [ADR-0005](ADR-0005-transaction-state-machine.md), [08 — Idempotencia y conciliación](../08-idempotency-and-reconciliation.md) |
+| Relacionados | [ADR-0005](ADR-0005-maquina-de-estados-transaccional.md), [08 — Idempotencia y conciliación](../08-idempotencia-y-conciliacion.md) |
 
 ## Contexto
 
