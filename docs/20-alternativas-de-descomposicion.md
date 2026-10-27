@@ -70,3 +70,23 @@ Se selecciona **B. Arquitectura híbrida** ([ADR-0012](adr/ADR-0012-descomposici
 - El equipo es de 1–2 ingenieros → reevaluar A.
 - Divergencia de capacidad o de responsables entre cliente y movimientos → dividir el servicio de consultas.
 - Activación de CQRS (ADR-0007) → posible contenedor de proyección.
+
+## 6. Actualización de la remediación de ARG-02 (ARG02-M07, L03)
+
+ARG-02 recalculó la matriz con cinco variantes:
+
+| Escenario | A | B | C |
+|---|---|---|---|
+| Pesos originales | 3,27 | 4,15 | 3,13 |
+| Pesos iguales | 3,25 | 4,00 | 3,25 |
+| Doble conteo corregido (A con integridad 5) | 3,42 | 4,15 | 3,13 |
+| B con complejidad y costo 2 | 3,27 | 4,00 | 3,13 |
+| Equipo pequeño | 3,59 | 4,00 | 2,84 |
+| **Combinado adverso** | **3,72** | **3,76** | 2,84 |
+
+**Conclusión corregida:** B **no es incuestionablemente superior**. En el escenario combinado adverso (equipo pequeño, complejidad real de 21 contenedores, IdP autohospedado) es **prácticamente equivalente** a A.
+
+- La selección de B se **mantiene** porque gana en todos los escenarios y aísla mejor el estado financiero.
+- Queda **condicionada** a Q-18 (tamaño y capacidades del equipo), que pasa a ser una **dependencia explícita de la decisión** antes de la implementación.
+- Si Q-18 indica un equipo pequeño, se reevalúa ADR-0012 hacia un monolito modular con la misma separación lógica (módulos, ACL internas, almacenes lógicos), lo que conservaría la mayor parte del diseño de componentes.
+- Los criterios «dependencia del Core» e «integridad transaccional» están correlacionados (ARG02-L03). El escenario «doble conteo corregido» muestra que la conclusión no depende de esa correlación.

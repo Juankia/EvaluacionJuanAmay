@@ -219,7 +219,7 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Origen | Verificación acotada de la Fase 3, V-3 a V-5 ([23](23-riesgos-y-condiciones-fase-3.md)) |
 | Impacto | **Alto**: duplicación financiera originada en la plataforma |
 | Mitigación | PT-01 (RPO 0 de las escrituras confirmadas), PT-02 (cuarentena), PT-03 (escritor único) en [ADR-0016](adr/ADR-0016-persistencia-y-durabilidad-del-estado.md) |
-| Riesgo residual | Alto hasta verificar PT-01 a PT-03 en la infraestructura |
+| Riesgo residual | Alto hasta verificar PT-01 a PT-03 en la infraestructura. *Actualización ARG-02:* ARG02-C01 mostró que PT-01 y PT-02 no cubrían la DR regional. Con ADR-0021 (diario independiente y PT-07/PT-08), el residual queda en **medio**, condicionado a DD-23 |
 | Disparador de reevaluación | Diseño de infraestructura y de DR; simulacros |
 
 ### RR-20 — Complejidad operativa de la arquitectura híbrida
@@ -243,6 +243,50 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | Mitigación | Despliegue multizona, base de datos replicada, endurecimiento y monitoreo; evaluar un IdP gestionado dentro del entorno de la institución en la fase de seguridad |
 | Riesgo residual | Medio-alto hasta la fase de seguridad y de infraestructura |
 | Disparador de reevaluación | Selección del producto de IdP |
+
+### RR-22 — Dependencia de la red plataforma–Core
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | La red hacia el Core (de ubicación desconocida, S21) es un dominio de falla común y el factor dominante de la latencia |
+| Origen | ARG02-H05 |
+| Impacto | Alto |
+| Mitigación | Registro de S21 y Q-20; enlaces redundantes en cualquier modelo; timeouts que distinguen la conexión de la lectura |
+| Riesgo residual | Alto hasta responder Q-20 |
+| Disparador de reevaluación | Respuesta a Q-20 |
+
+### RR-23 — Disponibilidad ligada a la auditoría
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Las acciones con falla cerrada (A1 a A4, A6) no se ejecutan si no hay evidencia durable |
+| Origen | [ADR-0020](adr/ADR-0020-politica-de-auditoria-por-categoria.md) |
+| Impacto | Medio |
+| Mitigación | Doble ruta durable para A4 y A5; outbox local para A1, A3 y A6 |
+| Riesgo residual | Bajo-medio |
+| Disparador de reevaluación | Respuesta a Q-19 |
+
+### RR-24 — Corrección y disponibilidad del diario de despacho
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Un defecto o una indisponibilidad del diario detiene los despachos o, si su semántica no es la requerida, compromete INV-DR |
+| Origen | [ADR-0021](adr/ADR-0021-diario-de-autorizacion-de-despacho.md) |
+| Impacto | Alto |
+| Mitigación | Requisitos de linealizabilidad y quórum (DD-23); falla cerrada; validación de la semántica antes de la implementación |
+| Riesgo residual | Medio |
+| Disparador de reevaluación | Selección de DD-23 |
+
+### RR-25 — Disponibilidad de la web ligada al almacén de sesiones
+
+| Campo | Descripción |
+|---|---|
+| Riesgo | Si cae el almacén de sesiones, los usuarios web deben volver a iniciar sesión |
+| Origen | [ADR-0019](adr/ADR-0019-sesiones-del-bff.md) |
+| Impacto | Medio |
+| Mitigación | Alta disponibilidad gestionada; el canal móvil no se ve afectado |
+| Riesgo residual | Bajo-medio |
+| Disparador de reevaluación | Incidentes |
 
 ## 3. Resumen
 
@@ -269,3 +313,7 @@ Escala de impacto: **Alto**, **Medio**, **Bajo**.
 | RR-19 | Durabilidad del almacén transaccional y restauración | Alto | Alto |
 | RR-20 | Complejidad operativa de la arquitectura híbrida | Medio | Medio |
 | RR-21 | IdP interno como componente crítico | Medio-alto | Medio-alto |
+| RR-22 | Dependencia de la red plataforma–Core | Alto | Alto |
+| RR-23 | Disponibilidad ligada a la auditoría | Medio | Bajo-medio |
+| RR-24 | Corrección y disponibilidad del diario de despacho | Alto | Medio |
+| RR-25 | Disponibilidad de la web ligada al almacén de sesiones | Medio | Bajo-medio |

@@ -244,3 +244,7 @@ Las compensaciones financieras no siempre son seguras ni posibles. El caso domin
 - **RR-16:** reverso no posible por la vía automática.
 - **RR-17:** operaciones sin resolución concluyente (vivacidad y carga manual).
 - **RR-18:** ejecución tardía única de un ejecutor zombi.
+
+## Nota de la remediación de ARG-02
+
+La secuencia de ejecución de §4.2 incorpora el paso **3b** de [ADR-0021](ADR-0021-diario-de-autorizacion-de-despacho.md): anexar y confirmar por quórum la entrada en el diario de autorización de despacho antes de enviar. Si la anexión falla o es incierta, no se envía. El invariante **INV-DR** («ninguna operación se despacha automáticamente de nuevo cuando no puede excluirse de forma fiable una ejecución previa») se agrega a los de §6. Esta nota **no modifica** los demás invariantes; el protocolo sigue pendiente de verificación independiente.

@@ -185,6 +185,32 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | Respuesta | La operación permanece en `CORE_UNKNOWN` o `REQUIRES_RECONCILIATION`, con las operaciones equivalentes bloqueadas. Si aparece antes del cierre, se resuelve con EV-POS. Si aparece después de `CLOSED_BY_EXCEPTION`, se abre un caso de efecto tardío |
 | Medida | 0 cierres o reenvíos basados en EV-INC. El 100 % de los efectos tardíos detectados en `VENTANA_VIGILANCIA_EFECTO_TARDIO` genera un caso vinculado. **No se mide ni se garantiza el tiempo de resolución** (depende del Core y de la revisión manual), pero sí que el caso llegue a un responsable en `T_RESOLUCION_UNKNOWN` + `T_RESOLUCION_MANUAL` |
 
+### QA14 — Integridad transaccional: reenvío del cliente tras una conmutación regional
+
+*Agregado en la remediación de ARG-02 (ARG02-C01).*
+
+| Parte | Descripción |
+|---|---|
+| Fuente | Desastre en la región primaria; cliente que reenvía |
+| Estímulo | Conmutación a la región secundaria con replicación asíncrona; se perdieron reservas y permisos recientes; el cliente reenvía una transferencia con la misma clave |
+| Artefacto | Diario de autorización de despacho, protocolo de recuperación con marca de agua ([ADR-0021](adr/ADR-0021-diario-de-autorizacion-de-despacho.md)) |
+| Entorno | Recuperación ante desastres |
+| Respuesta | Cuarentena (sin iniciaciones ni permisos); época incrementada; reconstrucción de las operaciones anotadas en el diario como `*_UNKNOWN`; el reenvío recibe «en verificación». Una clave sin entrada en el diario se trata como nueva solo después de la cuarentena |
+| Medida | **0 segundos despachos** de operaciones anotadas en el diario (INV-DR). El 100 % de las entradas del diario posteriores a la marca de agua se reconstruye antes de salir de la cuarentena. La salida de la cuarentena requiere la verificación automática y la autorización de dos personas |
+
+### QA15 — Disponibilidad: auditoría de consultas con una ruta caída
+
+*Agregado en la remediación de ARG-02 (ARG02-H03).*
+
+| Parte | Descripción |
+|---|---|
+| Fuente | Infraestructura |
+| Estímulo | La BD de consultas (outbox) o el broker no están disponibles |
+| Artefacto | Política de auditoría A4 y A5 ([ADR-0020](adr/ADR-0020-politica-de-auditoria-por-categoria.md)) |
+| Entorno | Operación normal |
+| Respuesta | La consulta se responde si **una** de las dos rutas durables confirma el evento de auditoría. Si fallan ambas, la consulta no se responde y se alerta |
+| Medida | Ninguna consulta respondida sin evidencia durable. Disponibilidad de las consultas ante la falla de una sola ruta ≥ `DISP_FUNC_NO_AFECTADAS` |
+
 ## 3. Registro de parámetros
 
 | Parámetro | Descripción | Estado | Fuente para fijarlo |
@@ -209,5 +235,9 @@ En esta fase **ningún parámetro está validado**. El registro está en la secc
 | `LEASE_DURACION`, `MAX_DESFASE_ENVIO` | Duración del arrendamiento de titularidad y desfase máximo entre el permiso y el envío | Objetivo propuesto (se calibra en pruebas) | Ingeniería (CF-02) |
 | `PLAZO_VALIDEZ_INTENCION` | Vigencia de la intención del cliente para conceder el permiso de envío | Por acordar | Negocio y experiencia de usuario (CF-02, R2-N03) |
 | `PLAZO_CIERRE_EXCEPCIONAL`, `VENTANA_VIGILANCIA_EFECTO_TARDIO` | Plazo mínimo antes del cierre excepcional y ventana de vigilancia de efectos tardíos | Por acordar | Operaciones, riesgo operativo y propietario del Core (CF-01) |
+| `SESION_INACTIVIDAD`, `SESION_ABSOLUTA`, `VIDA_ACCESS_TOKEN`, `ROTACION_CLAVES_FIRMA` | Sesiones y tokens | Por acordar | Seguridad de la información (ADR-0019, ADR-0013) |
+| `MAX_VINCULACIONES_POR_HORA` | Límite de la operación de vinculación | Por acordar | Seguridad y canales (ARG02-H04) |
+| `T_MAX_RETRASO_AUDITORIA`, `TTL_CONTACTO` | Retraso máximo de la auditoría; caché de contactos | Por acordar | Auditoría; canales |
+| `SESIONES_MAX_CORE` | Sesiones o conexiones máximas hacia el Core | Por acordar | Propietario del Core (RI-08) |
 | `T_CONSULTA_AUDITORIA` | Tiempo de respuesta de una consulta de auditoría | Por acordar | Auditoría y cumplimiento |
 | RTO, RPO | Objetivos de recuperación | Por acordar | BIA (DD-09) |

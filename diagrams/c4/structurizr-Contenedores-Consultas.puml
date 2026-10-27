@@ -130,7 +130,7 @@ rectangle "Plataforma de Banca Digital\n<size:15>[Sistema de software]</size>" <
   rectangle "==SPA web\n<size:15>[Contenedor: React + TypeScript]</size>\n\nAplicación de página única para la banca web: consultas y transferencias. No conserva tokens OAuth en el navegador (sesión gestionada por el BFF)." <<Element-RWxlbWVudCxDb250YWluZXIsTmF2ZWdhZG9y>> as PlataformadeBancaDigital.SPAweb
   rectangle "==Aplicación móvil\n<size:15>[Contenedor: React Native + TypeScript (recomendado, ADR-0018)]</size>\n\nAplicación multiplataforma para la banca móvil y la vinculación digital. Integra el SDK del proveedor KYC/biométrico y la biometría local del dispositivo." <<Element-RWxlbWVudCxDb250YWluZXIsTcOzdmls>> as PlataformadeBancaDigital.Aplicaciónmóvil
   rectangle "==API Gateway\n<size:15>[Contenedor: Producto de API Gateway gestionado (por seleccionar, DD-15)]</size>\n\nPunto único de entrada: enrutamiento, validación de tokens, limitación de tasa, correlación y políticas de seguridad de borde. Sin lógica de negocio ni estado financiero (ADR-0002)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.APIGateway
-  rectangle "==BFF de canales digitales\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nBackend for Frontend compartido por web y móvil: gestor de tokens de la SPA, composición de lecturas y adaptación por canal. No posee invariantes financieros (ADR-0014)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.BFFdecanalesdigitales
+  rectangle "==BFF de canales digitales\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nBackend for Frontend compartido por web y móvil: gestor de tokens de la SPA (sesión en el almacén de sesiones, ADR-0019), composición de lecturas y adaptación por canal. Proceso sin estado; no posee invariantes financieros (ADR-0014)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.BFFdecanalesdigitales
 }
 
 Clientebancario --> PlataformadeBancaDigital.SPAweb <<Relationship-UmVsYXRpb25zaGlw>> : "Usa la banca web\n<size:14>[HTTPS]</size>"
@@ -144,5 +144,6 @@ PlataformadeBancaDigital.Serviciodeconsultas --> SistemaComplementariodeClientes
 PlataformadeBancaDigital.Serviciodeconsultas --> PlataformadeBancaDigital.Cachédeconsultas <<Relationship-UmVsYXRpb25zaGlw>> : "Lee y escribe datos derivados (Cache-Aside)\n<size:14>[Protocolo de la caché]</size>"
 PlataformadeBancaDigital.Serviciodeconsultas --> PlataformadeBancaDigital.BDdeconsultas <<Relationship-UmVsYXRpb25zaGlw>> : "Registra eventos de auditoría en el outbox\n<size:14>[SQL/TLS]</size>"
 PlataformadeBancaDigital.Serviciodeconsultas --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Publica eventos de auditoría y consume eventos de invalidación\n<size:14>[Mensajería]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Consume eventos de seguridad para invalidar sesiones\n<size:14>[Mensajería]</size>"
 
 @enduml

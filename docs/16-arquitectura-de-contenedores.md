@@ -49,24 +49,31 @@ Convención visual: los contenedores **provisionales** llevan borde naranja disc
 
 ## 4. Inventario de contenedores
 
-| Contenedor | Tipo | Responsabilidad principal | Tecnología (estado) | Estado de diseño |
-|---|---|---|---|---|
-| SPA web | Aplicación de navegador | Banca web; sin tokens en el navegador | React + TypeScript ([ADR-0018](adr/ADR-0018-stack-de-frontend.md)) | Aprobado con condiciones |
-| Aplicación móvil | Aplicación móvil | Banca móvil y vinculación digital; SDK KYC; biometría local | React Native + TypeScript (recomendado, ADR-0018) | Aprobado con condiciones |
-| API Gateway | Borde | Enrutamiento, validación de tokens, limitación de tasa, correlación | Producto gestionado (por seleccionar, DD-15) | Aprobado con condiciones |
-| BFF de canales digitales | Aplicación | Gestor de tokens de la SPA; composición de lecturas; adaptación por canal | Java 21 / Quarkus (provisional, [ADR-0017](adr/ADR-0017-stack-de-backend.md)) | Aprobado con condiciones |
-| Proveedor de identidad (IdP) | Aplicación | OAuth 2.0 / OIDC, MFA, sesiones | Candidato Keycloak (provisional, ADR-0013) | Aprobado con condiciones |
-| Servicio de consultas | Aplicación | Cliente, cuentas, saldos, movimientos; ACL de lectura; Cache-Aside | Java 21 / Quarkus (provisional) | Aprobado con condiciones |
-| Servicio de vinculación digital | Aplicación | Etapas E1 a E6 de ADR-0009; ACL de alta y búsqueda; activación del acceso | Java 21 / Quarkus (provisional) | Aprobado con condiciones; **ruta `PRE_EXISTING` bloqueada en producción hasta DD-21** |
-| Servicio de transferencias | Aplicación | Idempotencia, orquestador durable, ACL de transferencias, conciliación, efecto tardío | Java 21 / Quarkus (provisional) | **PROVISIONAL** |
-| Servicio de notificaciones | Aplicación | Notificaciones push, SMS y correo; deduplicación; canal alternativo | Java 21 / Quarkus (provisional) | Aprobado con condiciones |
-| Servicio de auditoría | Aplicación | Ingesta y registro de solo anexión | Java 21 / Quarkus (provisional) | Aprobado con condiciones |
-| Consola de operaciones | Aplicación interna | Conciliación manual, revisión manual, cierre excepcional, consulta de auditoría | Por definir | **PROVISIONAL** (DD-18) |
-| BD transaccional de transferencias | Almacén | Estado financiero de la plataforma (no el libro mayor) | PostgreSQL ([ADR-0016](adr/ADR-0016-persistencia-y-durabilidad-del-estado.md)), con PT-01 a PT-03 | **PROVISIONAL** (requisitos PT pendientes de infraestructura) |
-| BD de vinculación, BD de notificaciones, BD de consultas (outbox), BD del IdP | Almacenes | Estado local de cada servicio | PostgreSQL (ADR-0016) | Aprobado con condiciones |
-| Almacén de auditoría | Almacén | Registro de solo anexión con encadenamiento de hashes y archivo inmutable | PostgreSQL + almacenamiento de objetos inmutable | Aprobado con condiciones |
-| Caché de consultas | Almacén derivado | Datos derivados según la matriz de cacheabilidad | Compatible con Redis (provisional, DD-07) | Aprobado con condiciones |
-| Broker de mensajería | Mensajería | Distribución de eventos del outbox | Gestionado (por seleccionar, DD-15; [ADR-0015](adr/ADR-0015-mensajeria-asincrona-con-outbox.md)) | Aprobado con condiciones |
+**21 contenedores**, contados directamente en `c4/workspace.dsl`. *Corrección de ARG-02:* la Fase 3 informó 16 por agrupar almacenes en una misma fila (ARG02-L01). La remediación agregó el almacén de sesiones del BFF (ADR-0019) y el diario de autorización de despacho (ADR-0021).
+
+| # | Contenedor | Tipo | Responsabilidad principal | Tecnología (estado) | Estado de diseño |
+|---|---|---|---|---|---|
+| 1 | SPA web | Aplicación de navegador | Banca web; sin tokens en el navegador | React + TypeScript ([ADR-0018](adr/ADR-0018-stack-de-frontend.md)) | Aprobado con condiciones |
+| 2 | Aplicación móvil | Aplicación móvil | Banca móvil y vinculación digital; SDK KYC; biometría local | React Native + TypeScript (recomendado) | Aprobado con condiciones |
+| 3 | API Gateway | Borde | Enrutamiento, validación de tokens, limitación de tasa, correlación | Producto gestionado (DD-15) | Aprobado con condiciones |
+| 4 | BFF de canales digitales | Aplicación (proceso sin estado) | Gestor de tokens de la SPA; composición de lecturas; adaptación por canal | Java 21 / Quarkus (provisional, [ADR-0017](adr/ADR-0017-stack-de-backend.md)) | Aprobado con condiciones |
+| 5 | Almacén de sesiones del BFF | Almacén | Sesiones web y tokens cifrados ([ADR-0019](adr/ADR-0019-sesiones-del-bff.md)) | Clave-valor en memoria con alta disponibilidad (DD-15) | Aprobado con condiciones |
+| 6 | Proveedor de identidad (IdP) | Aplicación | OAuth 2.0 / OIDC, MFA, sesiones, operación de vinculación acotada | Candidato Keycloak (provisional, [ADR-0013](adr/ADR-0013-frontera-del-idp.md)) | Aprobado con condiciones |
+| 7 | BD del IdP | Almacén | Cuentas, credenciales, factores, sesiones (clúster aislado) | PostgreSQL ([ADR-0016](adr/ADR-0016-persistencia-y-durabilidad-del-estado.md)) | Aprobado con condiciones |
+| 8 | Servicio de consultas | Aplicación | Cliente, cuentas, saldos, movimientos y contactos; ACL de lectura; Cache-Aside | Java 21 / Quarkus (provisional) | Aprobado con condiciones |
+| 9 | BD de consultas | Almacén | Outbox de auditoría (una de las dos rutas, [ADR-0020](adr/ADR-0020-politica-de-auditoria-por-categoria.md)) | PostgreSQL | Aprobado con condiciones |
+| 10 | Caché de consultas | Almacén derivado | Datos derivados según la matriz de cacheabilidad | Compatible con Redis (provisional, DD-07) | Aprobado con condiciones |
+| 11 | Servicio de vinculación digital | Aplicación | Etapas E1 a E6; ACL de alta y búsqueda; operación de vinculación | Java 21 / Quarkus (provisional) | Aprobado con condiciones. **Ejecución y recuperación del alta en el Core: BLOQUEADAS** (ARG02-C01); **ruta `PRE_EXISTING` bloqueada en producción** (DD-21) |
+| 12 | BD de vinculación | Almacén | Estado de vinculación, evidencia, outbox; PT-01 a PT-03 y PT-07 | PostgreSQL | Aprobado con condiciones |
+| 13 | Servicio de transferencias | Aplicación | Idempotencia, orquestador durable, ACL de transferencias, conciliación | Java 21 / Quarkus (provisional) | **PROVISIONAL** |
+| 14 | BD transaccional de transferencias | Almacén | Estado financiero de la plataforma (no un libro mayor) | PostgreSQL con PT-01 a PT-03 y PT-07 | **PROVISIONAL** |
+| 15 | Diario de autorización de despacho | Almacén | Evidencia independiente de despacho; época regional ([ADR-0021](adr/ADR-0021-diario-de-autorizacion-de-despacho.md)) | Por seleccionar (DD-23) | **PROVISIONAL** |
+| 16 | Broker de mensajería | Mensajería | Eventos del outbox; segunda ruta de auditoría | Gestionado (DD-15, [ADR-0015](adr/ADR-0015-mensajeria-asincrona-con-outbox.md)) | Aprobado con condiciones |
+| 17 | Servicio de notificaciones | Aplicación | Notificaciones push, SMS y correo; registro de dispositivos | Java 21 / Quarkus (provisional) | Aprobado con condiciones |
+| 18 | BD de notificaciones | Almacén | Deduplicación, intentos, preferencias, tokens de dispositivo | PostgreSQL | Aprobado con condiciones |
+| 19 | Servicio de auditoría | Aplicación | Ingesta, deduplicación, encadenamiento por partición | Java 21 / Quarkus (provisional) | Aprobado con condiciones |
+| 20 | Almacén de auditoría | Almacén | Solo anexión, cadenas por partición, archivo inmutable | PostgreSQL + almacenamiento de objetos inmutable | Aprobado con condiciones |
+| 21 | Consola de operaciones | Aplicación interna | Conciliación y revisión manual, cierre excepcional, auditoría; personal autenticado con el IdP corporativo | Por definir | **PROVISIONAL** (DD-18) |
 
 **No son contenedores:**
 
@@ -173,7 +180,7 @@ Ver [22](22-seguridad-entre-contenedores.md). **Punto de control único:** solo 
 |---|---|---|---|---|---|---|---|---|---|---|
 | SPA / App | Depende del Gateway y del BFF | Reintento seguro con la misma clave | Estado por identificador de operación | Sin tokens en el navegador; almacenamiento seguro en el móvil | Acciones auditadas en el backend | Distribución estática y tiendas | Caché del cliente | Código TypeScript compartido | Telemetría del cliente sin datos personales | Bajo |
 | API Gateway | **Crítica** (punto de entrada) | Redundancia multizona | Sin estado | Validación de tokens, WAF, limitación de tasa | Registros de acceso | Horizontal | Baja latencia | Configuración como código | Correlación de solicitudes | Medio |
-| BFF | Alta | Sin estado | Sin estado | Gestor de tokens; sin invariantes | Correlación | Horizontal | Composición | Rutas por canal | Trazas | Medio |
+| BFF | Alta | Proceso sin estado; sesión en un almacén externo (ADR-0019) | Volver a iniciar sesión si se pierde el almacén | Gestor de tokens; sin invariantes | Correlación | Horizontal | Composición | Rutas por canal | Trazas | Medio |
 | IdP | **Crítica** | Multizona; BD replicada | Respaldo y restauración | Credenciales, MFA, sesiones | Eventos de seguridad | Horizontal | — | Producto | Eventos | Medio |
 | Consultas | Alta | Degradación con caché y Circuit Breaker | Sin estado crítico | Autorización por propiedad de cuenta | Consultas auditadas | Horizontal (CL-3 por réplica) | Caché | ACL con pruebas de contrato | Métricas por clase | Medio |
 | Vinculación | Alta | Estados durables; proveedor no disponible ≠ rechazo | Recuperación de los estados en curso | Datos biométricos; punto de control del acceso | Cada etapa auditada | Moderada | — | Máquina de estados | Antigüedad por estado | Medio |
@@ -182,4 +189,4 @@ Ver [22](22-seguridad-entre-contenedores.md). **Punto de control único:** solo 
 | Auditoría | Alta para la ingesta (sin pérdida) | El outbox de origen protege ante caídas | Archivo inmutable | Acceso restringido; solo anexión | **Es la evidencia** | Horizontal | Asíncrona | — | Retraso de ingesta | Medio |
 | Consola (provisional) | Media | — | — | Cuatro ojos; acceso privilegiado | Toda acción auditada | Baja | — | — | — | Bajo |
 
-Las cifras de disponibilidad, RTO y RPO **no se fijan aquí**. Los objetivos candidatos están en ARG-01 §12.5 y siguen pendientes de confirmación institucional. La única excepción no negociable es el **RPO 0 de las escrituras confirmadas** del almacén transaccional (PT-01).
+Las cifras de disponibilidad, RTO y RPO **no se fijan aquí**. Los objetivos candidatos están en ARG-01 §12.5 y siguen pendientes de confirmación institucional. La única excepción no negociable es el **RPO 0 de las escrituras confirmadas** del almacén transaccional (PT-01) y la **confirmación por quórum** del diario de autorización de despacho (PT-07, ADR-0021).

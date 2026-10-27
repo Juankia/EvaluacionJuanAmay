@@ -32,6 +32,18 @@ hide stereotype
     Shadowing: 0;
     MaximumWidth: 200;
   }
+  // Element,Container,Almacén de datos,Provisional
+  .Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #b45f06;
+    LineStyle: 30-30;
+    LineThickness: 6;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 200;
+  }
   // Element,Container,Mensajería
   .Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE= {
     BackgroundColor: #2f6fa7;
@@ -135,6 +147,8 @@ hide stereotype
 rectangle "==Container" <<Element-RWxlbWVudCxDb250YWluZXI=>>
 
 database "==Container, Almacén de datos" <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M=>>
+
+database "==Container, Almacén de datos, Provisional" <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw=>>
 
 queue "==Container, Mensajería" <<Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE=>>
 

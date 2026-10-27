@@ -84,3 +84,14 @@ Se registran en [11](11-riesgos-residuales.md).
 | RR-19 | Durabilidad del almacén transaccional y restauración (V-3 a V-5) | Alto hasta verificar PT-01 a PT-03 |
 | RR-20 | Complejidad operativa de la arquitectura híbrida | Medio |
 | RR-21 | El IdP interno como componente crítico de disponibilidad y de seguridad | Medio-alto |
+
+## 7. Actualización de la remediación de ARG-02
+
+| Elemento | Cambio |
+|---|---|
+| PT-02 | Reformulada: la cuarentena rechaza las nuevas iniciaciones y concilia contra el diario de despacho ([ADR-0021](adr/ADR-0021-diario-de-autorizacion-de-despacho.md)) |
+| PT-06 | Redacción ampliada (ARG02-L06): incluye explícitamente los **sidecars de malla de servicios, los proxies de salida y los balanceadores** propios que puedan reintentar escrituras CL-1 |
+| **PT-07** (nueva) | Ningún tramo se despacha sin una entrada confirmada por quórum en el diario (INV-DR-1) |
+| **PT-08** (nueva) | Cercado regional por época en el diario |
+| **B-05** (nuevo bloqueo) | Diseño de los componentes de **ejecución y recuperación** de transferencias **y del alta de clientes**: bloqueado hasta la verificación independiente de CF-01, CF-02 y la remediación de ARG02-C01 |
+| **B-06** (nuevo bloqueo) | Implementación de los despachos financieros: requiere DD-23 (capacidad del diario) o la adopción explícita del modo de suspensión regional (ADR-0021 §7) |

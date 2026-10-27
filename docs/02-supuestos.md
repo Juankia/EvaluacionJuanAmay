@@ -165,6 +165,13 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 - **Base:** supuesto externo (G-EXT-3 de ADR-0005). **No lo garantiza la plataforma.**
 - **Validación:** propietario del Core (Q-17).
 
+### S21 — Ubicación del Core y red plataforma–Core: DESCONOCIDAS
+
+- **Enunciado:** no se conoce dónde se ejecuta el Core Bancario (en las instalaciones de la institución o en la nube) ni la topología, la redundancia y la latencia medida de la red entre la plataforma y el Core. **No se supone ningún modelo**; los candidatos se analizan en [19 §5](19-comunicacion-entre-contenedores.md#5-ubicación-del-core-y-conectividad-arg02-h05).
+- **Base:** ausencia de evidencia en el reto y en el repositorio (ARG02-H05).
+- **Decisiones afectadas:** timeouts y plazos (ADR-0005), presupuesto del Core (ADR-0011), región cloud y DR (DD-09, DD-15), C6.
+- **Validación:** Q-20.
+
 ## 3. Resumen
 
 | ID | Supuesto | Criticidad si es falso | Decisiones afectadas |
@@ -189,3 +196,4 @@ Un **supuesto arquitectónico** es una condición que el equipo de arquitectura 
 | S18 | Transferencia propia atómica en el Core | Media | ADR-0005 |
 | S19 | La red y los intermediarios no duplican solicitudes | Alta | ADR-0005 (G-EXT-1) |
 | S20 | El Core ejecuta cada solicitud como máximo una vez | Alta | ADR-0005 (G-EXT-3) |
+| S21 | Ubicación del Core y red plataforma–Core desconocidas | Alta | ADR-0005, ADR-0011, DD-09, DD-15, C6 |

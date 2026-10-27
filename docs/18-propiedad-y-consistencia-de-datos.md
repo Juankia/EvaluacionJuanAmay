@@ -46,8 +46,18 @@ No existe una transacción que abarque el almacén de transferencias, el broker 
 2. El relé publica el evento (al menos una vez). El servicio de auditoría lo anexa de forma idempotente por identificador de evento.
 3. **Retraso de auditoría:** existe una ventana entre (1) y (2). Se monitorea la antigüedad del outbox y la del retraso de ingesta. Si el broker no está disponible, la evidencia **no se pierde**: permanece en el outbox de origen.
 4. **Acciones rechazadas antes de cualquier cambio de estado** (por ejemplo, una solicitud sin clave): el servicio que rechaza registra el evento de auditoría en su outbox. Si la acción no llega a ningún servicio (rechazo en el Gateway), la evidencia son los registros de acceso del Gateway, que se envían a la observabilidad y al SIEM institucional (Q-13).
-5. **Consultas:** el servicio de consultas escribe un evento de auditoría por consulta del cliente en su outbox antes de responder. Si no puede escribirlo, **no responde**. Se prioriza la auditabilidad (R5); el costo es una escritura por consulta.
+5. **Consultas:** *sustituido en la remediación de ARG-02 por [ADR-0020](adr/ADR-0020-politica-de-auditoria-por-categoria.md).* Las categorías A4 y A5 usan una **doble ruta durable** (publicación con confirmación en el broker **o** outbox local). La respuesta espera la confirmación de una de las dos; solo si fallan ambas, la consulta no se responde.
 
 ## 5. Requisitos de durabilidad del estado financiero
 
 Están en [ADR-0016](adr/ADR-0016-persistencia-y-durabilidad-del-estado.md): PT-01 (RPO 0 de las escrituras confirmadas), PT-02 (cuarentena tras restauración) y PT-03 (escritor único). Su origen está en la verificación acotada de [23](23-riesgos-y-condiciones-fase-3.md).
+
+## 6. Actualización de la remediación de ARG-02
+
+| Contenedor | Datos autoritativos (de la plataforma) | Sensibles | Consistencia | Retención | Auditoría |
+|---|---|---|---|---|---|
+| Almacén de sesiones del BFF | Sesiones web, tokens cifrados, índice de sujeto a sesiones, claves de intenciones pendientes generadas por la SPA | **Tokens** | Fuerte por sesión | Vida de la sesión | Eventos de sesión (A7) |
+| Diario de autorización de despacho | Entradas de despacho y época regional | Solo resúmenes criptográficos y referencias derivadas | **Linealizable con quórum** | `RETENCION_CLAVE` + `VENTANA_VIGILANCIA_EFECTO_TARDIO` | Cada entrada es evidencia (A1) |
+| Servicio de notificaciones (ampliado, ARG02-M05) | **Tokens de dispositivo** (registrados por la app a través del BFF) y preferencias de canal | Datos de contacto (en tránsito, no persistidos de forma permanente) | Local | Mientras el dispositivo esté vigente | Registro y baja |
+
+**Datos de contacto (ARG02-M05):** el número de teléfono y el correo son autoritativos en el **Core o en el Sistema Complementario** (por validar con Q-09). El servicio de notificaciones **no** los conserva como fuente: los obtiene **en el momento del envío** a través del servicio de consultas (API interna, autenticada entre servicios). Puede guardarlos en caché por un tiempo corto, `TTL_CONTACTO`.

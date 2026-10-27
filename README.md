@@ -18,6 +18,7 @@ Requisito → Driver / Supuesto → Decisión → Trade-off → Consecuencia
 | Revisión ARG-01 | Architecture Review Gate de las Fases 0–2 | **NO-GO** (1 CRITICAL, 5 HIGH). Remediación completada; **pendiente de la revisión ARG-01-R2** ([informe](docs/reviews/ARG-01-informe-de-remediacion.md)) |
 | Verificación ARG-01-R2 | Verificación independiente de la remediación | **CONDITIONAL GO**. CF-01 y CF-02 remediados en diseño; **pendientes de verificación independiente** ([remediación](docs/reviews/ARG-01-R2-remediacion-CF01-CF02.md)) |
 | Fase 3 | C4 Nivel 2: Contenedores | **Completada; pendiente de la revisión ARG-02** ([preparación](docs/reviews/ARG-02-preparacion-revision-contenedores.md)). El orquestador de transferencias es **provisional**. **No se autoriza implementación productiva** |
+| Revisión ARG-02 | Revisión independiente de contenedores | CONDITIONAL GO con alcance restringido; **NO-GO para el diseño de los componentes de ejecución y recuperación** de transferencias y del alta de clientes. Remediación en [registro](docs/reviews/ARG-02-registro-de-remediacion.md) |
 | Fases posteriores | C4 de Componentes, seguridad e identidad, infraestructura cloud, DR, justificaciones de frontend y notificaciones | No iniciadas |
 
 > Este repositorio no anticipa decisiones de fases posteriores. Lo que todavía no se ha decidido figura como **decisión diferida**, con su disparador explícito.
@@ -109,6 +110,9 @@ Documentos:
 | [ADR-0016](docs/adr/ADR-0016-persistencia-y-durabilidad-del-estado.md) | Persistencia relacional por servicio y durabilidad del estado financiero | Aceptada con condiciones |
 | [ADR-0017](docs/adr/ADR-0017-stack-de-backend.md) | Stack de backend: Java 21 y Quarkus | Provisional |
 | [ADR-0018](docs/adr/ADR-0018-stack-de-frontend.md) | Stack de frontend: React + TS y React Native + TS | Aceptada con condiciones |
+| [ADR-0019](docs/adr/ADR-0019-sesiones-del-bff.md) | Sesiones web gestionadas por el BFF con un almacén de sesiones dedicado | Aceptada con condiciones |
+| [ADR-0020](docs/adr/ADR-0020-politica-de-auditoria-por-categoria.md) | Política de auditoría por categoría de evento | Aceptada con condiciones |
+| [ADR-0021](docs/adr/ADR-0021-diario-de-autorizacion-de-despacho.md) | Diario de autorización de despacho y recuperación regional segura | Aceptada con condiciones (pendiente de verificación independiente) |
 
 ## Fuente del reto
 

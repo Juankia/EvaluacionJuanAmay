@@ -36,6 +36,18 @@ hide stereotype
     Shadowing: 0;
     MaximumWidth: 450;
   }
+  // Element,Container,Almacén de datos,Provisional
+  .Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #b45f06;
+    LineStyle: 30-30;
+    LineThickness: 6;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
   // Element,Container,Mensajería
   .Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE= {
     BackgroundColor: #2f6fa7;
@@ -137,12 +149,13 @@ rectangle "==Proveedor KYC/Biométrico\n<size:15>[Sistema de software]</size>\n\
 rectangle "Plataforma de Banca Digital\n<size:15>[Sistema de software]</size>" <<Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs>> {
   rectangle "==Proveedor de identidad (IdP)\n<size:15>[Contenedor: Producto OIDC; candidato provisional: Keycloak (ADR-0013)]</size>\n\nServidor de autorización OAuth 2.0 / OpenID Connect para clientes: autenticación, MFA, sesiones y emisión de tokens. Interno a la plataforma (ADR-0013)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.ProveedordeidentidadIdP
   rectangle "==Servicio de vinculación digital\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nMáquina de estados de vinculación (E1 a E6, ADR-0009): verificación de identidad, identificación y alta del cliente, autorización de la vinculación y activación del acceso digital. Contiene la ACL de alta y búsqueda de clientes." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.Serviciodevinculacióndigital
-  database "==BD de vinculación\n<size:15>[Contenedor: PostgreSQL (ADR-0016)]</size>\n\nEstado durable de las solicitudes de vinculación, claves de idempotencia, evidencia de creación y outbox." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M=>> as PlataformadeBancaDigital.BDdevinculación
+  database "==BD de vinculación\n<size:15>[Contenedor: PostgreSQL (ADR-0016)]</size>\n\nEstado durable de las solicitudes de vinculación, claves de idempotencia, evidencia de creación y outbox. Sujeta a PT-01 a PT-03 y PT-07 por el alta de clientes (ADR-0016)." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M=>> as PlataformadeBancaDigital.BDdevinculación
+  database "==Diario de autorización de despacho\n<size:15>[Contenedor: Almacén linealizable con quórum entre dominios de falla (capacidad por seleccionar, DD-23)]</size>\n\nRegistro independiente, de solo anexión y con confirmación por quórum en al menos tres dominios de falla. Ningún tramo se despacha sin su entrada (INV-DR-1). Mantiene la época regional (ADR-0021). PROVISIONAL." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Diariodeautorizacióndedespacho
   queue "==Broker de mensajería\n<size:15>[Contenedor: Broker gestionado de colas y tópicos (por seleccionar, DD-15)]</size>\n\nDistribuye los eventos publicados desde los outbox: entrega al menos una vez, tópicos con suscripciones, colas de mensajes fallidos (ADR-0015)." <<Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE=>> as PlataformadeBancaDigital.Brokerdemensajería
   rectangle "==Consola de operaciones\n<size:15>[Contenedor: Aplicación web interna (por definir)]</size>\n\nResolución de REQUIRES_RECONCILIATION y MANUAL_REVIEW con cuatro ojos, cierre excepcional y consulta de auditoría. PROVISIONAL: puede sustituirse por un sistema administrativo existente (DD-18)." <<Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Consoladeoperaciones
   rectangle "==Aplicación móvil\n<size:15>[Contenedor: React Native + TypeScript (recomendado, ADR-0018)]</size>\n\nAplicación multiplataforma para la banca móvil y la vinculación digital. Integra el SDK del proveedor KYC/biométrico y la biometría local del dispositivo." <<Element-RWxlbWVudCxDb250YWluZXIsTcOzdmls>> as PlataformadeBancaDigital.Aplicaciónmóvil
   rectangle "==API Gateway\n<size:15>[Contenedor: Producto de API Gateway gestionado (por seleccionar, DD-15)]</size>\n\nPunto único de entrada: enrutamiento, validación de tokens, limitación de tasa, correlación y políticas de seguridad de borde. Sin lógica de negocio ni estado financiero (ADR-0002)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.APIGateway
-  rectangle "==BFF de canales digitales\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nBackend for Frontend compartido por web y móvil: gestor de tokens de la SPA, composición de lecturas y adaptación por canal. No posee invariantes financieros (ADR-0014)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.BFFdecanalesdigitales
+  rectangle "==BFF de canales digitales\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nBackend for Frontend compartido por web y móvil: gestor de tokens de la SPA (sesión en el almacén de sesiones, ADR-0019), composición de lecturas y adaptación por canal. Proceso sin estado; no posee invariantes financieros (ADR-0014)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.BFFdecanalesdigitales
 }
 
 Solicitantedevinculación --> PlataformadeBancaDigital.Aplicaciónmóvil <<Relationship-UmVsYXRpb25zaGlw>> : "Realiza la vinculación digital\n<size:14>[Aplicación nativa]</size>"
@@ -158,7 +171,9 @@ PlataformadeBancaDigital.Serviciodevinculacióndigital --> CoreBancario <<Relati
 PlataformadeBancaDigital.Serviciodevinculacióndigital --> PlataformadeBancaDigital.ProveedordeidentidadIdP <<Relationship-UmVsYXRpb25zaGlw>> : "Crea y activa la cuenta digital vinculada (único contenedor autorizado)\n<size:14>[HTTPS (API de administración)]</size>"
 PlataformadeBancaDigital.Serviciodevinculacióndigital --> PlataformadeBancaDigital.BDdevinculación <<Relationship-UmVsYXRpb25zaGlw>> : "Persiste el estado y la evidencia de la vinculación\n<size:14>[SQL/TLS]</size>"
 PlataformadeBancaDigital.Serviciodevinculacióndigital --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Publica eventos de estado y de auditoría (outbox)\n<size:14>[Mensajería]</size>"
+PlataformadeBancaDigital.Serviciodevinculacióndigital --> PlataformadeBancaDigital.Diariodeautorizacióndedespacho <<Relationship-UmVsYXRpb25zaGlw>> : "Anexa y confirma la autorización de despacho del alta de clientes\n<size:14>[Por seleccionar (DD-23)]</size>"
 PlataformadeBancaDigital.ProveedordeidentidadIdP --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Publica eventos de seguridad\n<size:14>[Mensajería]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Consume eventos de seguridad para invalidar sesiones\n<size:14>[Mensajería]</size>"
 PlataformadeBancaDigital.Consoladeoperaciones --> PlataformadeBancaDigital.Serviciodevinculacióndigital <<Relationship-UmVsYXRpb25zaGlw>> : "Resuelve revisiones manuales de vinculación (cuatro ojos)\n<size:14>[HTTPS/JSON (API de operaciones)]</size>"
 
 @enduml

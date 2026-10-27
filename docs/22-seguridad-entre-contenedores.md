@@ -81,3 +81,10 @@ Dentro de TB-2 se distinguen **subzonas**:
 - Minimización en las notificaciones (sin datos sensibles ni enlaces que soliciten datos).
 - Registros sin datos sensibles ([00-estandares](00-estandares-de-ingenieria.md) §5.6).
 - Acceso al almacén de auditoría solo para roles de auditoría, mediante la consola o las herramientas institucionales; nadie puede modificarlo ni borrarlo.
+
+## 6. Actualización de la remediación de ARG-02
+
+- **Sesiones web (ARG02-H02):** [ADR-0019](adr/ADR-0019-sesiones-del-bff.md). Tokens solo en el almacén de sesiones; cookie `__Host-` con `HttpOnly`, `Secure` y `SameSite=Strict`; token anti-CSRF; revocación por eventos del IdP; falla cerrada ante la caída del almacén.
+- **Administración del IdP (ARG02-H04, M04):** [ADR-0013](adr/ADR-0013-frontera-del-idp.md), enmienda. Operación de vinculación acotada con una afirmación firmada; una vinculación por cliente; límites de volumen; identidad del personal en el IdP corporativo; acceso justo a tiempo; ciclo de vida de las claves; recuperación que invalida sesiones y reaplica revocaciones.
+- **El punto de control del §3.1 se refuerza:** la «credencial de servicio del servicio de vinculación» **ya no** es una credencial de administración amplia. Solo habilita la operación de vinculación acotada.
+- **Auditoría por categoría:** [ADR-0020](adr/ADR-0020-politica-de-auditoria-por-categoria.md).

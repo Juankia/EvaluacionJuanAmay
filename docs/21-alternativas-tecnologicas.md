@@ -99,3 +99,11 @@ El diseño de contenedores se puede desplegar en ambos proveedores. La selecció
 | React + TS / React Native + TS (ADR-0018) | Aceptada con condiciones |
 | Caché compatible con Redis | Provisional (DD-07) |
 | Proveedor cloud y entorno de ejecución | Diferidos (DD-15) |
+
+## 10. Actualización de la remediación de ARG-02
+
+| Tema | Decisión |
+|---|---|
+| Almacén de sesiones del BFF ([ADR-0019](adr/ADR-0019-sesiones-del-bff.md)) | Capacidad: almacén clave-valor en memoria con alta disponibilidad gestionada y cifrado. **Separado** de la caché de consultas. Producto con DD-15 |
+| Diario de autorización de despacho ([ADR-0021](adr/ADR-0021-diario-de-autorizacion-de-despacho.md)) | Capacidad: almacenamiento **linealizable**, de solo anexión, con quórum en ≥ 3 dominios de falla. **No se selecciona un producto** (DD-23); se valida su semántica real antes de la implementación |
+| Accesibilidad (ARG02-L04) | Objetivo **candidato**: conformidad WCAG 2.1 nivel AA en la SPA y la app. **Por acordar** con la institución; no se presenta como un requisito regulatorio |

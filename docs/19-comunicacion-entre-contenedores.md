@@ -81,10 +81,11 @@ N_EFECTIVO_MAX_s = N_MAX_s
 |---|---|---|
 | RI-01 | `N_MAX_REPLICAS` es un límite automatizado y verificable | Techo del escalado automático declarado por servicio; un escalado por encima del techo es imposible por configuración |
 | RI-02 | La cuota se calcula sobre `N_EFECTIVO_MAX`, o la estrategia de despliegue se restringe | **Rolling:** el surge se incluye en `N_EFECTIVO_MAX`. **Blue/green:** la flota nueva arranca con **admisión hacia el Core cerrada** (interruptor de configuración) y la abre solo después de cerrar la de la flota anterior. **Terminación:** cierre ordenado de la admisión antes de retirar la réplica |
-| RI-03 | `Σ_s Q_{c,s} ≤ Q_c` verificado automáticamente | Validación de configuración en el pipeline de despliegue; un despliegue que la viole se rechaza |
+| RI-03 | `Σ_s Q_{c,s} ≤ Q_c` verificado automáticamente **y** `q_{c,s} ≥ 1` por réplica para toda clase que el servicio use (*enmienda ARG02-M03*). Si `Q_{c,s} < N_EFECTIVO_MAX_s`, la configuración se rechaza: hay que reducir `N_MAX` o aumentar la cuota | Validación de configuración en el pipeline de despliegue; un despliegue que la viole se rechaza |
 | RI-04 | Protocolo de cambio de `N_MAX` | Para subir el techo, primero se bajan las cuotas por réplica y luego se sube el techo; para bajarlo, en el orden inverso |
 | RI-05 | Arrendamientos de M2 con vencimiento | Solo si se activa M2 (DD-20) |
 | RI-06 | Control de respaldo en tiempo de ejecución | Métrica de la concurrencia real hacia el Core con alerta cerca del presupuesto |
+| RI-08 | **Presupuesto de conexiones** (sesiones del Core) además del de concurrencia: `Σ réplicas × (conexiones mínimas + máximas del pool) ≤ SESIONES_MAX_CORE` (*nuevo, ARG02-M03*) | Validación en el pipeline junto con RI-03 |
 | RI-07 | Intermediario frente al Core como última línea | Si existe (Q-16, Q-17), se configura como límite adicional, sin sustituir a M1 |
 
 **No se requiere un sistema externo de coordinación distribuida** para la protección base. M1 es configuración; M2 queda diferida (DD-20) y, si se activa, tiene a M1 como respaldo.
@@ -116,3 +117,20 @@ Con *n* réplicas activas < `N_EFECTIVO_MAX`, la clase solo usa `n / N_EFECTIVO_
   - retraso de la auditoría;
   - entrega de notificaciones.
 - Eventos de seguridad hacia el SIEM institucional, si existe (Q-13).
+
+## 5. Ubicación del Core y conectividad (ARG02-H05)
+
+**Estado: DESCONOCIDO.** El repositorio no contiene evidencia confiable sobre dónde se ejecuta el Core Bancario ni sobre la red entre la plataforma y el Core. Se registra como supuesto **S21** y como pregunta **Q-20**. **No se selecciona ningún modelo de conectividad.**
+
+| Modelo candidato | Latencia | Disponibilidad de la red | Fronteras de seguridad | Dependencias operativas | Transferencia de datos | DR | Costo |
+|---|---|---|---|---|---|---|---|
+| Misma red privada (Core en el mismo entorno cloud) | Menor | La del proveedor | Dentro de la red privada | Pocas | Interna | Ligada a la región del Core | Bajo |
+| Core en las instalaciones de la institución con conectividad dedicada privada hacia la nube | Depende de la distancia y del proveedor de enlace (por medir) | **Enlaces redundantes** obligatorios | TB-2 ↔ TB-3 cruza un enlace dedicado; cifrado requerido | Operador del enlace, equipos de borde de la institución | Cargos por transferencia según el proveedor | La región de DR también necesita su propio enlace | Medio-alto |
+| Core en las instalaciones de la institución con VPN sitio a sitio por Internet | Mayor y variable | Menor que un enlace dedicado | Túnel cifrado sobre Internet | Equipos VPN; Internet | Igual | Igual | Bajo-medio |
+| Otra conectividad empresarial (por ejemplo, un intermediario o ESB existente frente al Core) | Agrega un salto | La del intermediario | Frontera adicional | Equipo del intermediario | Variable | Variable | Variable |
+
+**Implicaciones para el diseño, independientes del modelo:**
+
+1. El enlace plataforma–Core es un **dominio de falla común** a todas las ACL. Su falla equivale a «Core no disponible» (QA3), y los timeouts de conexión deben distinguirlo (clase `NOT_SENT` frente a `UNKNOWN`, ADR-0005).
+2. La **latencia medida** del enlace condiciona los timeouts, el plazo de negocio y el presupuesto de concurrencia (por la ley de Little, la concurrencia necesaria crece con la latencia).
+3. C6 («garantice baja latencia») **no puede afirmarse** mientras no se conozca S21 y no se mida la latencia (Q-20).

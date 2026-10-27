@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | **Aceptada — enmendada (versión 3)** por la remediación de CF-01 de ARG-01-R2 (ajusta IC-12 e IC-14; agrega IC-15, que aborda R2-N04). Pendiente de verificación independiente |
+| Estado | **Aceptada — enmendada (versión 4)** en la remediación de ARG-02 (IC-13 determinista; IC-16 nuevo). Pendiente de verificación independiente |
 | Fecha | 2026-10-27 (versiones 1, 2 y 3) |
 | Requisitos | R1 (transferencias), R3, C2 |
 | Drivers y supuestos | S3, S18; AQ-02; QA3, QA5, QA9 |
@@ -125,3 +125,10 @@ La solicitud de vinculación aplica IC-01 a IC-14. La creación del cliente en e
 - **RR-04:** conciliación sin idempotencia nativa (probabilística).
 - **RR-13:** duplicado semántico con claves distintas.
 - **Clientes que incumplen IC-02:** por ejemplo, una clave nueva por intento. Se detectan por métricas de reenvíos con clave distinta y huella igual (sección 3) y se mitigan con la confirmación explícita.
+
+## Enmienda de la remediación de ARG-02 (versión 4)
+
+| ID | Cambio |
+|---|---|
+| **IC-13 (modificada)** | La referencia externa que se propaga al Core se **deriva de forma determinista** como `HMAC(clave_de_derivación, ámbito ‖ clave ‖ tramo)`, ajustada al formato del Core (Q-17). El identificador interno de operación sigue siendo 1:1 con (ámbito, clave) |
+| **IC-16 (nueva)** | **Clave desconocida después de una recuperación:** si una solicitud llega con una (ámbito, clave) que no existe en el almacén, se busca la referencia recalculada en el diario de autorización de despacho ([ADR-0021](ADR-0021-diario-de-autorizacion-de-despacho.md)). Si existe una entrada, se reconstruye la operación como `*_UNKNOWN` y se devuelve «en verificación». Si no existe, la operación **nunca se despachó** y puede reservarse como nueva. Durante la cuarentena, toda iniciación se rechaza sin efectos |

@@ -55,3 +55,7 @@ Para las aplicaciones de navegador, la práctica recomendada para OAuth 2.0 favo
 
 - Acumulación de lógica en el BFF.
 - Dependencia de disponibilidad de un contenedor adicional.
+
+## Nota de la remediación de ARG-02
+
+La sesión web y el almacenamiento de los tokens de la SPA se definen en [ADR-0019](ADR-0019-sesiones-del-bff.md): el BFF **no guarda estado en el proceso**, pero mantiene la sesión en un **almacén de sesiones dedicado**. La afirmación «sin estado» del documento 16 se corrige en consecuencia (ARG02-H02).

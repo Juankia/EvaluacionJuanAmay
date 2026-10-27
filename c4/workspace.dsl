@@ -9,6 +9,9 @@
  *   - Vista "Contenedores": contenedores de aplicación (sin almacenes ni broker).
  *   - Vistas focalizadas: Consultas, Vinculación, Transferencias, NotificacionesAuditoria, IntegracionCore.
  *   Cambio de la Fase 3: el IdP candidato externo se resuelve como contenedor interno (ADR-0013).
+ *   Cambios de la remediación de ARG-02: almacén de sesiones del BFF (ADR-0019), diario de autorización
+ *   de despacho (ADR-0021, provisional), IdP corporativo candidato para el personal (ADR-0013) y relaciones
+ *   de notificación (registro de dispositivos y datos de contacto, ARG02-M05).
  *   Estado de diseño de los contenedores (propiedad "EstadoDiseño"): Aprobado, Aprobado con condiciones,
  *   Provisional, Diferido o Bloqueado (docs/23-riesgos-y-condiciones-fase-3.md).
  *   Los límites de confianza NO se representan aquí. Están en docs/14-limites-de-confianza.md,
@@ -98,8 +101,15 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
                     "EstadoDiseño" "Aprobado con condiciones"
                 }
             }
-            bff = container "BFF de canales digitales" "Backend for Frontend compartido por web y móvil: gestor de tokens de la SPA, composición de lecturas y adaptación por canal. No posee invariantes financieros (ADR-0014)." "Java 21 / Quarkus (provisional, ADR-0017)" {
+            bff = container "BFF de canales digitales" "Backend for Frontend compartido por web y móvil: gestor de tokens de la SPA (sesión en el almacén de sesiones, ADR-0019), composición de lecturas y adaptación por canal. Proceso sin estado; no posee invariantes financieros (ADR-0014)." "Java 21 / Quarkus (provisional, ADR-0017)" {
                 tags "Aplicación"
+                properties {
+                    "EstadoDiseño" "Aprobado con condiciones"
+                }
+            }
+
+            bffSesiones = container "Almacén de sesiones del BFF" "Sesiones web y tokens de la SPA cifrados, índice de sujeto a sesiones y claves de intenciones pendientes generadas por la SPA (ADR-0019)." "Almacén clave-valor en memoria con alta disponibilidad (producto con DD-15)" {
+                tags "Almacén de datos"
                 properties {
                     "EstadoDiseño" "Aprobado con condiciones"
                 }
@@ -135,7 +145,7 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
                     "EstadoDiseño" "Aprobado con condiciones; ruta PRE_EXISTING bloqueada en producción hasta DD-21"
                 }
             }
-            vinculacionDb = container "BD de vinculación" "Estado durable de las solicitudes de vinculación, claves de idempotencia, evidencia de creación y outbox." "PostgreSQL (ADR-0016)" {
+            vinculacionDb = container "BD de vinculación" "Estado durable de las solicitudes de vinculación, claves de idempotencia, evidencia de creación y outbox. Sujeta a PT-01 a PT-03 y PT-07 por el alta de clientes (ADR-0016)." "PostgreSQL (ADR-0016)" {
                 tags "Almacén de datos"
             }
             transferencias = container "Servicio de transferencias" "Contrato de idempotencia (ADR-0006) y orquestador durable de transferencias (ADR-0005): titularidad cercada, permiso de envío único, conciliación y efecto tardío. Contiene la ACL de transferencias. PROVISIONAL: CF-01/CF-02 sin verificación independiente." "Java 21 / Quarkus (provisional, ADR-0017)" {
@@ -145,6 +155,13 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
                 }
             }
             transferenciasDb = container "BD transaccional de transferencias" "Intenciones, huellas, estado de las operaciones, titularidad y tokens, evidencia huérfana, casos de conciliación y outbox. Requisitos: escritor único, RPO 0 de las escrituras confirmadas y cuarentena tras restauración (ADR-0016)." "PostgreSQL (ADR-0016)" {
+                tags "Almacén de datos" "Provisional"
+                properties {
+                    "EstadoDiseño" "Provisional"
+                }
+            }
+
+            diarioDespacho = container "Diario de autorización de despacho" "Registro independiente, de solo anexión y con confirmación por quórum en al menos tres dominios de falla. Ningún tramo se despacha sin su entrada (INV-DR-1). Mantiene la época regional (ADR-0021). PROVISIONAL." "Almacén linealizable con quórum entre dominios de falla (capacidad por seleccionar, DD-23)" {
                 tags "Almacén de datos" "Provisional"
                 properties {
                     "EstadoDiseño" "Provisional"
@@ -233,6 +250,13 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
         // ================================================================
         // Sistemas candidatos (solo en la vista ampliada)
         // ================================================================
+        idpCorporativo = softwareSystem "IdP corporativo de la institución" "Candidato. Identidad del personal (operadores, auditores, administradores), federada con la consola de operaciones y con la administración del IdP de clientes (ADR-0013). Existencia por confirmar." {
+            tags "Candidato"
+            properties {
+                "Confianza" "Por validar"
+                "Fuente" "Remediación de ARG02-M04"
+            }
+        }
         fuenteIdentidad = softwareSystem "Fuente Oficial de Identidad" "Candidato. Fuente oficial de datos de identificación de personas. Su uso requiere validar la autorización legal, la disponibilidad técnica y el mecanismo de acceso (DD-17)." {
             tags "Candidato"
             properties {
@@ -343,6 +367,8 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
         plataforma.gateway -> plataforma.bff "Enruta las solicitudes de canal" "HTTPS/JSON"
         plataforma.bff -> plataforma.idp "Intercambia códigos y renueva tokens como cliente confidencial de la SPA" "HTTPS (OAuth 2.0)"
 
+        plataforma.bff -> plataforma.bffSesiones "Guarda y recupera sesiones y tokens cifrados" "Protocolo del almacén (TLS)"
+        plataforma.bff -> plataforma.notif "Registra dispositivos y preferencias de notificación" "HTTPS/JSON"
         plataforma.bff -> plataforma.consultas "Consulta cliente, cuentas y movimientos" "HTTPS/JSON"
         plataforma.bff -> plataforma.vinculacion "Gestiona solicitudes de vinculación" "HTTPS/JSON"
         plataforma.bff -> plataforma.transferencias "Inicia transferencias y consulta su estado por identificador de operación" "HTTPS/JSON; Idempotency-Key"
@@ -363,6 +389,8 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
         plataforma.transferencias -> transferencias "Solicita el procesamiento interbancario (ruta por validar)" "Por validar (Q-01)" "Ruta por validar"
         plataforma.transferencias -> plataforma.transferenciasDb "Reserva intenciones y aplica transiciones cercadas" "SQL/TLS"
         plataforma.transferencias -> plataforma.broker "Publica movimientos confirmados, cambios de estado y auditoría (outbox)" "Mensajería"
+        plataforma.transferencias -> plataforma.diarioDespacho "Anexa y confirma la autorización de despacho antes de cada envío (INV-DR-1)" "Por seleccionar (DD-23)"
+        plataforma.vinculacion -> plataforma.diarioDespacho "Anexa y confirma la autorización de despacho del alta de clientes" "Por seleccionar (DD-23)"
 
         plataforma.idp -> plataforma.idpDb "Lee y escribe cuentas, factores y sesiones" "SQL/TLS"
         plataforma.idp -> plataforma.broker "Publica eventos de seguridad" "Mensajería"
@@ -370,6 +398,8 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
         plataforma.notif -> plataforma.broker "Consume eventos notificables" "Mensajería"
         plataforma.notif -> plataforma.notifDb "Deduplica y registra los intentos de entrega" "SQL/TLS"
         plataforma.notif -> notificaciones "Envía notificaciones push, SMS y correo" "HTTPS (API de los proveedores)"
+        plataforma.notif -> plataforma.consultas "Obtiene los datos de contacto vigentes del destinatario" "HTTPS/JSON (API interna)"
+        plataforma.bff -> plataforma.broker "Consume eventos de seguridad para invalidar sesiones" "Mensajería"
 
         plataforma.auditoria -> plataforma.broker "Consume eventos de auditoría" "Mensajería"
         plataforma.auditoria -> plataforma.auditoriaDb "Anexa registros encadenados" "SQL/TLS"
@@ -379,6 +409,7 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
         plataforma.consola -> plataforma.transferencias "Resuelve casos de conciliación y cierres excepcionales (cuatro ojos)" "HTTPS/JSON (API de operaciones)"
         plataforma.consola -> plataforma.vinculacion "Resuelve revisiones manuales de vinculación (cuatro ojos)" "HTTPS/JSON (API de operaciones)"
         plataforma.consola -> plataforma.auditoria "Consulta el registro de auditoría" "HTTPS/JSON"
+        plataforma.consola -> idpCorporativo "Autentica al personal (federación)" "OpenID Connect o SAML" "Por validar"
     }
 
     views {
@@ -414,19 +445,19 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
 
         container plataforma "Contenedores-Vinculacion" "Vista focalizada: vinculación digital (ADR-0009)." {
             title "C4 Nivel 2 — Vinculación digital"
-            include solicitante plataforma.app plataforma.gateway plataforma.bff plataforma.vinculacion plataforma.vinculacionDb plataforma.idp plataforma.broker plataforma.consola kyc core
+            include solicitante plataforma.app plataforma.gateway plataforma.bff plataforma.vinculacion plataforma.vinculacionDb plataforma.diarioDespacho plataforma.idp plataforma.broker plataforma.consola kyc core
             autolayout lr 250 150
         }
 
         container plataforma "Contenedores-Transferencias" "Vista focalizada: transferencias. El orquestador es PROVISIONAL (CF-01/CF-02 pendientes de verificación independiente)." {
             title "C4 Nivel 2 — Transferencias (provisional)"
-            include cliente plataforma.spa plataforma.app plataforma.gateway plataforma.bff plataforma.transferencias plataforma.transferenciasDb plataforma.broker plataforma.consola core transferencias
+            include cliente plataforma.spa plataforma.app plataforma.gateway plataforma.bff plataforma.bffSesiones plataforma.transferencias plataforma.transferenciasDb plataforma.diarioDespacho plataforma.broker plataforma.consola core transferencias
             autolayout lr 250 150
         }
 
         container plataforma "Contenedores-NotificacionesAuditoria" "Vista focalizada: eventos, notificaciones y auditoría." {
             title "C4 Nivel 2 — Notificaciones y auditoría"
-            include plataforma.consultas plataforma.vinculacion plataforma.transferencias plataforma.idp plataforma.broker plataforma.notif plataforma.notifDb plataforma.auditoria plataforma.auditoriaDb plataforma.consola notificaciones cliente
+            include plataforma.bff plataforma.consultas plataforma.vinculacion plataforma.transferencias plataforma.idp plataforma.broker plataforma.notif plataforma.notifDb plataforma.auditoria plataforma.auditoriaDb plataforma.consola notificaciones cliente
             autolayout lr 250 150
         }
 

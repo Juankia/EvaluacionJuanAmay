@@ -119,3 +119,14 @@ La cobertura y lo pendiente por requisito están en [ARG-02 — Preparación, se
 | R5 | Servicio y almacén de auditoría; caché de consultas en el Servicio de consultas |
 | R6 | SPA web, aplicación móvil |
 | C1–C6 | Transversales: [22](22-seguridad-entre-contenedores.md), [19](19-comunicacion-entre-contenedores.md), [18](18-propiedad-y-consistencia-de-datos.md), [21](21-alternativas-tecnologicas.md) |
+
+## 9. Trazabilidad de la remediación de ARG-02
+
+| Hallazgo | Requisitos | Decisión | Escenarios | Riesgos |
+|---|---|---|---|---|
+| ARG02-C01 | R1, R3; C3 | [ADR-0021](adr/ADR-0021-diario-de-autorizacion-de-despacho.md); ADR-0006 IC-13 e IC-16; ADR-0016 PT-07 y PT-08 | QA14 | RR-19, RR-24 |
+| ARG02-H01 | C2, C3 | ADR-0016 (modos de durabilidad, detección) | QA14 | RR-19 |
+| ARG02-H02 | R2, R6; C4 | [ADR-0019](adr/ADR-0019-sesiones-del-bff.md) | QA4 | RR-25 |
+| ARG02-H03 | R5 | [ADR-0020](adr/ADR-0020-politica-de-auditoria-por-categoria.md) | QA6, QA15 | RR-23 |
+| ARG02-H04 | R2, R3; C4 | ADR-0013 (enmienda) | QA11 | RR-21 |
+| ARG02-H05 | C6 | S21; Q-20; [19 §5](19-comunicacion-entre-contenedores.md#5-ubicación-del-core-y-conectividad-arg02-h05) | — | RR-22 |

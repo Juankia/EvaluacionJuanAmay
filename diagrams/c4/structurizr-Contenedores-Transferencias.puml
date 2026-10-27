@@ -24,6 +24,18 @@ hide stereotype
     Shadowing: 0;
     MaximumWidth: 450;
   }
+  // Element,Container,Almacén de datos
+  .Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M= {
+    BackgroundColor: #2f6fa7;
+    LineColor: #204d74;
+    LineStyle: 0;
+    LineThickness: 2;
+    FontColor: #ffffff;
+    FontSize: 22;
+    HorizontalAlignment: center;
+    Shadowing: 0;
+    MaximumWidth: 450;
+  }
   // Element,Container,Almacén de datos,Provisional
   .Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw= {
     BackgroundColor: #2f6fa7;
@@ -156,14 +168,16 @@ rectangle "==Core Bancario\n<size:15>[Sistema de software]</size>\n\nSistema exi
 rectangle "==Sistema Externo de Transferencias\n<size:15>[Sistema de software]</size>\n\nCapacidad externa que procesa las transferencias interbancarias. La topología de integración (directa, mediante la infraestructura de pagos existente de la institución o mediante un intermediario autorizado) está por validar (S13, DD-16)." <<Element-RWxlbWVudCxJbmZyYWVzdHJ1Y3R1cmEgZmluYW5jaWVyYSBleHRlcm5h>> as SistemaExternodeTransferencias
 
 rectangle "Plataforma de Banca Digital\n<size:15>[Sistema de software]</size>" <<Boundary-UGxhdGFmb3JtYSBkZSBCYW5jYSBEaWdpdGFs>> {
+  database "==Almacén de sesiones del BFF\n<size:15>[Contenedor: Almacén clave-valor en memoria con alta disponibilidad (producto con DD-15)]</size>\n\nSesiones web y tokens de la SPA cifrados, índice de sujeto a sesiones y claves de intenciones pendientes generadas por la SPA (ADR-0019)." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3M=>> as PlataformadeBancaDigital.AlmacéndesesionesdelBFF
   rectangle "==Servicio de transferencias\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nContrato de idempotencia (ADR-0006) y orquestador durable de transferencias (ADR-0005): titularidad cercada, permiso de envío único, conciliación y efecto tardío. Contiene la ACL de transferencias. PROVISIONAL: CF-01/CF-02 sin verificación independiente." <<Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Serviciodetransferencias
   database "==BD transaccional de transferencias\n<size:15>[Contenedor: PostgreSQL (ADR-0016)]</size>\n\nIntenciones, huellas, estado de las operaciones, titularidad y tokens, evidencia huérfana, casos de conciliación y outbox. Requisitos: escritor único, RPO 0 de las escrituras confirmadas y cuarentena tras restauración (ADR-0016)." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.BDtransaccionaldetransferencias
+  database "==Diario de autorización de despacho\n<size:15>[Contenedor: Almacén linealizable con quórum entre dominios de falla (capacidad por seleccionar, DD-23)]</size>\n\nRegistro independiente, de solo anexión y con confirmación por quórum en al menos tres dominios de falla. Ningún tramo se despacha sin su entrada (INV-DR-1). Mantiene la época regional (ADR-0021). PROVISIONAL." <<Element-RWxlbWVudCxDb250YWluZXIsQWxtYWPDqW4gZGUgZGF0b3MsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Diariodeautorizacióndedespacho
   queue "==Broker de mensajería\n<size:15>[Contenedor: Broker gestionado de colas y tópicos (por seleccionar, DD-15)]</size>\n\nDistribuye los eventos publicados desde los outbox: entrega al menos una vez, tópicos con suscripciones, colas de mensajes fallidos (ADR-0015)." <<Element-RWxlbWVudCxDb250YWluZXIsTWVuc2FqZXLDrWE=>> as PlataformadeBancaDigital.Brokerdemensajería
   rectangle "==Consola de operaciones\n<size:15>[Contenedor: Aplicación web interna (por definir)]</size>\n\nResolución de REQUIRES_RECONCILIATION y MANUAL_REVIEW con cuatro ojos, cierre excepcional y consulta de auditoría. PROVISIONAL: puede sustituirse por un sistema administrativo existente (DD-18)." <<Element-RWxlbWVudCxDb250YWluZXIsUHJvdmlzaW9uYWw=>> as PlataformadeBancaDigital.Consoladeoperaciones
   rectangle "==SPA web\n<size:15>[Contenedor: React + TypeScript]</size>\n\nAplicación de página única para la banca web: consultas y transferencias. No conserva tokens OAuth en el navegador (sesión gestionada por el BFF)." <<Element-RWxlbWVudCxDb250YWluZXIsTmF2ZWdhZG9y>> as PlataformadeBancaDigital.SPAweb
   rectangle "==Aplicación móvil\n<size:15>[Contenedor: React Native + TypeScript (recomendado, ADR-0018)]</size>\n\nAplicación multiplataforma para la banca móvil y la vinculación digital. Integra el SDK del proveedor KYC/biométrico y la biometría local del dispositivo." <<Element-RWxlbWVudCxDb250YWluZXIsTcOzdmls>> as PlataformadeBancaDigital.Aplicaciónmóvil
   rectangle "==API Gateway\n<size:15>[Contenedor: Producto de API Gateway gestionado (por seleccionar, DD-15)]</size>\n\nPunto único de entrada: enrutamiento, validación de tokens, limitación de tasa, correlación y políticas de seguridad de borde. Sin lógica de negocio ni estado financiero (ADR-0002)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.APIGateway
-  rectangle "==BFF de canales digitales\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nBackend for Frontend compartido por web y móvil: gestor de tokens de la SPA, composición de lecturas y adaptación por canal. No posee invariantes financieros (ADR-0014)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.BFFdecanalesdigitales
+  rectangle "==BFF de canales digitales\n<size:15>[Contenedor: Java 21 / Quarkus (provisional, ADR-0017)]</size>\n\nBackend for Frontend compartido por web y móvil: gestor de tokens de la SPA (sesión en el almacén de sesiones, ADR-0019), composición de lecturas y adaptación por canal. Proceso sin estado; no posee invariantes financieros (ADR-0014)." <<Element-RWxlbWVudCxDb250YWluZXI=>> as PlataformadeBancaDigital.BFFdecanalesdigitales
 }
 
 Clientebancario --> PlataformadeBancaDigital.SPAweb <<Relationship-UmVsYXRpb25zaGlw>> : "Usa la banca web\n<size:14>[HTTPS]</size>"
@@ -171,11 +185,14 @@ Clientebancario --> PlataformadeBancaDigital.Aplicaciónmóvil <<Relationship-Um
 PlataformadeBancaDigital.SPAweb --> PlataformadeBancaDigital.APIGateway <<Relationship-UmVsYXRpb25zaGlw>> : "Invoca la API de canal con la sesión del BFF\n<size:14>[HTTPS/JSON; cookie segura]</size>"
 PlataformadeBancaDigital.Aplicaciónmóvil --> PlataformadeBancaDigital.APIGateway <<Relationship-UmVsYXRpb25zaGlw>> : "Invoca la API de canal con un token de acceso\n<size:14>[HTTPS/JSON; OAuth 2.0]</size>"
 PlataformadeBancaDigital.APIGateway --> PlataformadeBancaDigital.BFFdecanalesdigitales <<Relationship-UmVsYXRpb25zaGlw>> : "Enruta las solicitudes de canal\n<size:14>[HTTPS/JSON]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales --> PlataformadeBancaDigital.AlmacéndesesionesdelBFF <<Relationship-UmVsYXRpb25zaGlw>> : "Guarda y recupera sesiones y tokens cifrados\n<size:14>[Protocolo del almacén (TLS)]</size>"
 PlataformadeBancaDigital.BFFdecanalesdigitales --> PlataformadeBancaDigital.Serviciodetransferencias <<Relationship-UmVsYXRpb25zaGlw>> : "Inicia transferencias y consulta su estado por identificador de operación\n<size:14>[HTTPS/JSON; Idempotency-Key]</size>"
 PlataformadeBancaDigital.Serviciodetransferencias --> CoreBancario <<Relationship-UmVsYXRpb25zaGlw>> : "Ejecuta transferencias y concilia (ACL; CL-1/CL-2; permiso de envío único)\n<size:14>[Protocolo del Core (por validar, S3)]</size>"
 PlataformadeBancaDigital.Serviciodetransferencias --> SistemaExternodeTransferencias <<Relationship-UmVsYXRpb25zaGlwLFJ1dGEgcG9yIHZhbGlkYXI=>> : "Solicita el procesamiento interbancario (ruta por validar)\n<size:14>[Por validar (Q-01)]</size>"
 PlataformadeBancaDigital.Serviciodetransferencias --> PlataformadeBancaDigital.BDtransaccionaldetransferencias <<Relationship-UmVsYXRpb25zaGlw>> : "Reserva intenciones y aplica transiciones cercadas\n<size:14>[SQL/TLS]</size>"
 PlataformadeBancaDigital.Serviciodetransferencias --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Publica movimientos confirmados, cambios de estado y auditoría (outbox)\n<size:14>[Mensajería]</size>"
+PlataformadeBancaDigital.Serviciodetransferencias --> PlataformadeBancaDigital.Diariodeautorizacióndedespacho <<Relationship-UmVsYXRpb25zaGlw>> : "Anexa y confirma la autorización de despacho antes de cada envío (INV-DR-1)\n<size:14>[Por seleccionar (DD-23)]</size>"
+PlataformadeBancaDigital.BFFdecanalesdigitales --> PlataformadeBancaDigital.Brokerdemensajería <<Relationship-UmVsYXRpb25zaGlw>> : "Consume eventos de seguridad para invalidar sesiones\n<size:14>[Mensajería]</size>"
 PlataformadeBancaDigital.Consoladeoperaciones --> PlataformadeBancaDigital.Serviciodetransferencias <<Relationship-UmVsYXRpb25zaGlw>> : "Resuelve casos de conciliación y cierres excepcionales (cuatro ojos)\n<size:14>[HTTPS/JSON (API de operaciones)]</size>"
 
 @enduml

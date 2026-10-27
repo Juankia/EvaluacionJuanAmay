@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | **Aceptada con condiciones** (motor relacional y requisitos de durabilidad). El servicio gestionado concreto se decide con el proveedor cloud (DD-15) |
+| Estado | **Aceptada con condiciones — enmendada en la remediación de ARG-02** (ARG02-C01, H01, M04, L02, L05). El servicio gestionado concreto se decide con el proveedor cloud (DD-15) |
 | Fecha | 2026-10-27 |
 | Requisitos | R1, R3, R5; C2, C3 |
 | Drivers y supuestos | S2; AQ-02, AQ-04, AQ-05; QA3, QA6, QA12 |
@@ -70,3 +70,17 @@ La verificación acotada de la Fase 3 ([23](../23-riesgos-y-condiciones-fase-3.m
 ## Riesgos
 
 - RR-19: durabilidad del almacén transaccional y restauración.
+
+## Enmienda de la remediación de ARG-02
+
+| ID | Cambio | Origen |
+|---|---|---|
+| **Alcance de PT-01 a PT-03** | Aplican **explícitamente** a la BD transaccional de transferencias **y** a la BD de vinculación (alta de clientes) | ARG02-L02 |
+| **PT-02 (reformulada)** | La cuarentena **también rechaza las nuevas iniciaciones financieras**, no solo los permisos de envío. La conciliación se apoya en el **diario de autorización de despacho**, no solo en el almacén restaurado ([ADR-0021](ADR-0021-diario-de-autorizacion-de-despacho.md) §6) | ARG02-C01 |
+| **PT-07 (nueva)** | Ningún tramo se despacha sin una entrada confirmada por quórum en el diario de autorización de despacho (INV-DR-1) | ARG02-C01 |
+| **PT-08 (nueva)** | La promoción de una región requiere incrementar la época regional en el diario; una región con una época anterior no puede autorizar despachos | ARG02-C01, escenario de cerebro dividido |
+| **Modos de durabilidad (nuevo)** | **NORMAL:** réplica síncrona confirmada y diario disponible. **DEGRADADO_BD:** se perdió la réplica síncrona o hay retraso; se permiten despachos **solo** si el diario está disponible, porque es la evidencia independiente; alerta. **DEGRADADO_DIARIO:** el diario no está disponible; **sin despachos**. **INCIERTO:** hubo una conmutación o una restauración con escrituras confirmadas inciertas; **cuarentena** (ADR-0021 §6) | ARG02-H01 |
+| **Detección (nuevo)** | El servicio publica y evalúa: el estado de la réplica síncrona, el retraso de la replicación, los eventos de conmutación del servicio gestionado, la época regional del diario y la coincidencia entre la marca de agua y el diario. Toda conmutación activa el modo INCIERTO **hasta demostrar** que no hubo pérdida | ARG02-H01 |
+| **Validación de la configuración (nuevo)** | **No se presume** la semántica de replicación de ningún servicio gestionado. Antes de la implementación se valida la configuración real: comportamiento ante la pérdida de la réplica síncrona, conmutación y protección contra varios escritores (CP-10) | ARG02-H01 |
+| **Lecturas de estado (nuevo)** | Ninguna decisión de estado (transiciones, IC-07, IC-15, titularidad) se toma con lecturas de réplicas; solo con el primario | ARG02-L05 |
+| **BD del IdP aislada (nuevo)** | La BD del IdP **no comparte** el clúster físico con otros almacenes | ARG02-M04 |
