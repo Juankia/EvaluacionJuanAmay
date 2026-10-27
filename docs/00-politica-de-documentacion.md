@@ -60,6 +60,8 @@ Se mantienen en inglés, según las convenciones de ingeniería:
 | Nombres técnicos de componentes desplegables | `digital-banking-bff`, `transfer-service` |
 | Mensajes de commit | Ver sección 6 |
 
+Las reglas detalladas de idioma y nomenclatura del código, el glosario de dominio (término de negocio → término en código) y los estándares de diseño están en [Estándares de ingeniería](00-estandares-de-ingenieria.md).
+
 ### 3.3 Términos técnicos internacionales
 
 Los nombres de tecnologías, estándares y patrones se mantienen en su forma original. Se traducen solo cuando la traducción no pierde precisión.
@@ -190,6 +192,7 @@ Además, todos los nombres de archivo de documentos y ADR:
 ### 9.2 Numeración
 
 - **Prefijo de los documentos:** indica el orden de lectura. Un número no se reutiliza.
+- **Prefijo `00-`:** reservado para los **documentos normativos** del repositorio (políticas y estándares), que pueden compartirlo. Ejemplos: `00-politica-de-documentacion.md`, `00-estandares-de-ingenieria.md`. Los documentos arquitectónicos usan números únicos a partir de `01-`.
 - **Número de ADR:** es un **identificador permanente**. No se renumera ni se reutiliza, aunque el ADR se reemplace o se deje sin efecto. Un ADR nuevo toma el siguiente número disponible.
 - **Títulos:** los títulos de los documentos (encabezado `#`) se escriben en español con tildes. La restricción ASCII aplica solo a los nombres de archivo.
 

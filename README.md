@@ -53,6 +53,7 @@ Documentos:
 ├── README.md
 ├── docs/
 │   ├── 00-politica-de-documentacion.md         Convenciones de idioma y redacción
+│   ├── 00-estandares-de-ingenieria.md          Estándares de código, glosario de dominio, pruebas y CI
 │   ├── 01-drivers-arquitectonicos.md           Drivers funcionales y de calidad
 │   ├── 02-supuestos.md                         Supuestos arquitectónicos (S1–S17)
 │   ├── 03-atributos-de-calidad.md              Priorización de atributos de calidad
@@ -96,7 +97,9 @@ El enunciado original es el documento `Reto Técnico Arquitecto Jardín Azuayo.p
 
 ## Convenciones
 
-Toda la documentación sigue la [política de documentación e idioma](docs/00-politica-de-documentacion.md):
+Toda la documentación sigue la [política de documentación e idioma](docs/00-politica-de-documentacion.md). Las futuras implementaciones seguirán los [estándares de ingeniería](docs/00-estandares-de-ingenieria.md). Estos estándares no inician la implementación ni seleccionan el stack, que sigue diferido (DD-19).
+
+Puntos principales de la política:
 
 - Redacción en español técnico profesional (es-EC).
 - Identificadores de código, contratos y eventos en inglés.
