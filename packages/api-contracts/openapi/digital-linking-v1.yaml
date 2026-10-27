@@ -1,0 +1,100 @@
+openapi: 3.0.3
+info:
+  title: Digital Linking Service — channel API (safe subset)
+  version: 1.0.0
+  description: >
+    Only the non-activating steps are implemented: start, identity verification with a
+    MOCK provider, and read-only status. Customer creation in the Core (E3) and digital
+    access activation (E5) are BLOCKED and their adapters are disabled. Internal states
+    (for example PRE_EXISTING) are never exposed (VD-07).
+paths:
+  /v1/onboarding-requests:
+    post:
+      operationId: startOnboarding
+      parameters:
+        - $ref: './common-v1.yaml#/components/parameters/IdempotencyKey'
+        - $ref: './common-v1.yaml#/components/parameters/CorrelationId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/StartOnboardingRequest'}
+      responses:
+        '201':
+          description: Request created
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OnboardingStatusResponse'}
+        '200':
+          description: Idempotent replay of an existing request
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OnboardingStatusResponse'}
+        '400': {$ref: '#/components/responses/Error'}
+        '409': {$ref: '#/components/responses/Error'}
+        '503': {$ref: '#/components/responses/Error'}
+  /v1/onboarding-requests/{requestId}/identity-verifications:
+    post:
+      operationId: verifyIdentity
+      parameters:
+        - $ref: './common-v1.yaml#/components/parameters/IdempotencyKey'
+        - {name: requestId, in: path, required: true, schema: {type: string, format: uuid}}
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/IdentityVerificationRequest'}
+      responses:
+        '200':
+          description: Verification outcome reflected in the request status
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OnboardingStatusResponse'}
+        '400': {$ref: '#/components/responses/Error'}
+        '404': {$ref: '#/components/responses/Error'}
+        '409': {$ref: '#/components/responses/Error'}
+        '503': {$ref: '#/components/responses/Error'}
+  /v1/onboarding-requests/{requestId}:
+    get:
+      operationId: getOnboardingStatus
+      parameters:
+        - {name: requestId, in: path, required: true, schema: {type: string, format: uuid}}
+      responses:
+        '200':
+          description: Read-only status
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/OnboardingStatusResponse'}
+        '404': {$ref: '#/components/responses/Error'}
+components:
+  responses:
+    Error:
+      description: Uniform error
+      content:
+        application/json:
+          schema: {$ref: './common-v1.yaml#/components/schemas/ErrorResponse'}
+  schemas:
+    StartOnboardingRequest:
+      type: object
+      required: [identificationType, identificationNumber, consentAccepted]
+      properties:
+        identificationType: {type: string, enum: [CEDULA]}
+        identificationNumber: {type: string, pattern: '^[0-9]{10}$'}
+        consentAccepted: {type: boolean, enum: [true]}
+    IdentityVerificationRequest:
+      type: object
+      required: [captureReference]
+      properties:
+        captureReference:
+          type: string
+          pattern: '^[A-Za-z0-9_-]{4,64}$'
+          description: Opaque reference from the KYC SDK. Never biometric data.
+    OnboardingStatusResponse:
+      type: object
+      required: [requestId, channelStatus, updatedAt]
+      properties:
+        requestId: {type: string, format: uuid}
+        channelStatus:
+          type: string
+          enum: [IN_PROGRESS, ACTION_REQUIRED, UNDER_REVIEW, COMPLETED, CANNOT_CONTINUE_DIGITALLY]
+        updatedAt: {type: string, format: date-time}

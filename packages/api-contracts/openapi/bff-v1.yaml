@@ -1,0 +1,94 @@
+openapi: 3.0.3
+info:
+  title: Web BFF — channel API
+  version: 1.0.0
+  description: >
+    Session-based API for the web SPA (ADR-0019). Tokens never reach the browser.
+    Mutating requests require the X-CSRF-Token header. There are NO transfer or
+    customer-creation routes (blocker B-05).
+paths:
+  /api/v1/dev/session:
+    post:
+      operationId: createDevSession
+      description: >
+        LOCAL DEVELOPMENT ONLY. Disabled unless bff.dev-auth.enabled=true. Replaces the
+        corporate IdP login (OIDC) which is not available locally. Synthetic users only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username]
+              properties:
+                username: {type: string, pattern: '^[a-z0-9.-]{3,32}$'}
+      responses:
+        '200':
+          description: Session created; cookie set
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SessionResponse'}
+        '400': {$ref: '#/components/responses/Error'}
+        '401': {$ref: '#/components/responses/Error'}
+        '404': {$ref: '#/components/responses/Error'}
+  /api/v1/session:
+    get:
+      operationId: getSession
+      responses:
+        '200':
+          description: Current session
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/SessionResponse'}
+        '401': {$ref: '#/components/responses/Error'}
+    delete:
+      operationId: logout
+      parameters:
+        - {name: X-CSRF-Token, in: header, required: true, schema: {type: string}}
+      responses:
+        '204': {description: Session revoked}
+        '401': {$ref: '#/components/responses/Error'}
+        '403': {$ref: '#/components/responses/Error'}
+  /api/v1/accounts:
+    get:
+      operationId: listAccounts
+      responses:
+        '200':
+          description: Proxied from the inquiries service
+          content:
+            application/json:
+              schema: {$ref: './inquiries-v1.yaml#/components/schemas/AccountSummaryResponse'}
+        '401': {$ref: '#/components/responses/Error'}
+        '503': {$ref: '#/components/responses/Error'}
+  /api/v1/accounts/{accountId}/movements:
+    get:
+      operationId: listMovements
+      parameters:
+        - {name: accountId, in: path, required: true, schema: {type: string}}
+        - {name: cursor, in: query, required: false, schema: {type: string}}
+        - {name: pageSize, in: query, required: false, schema: {type: integer}}
+      responses:
+        '200':
+          description: Proxied from the inquiries service
+          content:
+            application/json:
+              schema: {$ref: './inquiries-v1.yaml#/components/schemas/MovementPageResponse'}
+        '400': {$ref: '#/components/responses/Error'}
+        '401': {$ref: '#/components/responses/Error'}
+        '404': {$ref: '#/components/responses/Error'}
+        '503': {$ref: '#/components/responses/Error'}
+components:
+  responses:
+    Error:
+      description: Uniform error
+      content:
+        application/json:
+          schema: {$ref: './common-v1.yaml#/components/schemas/ErrorResponse'}
+  schemas:
+    SessionResponse:
+      type: object
+      required: [displayName, csrfToken, expiresAt]
+      properties:
+        displayName: {type: string}
+        csrfToken: {type: string}
+        expiresAt: {type: string, format: date-time}

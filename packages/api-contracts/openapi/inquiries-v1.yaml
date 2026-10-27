@@ -1,0 +1,105 @@
+openapi: 3.0.3
+info:
+  title: Inquiries Service — channel API
+  version: 1.0.0
+  description: >
+    Read-only account inquiries. Requires a user token with audience "inquiries".
+    Account identifiers in responses are masked. A foreign or missing account returns
+    RESOURCE_NOT_FOUND (no enumeration, docs/25 §3).
+paths:
+  /v1/accounts:
+    get:
+      operationId: listAccounts
+      parameters:
+        - $ref: './common-v1.yaml#/components/parameters/CorrelationId'
+      responses:
+        '200':
+          description: Account summary of the authenticated customer
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountSummaryResponse'
+        '401': {$ref: '#/components/responses/Error'}
+        '503': {$ref: '#/components/responses/Error'}
+  /v1/accounts/{accountId}/movements:
+    get:
+      operationId: listMovements
+      parameters:
+        - $ref: './common-v1.yaml#/components/parameters/CorrelationId'
+        - name: accountId
+          in: path
+          required: true
+          schema: {type: string, pattern: '^[A-Za-z0-9-]{4,34}$'}
+        - name: cursor
+          in: query
+          required: false
+          schema: {type: string, maxLength: 200}
+        - name: pageSize
+          in: query
+          required: false
+          schema: {type: integer, minimum: 1, maximum: 50, default: 20}
+      responses:
+        '200':
+          description: One page of movements, newest first
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MovementPageResponse'
+        '400': {$ref: '#/components/responses/Error'}
+        '401': {$ref: '#/components/responses/Error'}
+        '404': {$ref: '#/components/responses/Error'}
+        '503': {$ref: '#/components/responses/Error'}
+components:
+  responses:
+    Error:
+      description: Uniform error
+      content:
+        application/json:
+          schema:
+            $ref: './common-v1.yaml#/components/schemas/ErrorResponse'
+  schemas:
+    Money:
+      type: object
+      required: [value, currency]
+      properties:
+        value: {type: string, pattern: '^-?[0-9]+\.[0-9]{2}$'}
+        currency: {type: string, pattern: '^[A-Z]{3}$'}
+    AccountSummary:
+      type: object
+      required: [accountId, maskedNumber, productType, status, availableBalance, ledgerBalance]
+      properties:
+        accountId: {type: string}
+        maskedNumber: {type: string}
+        productType: {type: string, enum: [SAVINGS, CHECKING, OTHER]}
+        status: {type: string, enum: [ACTIVE, BLOCKED, OTHER]}
+        availableBalance: {$ref: '#/components/schemas/Money'}
+        ledgerBalance: {$ref: '#/components/schemas/Money'}
+    AccountSummaryResponse:
+      type: object
+      required: [items, asOf, freshness]
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/AccountSummary'}
+        asOf: {type: string, format: date-time}
+        freshness: {type: string, enum: [FRESH, CACHED, DEGRADED]}
+    Movement:
+      type: object
+      required: [movementId, bookingDate, valueDate, amount, direction, description]
+      properties:
+        movementId: {type: string}
+        bookingDate: {type: string, format: date}
+        valueDate: {type: string, format: date}
+        amount: {$ref: '#/components/schemas/Money'}
+        direction: {type: string, enum: [DEBIT, CREDIT]}
+        description: {type: string}
+    MovementPageResponse:
+      type: object
+      required: [items, asOf, freshness]
+      properties:
+        items:
+          type: array
+          items: {$ref: '#/components/schemas/Movement'}
+        nextCursor: {type: string, nullable: true}
+        asOf: {type: string, format: date-time}
+        freshness: {type: string, enum: [FRESH, CACHED, DEGRADED]}

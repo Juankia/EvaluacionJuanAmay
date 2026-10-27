@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://contracts.digitalbanking.local/event-envelope-v1.schema.json",
+  "title": "EventEnvelope",
+  "description": "Common event envelope (docs/25 §4.1). Payload must be minimised: no contact data, no biometric data, no credentials.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["eventId", "eventType", "schemaVersion", "source", "subjectType", "subjectId", "sequence", "occurredAt", "auditCategory", "payload"],
+  "properties": {
+    "eventId": {"type": "string", "minLength": 8, "maxLength": 64},
+    "eventType": {"type": "string", "pattern": "^[A-Z][A-Za-z]+$"},
+    "schemaVersion": {"type": "integer", "minimum": 1},
+    "source": {"type": "string"},
+    "subjectType": {"type": "string", "enum": ["OPERATION", "ONBOARDING_REQUEST", "CUSTOMER", "SESSION"]},
+    "subjectId": {"type": "string", "maxLength": 64},
+    "sequence": {"type": "integer", "minimum": 1},
+    "occurredAt": {"type": "string", "format": "date-time"},
+    "correlationId": {"type": ["string", "null"]},
+    "auditCategory": {"type": "string", "enum": ["A1", "A2", "A3", "A4", "A5", "A6", "A7", "A8"]},
+    "payload": {"type": "object"}
+  }
+}

@@ -2,3 +2,13 @@
 .structurizr/
 c4/.structurizr/
 c4/workspace.json
+
+# Build y dependencias
+target/
+node_modules/
+dist/
+
+# Secretos y claves locales
+.env
+infra/local/.secrets/
+*.key

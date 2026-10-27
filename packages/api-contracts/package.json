@@ -1,0 +1,13 @@
+{
+  "name": "@digitalbanking/api-contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "TypeScript types mirroring the OpenAPI channel contracts. Hand-maintained; checked against the OpenAPI files by test.",
+  "type": "module",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  }
+}

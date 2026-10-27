@@ -1,0 +1,57 @@
+openapi: 3.0.3
+info:
+  title: Transfers Service — BOUNDARY CONTRACT ONLY
+  version: 0.0.1-blocked
+  description: >
+    CONTRACT ONLY. NOT IMPLEMENTED. NOT APPROVED. Blocker B-05 (execution and recovery
+    design), CF-01/CF-02 pending independent verification, DD-23, Q-20, Q-21. This file
+    documents the channel-facing boundary so that consumers do not depend on internal
+    semantics. It does not approve any transaction protocol. No server, client or stub
+    implementing these operations may be created until B-05 is lifted.
+x-status: BLOCKED
+x-blockers: [B-05, CF-01, CF-02, DD-23, Q-20, Q-21]
+paths:
+  /v1/transfers:
+    post:
+      operationId: initiateTransfer
+      x-status: BLOCKED
+      parameters:
+        - $ref: './common-v1.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/TransferRequest'}
+      responses:
+        '202':
+          description: Accepted; status must be queried by operationId
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TransferStatusResponse'}
+  /v1/transfers/{operationId}:
+    get:
+      operationId: getTransferStatus
+      x-status: BLOCKED
+      parameters:
+        - {name: operationId, in: path, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Channel status
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/TransferStatusResponse'}
+components:
+  schemas:
+    TransferRequest:
+      type: object
+      description: Fields intentionally left open until B-05 is lifted.
+      properties: {}
+    TransferStatusResponse:
+      type: object
+      required: [operationId, channelStatus, updatedAt]
+      properties:
+        operationId: {type: string}
+        channelStatus:
+          type: string
+          enum: [RECEIVED, IN_PROGRESS, IN_VERIFICATION, COMPLETED, REJECTED, FAILED_NO_EFFECT, REVERSED, CLOSED_BY_EXCEPTION]
+        updatedAt: {type: string, format: date-time}

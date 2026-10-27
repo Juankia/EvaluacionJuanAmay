@@ -1,0 +1,68 @@
+openapi: 3.0.3
+info:
+  title: Common technical components
+  version: 1.0.0
+  description: Cross-cutting technical schemas (errors, correlation). No domain model.
+paths: {}
+components:
+  parameters:
+    CorrelationId:
+      name: X-Correlation-Id
+      in: header
+      required: false
+      schema:
+        type: string
+        pattern: '^[A-Za-z0-9-]{8,64}$'
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        minLength: 16
+        maxLength: 128
+        pattern: '^[A-Za-z0-9_-]{16,128}$'
+  schemas:
+    ErrorResponse:
+      type: object
+      required: [code, messageKey, retryable, details]
+      properties:
+        code:
+          type: string
+          enum:
+            - VALIDATION_ERROR
+            - IDEMPOTENCY_KEY_REQUIRED
+            - UNAUTHENTICATED
+            - FORBIDDEN
+            - RESOURCE_NOT_FOUND
+            - IDEMPOTENCY_CONFLICT
+            - EQUIVALENT_OPERATION_IN_PROGRESS
+            - ONBOARDING_CANNOT_CONTINUE_DIGITALLY
+            - CORE_UNAVAILABLE
+            - CAPACITY_EXCEEDED
+            - IDENTITY_PROVIDER_UNAVAILABLE
+            - AUDIT_UNAVAILABLE
+            - SERVICE_IN_QUARANTINE
+            - INTERNAL_ERROR
+        messageKey:
+          type: string
+        correlationId:
+          type: string
+          nullable: true
+        retryable:
+          type: boolean
+        retryAfterSeconds:
+          type: integer
+          nullable: true
+        details:
+          type: array
+          items:
+            $ref: '#/components/schemas/FieldViolation'
+    FieldViolation:
+      type: object
+      required: [field, reason]
+      properties:
+        field:
+          type: string
+        reason:
+          type: string

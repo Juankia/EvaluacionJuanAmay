@@ -1,0 +1,3 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Marks this library for Quarkus bean and provider discovery (filters and exception mappers). -->
+<beans xmlns="https://jakarta.ee/xml/ns/jakartaee" bean-discovery-mode="annotated" version="4.0"/>

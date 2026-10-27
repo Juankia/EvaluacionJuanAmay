@@ -1,0 +1,36 @@
+openapi: 3.0.3
+info:
+  title: Notifications Service — operational API
+  version: 1.0.0
+  description: >
+    Notifications are driven by events (asynchronous). This API only exposes delivery
+    records for local verification. All channel providers are FAKE: no real messages
+    are sent. Device registration (docs/25 §2.4) is planned, not implemented.
+paths:
+  /ops/v1/deliveries:
+    get:
+      operationId: listDeliveries
+      parameters:
+        - {name: eventId, in: query, required: true, schema: {type: string}}
+      responses:
+        '200':
+          description: Delivery attempts recorded for an event
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items]
+                properties:
+                  items:
+                    type: array
+                    items: {$ref: '#/components/schemas/Delivery'}
+components:
+  schemas:
+    Delivery:
+      type: object
+      required: [eventId, channel, status, attempts]
+      properties:
+        eventId: {type: string}
+        channel: {type: string, enum: [PUSH, SMS]}
+        status: {type: string, enum: [SENT, FAILED]}
+        attempts: {type: integer}
