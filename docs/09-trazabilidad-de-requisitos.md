@@ -134,3 +134,7 @@ La cobertura y lo pendiente por requisito están en [ARG-02 — Preparación, se
 ## 10. Representación en los componentes (Fase 4)
 
 La trazabilidad de requisitos a componentes está en [24 §7](24-arquitectura-de-componentes.md#7-trazabilidad-de-componentes). **R1 (transferencias) y R3 (alta del cliente en el Core) solo tienen contratos de frontera** en el nivel 3 mientras rija B-05.
+
+## 11. Cobertura de la entrega
+
+La matriz consolidada de R1–R6 y C1–C6, con diagramas, documentos, evidencia implementada y estado separado de arquitectura y código, está en [entrega — matriz de cumplimiento](entrega/matriz-cumplimiento.md). C2, C3, C5 y C6 se completan con [27](27-infraestructura-cloud.md), [28](28-alta-disponibilidad-y-recuperacion.md) y [ADR-0022](adr/ADR-0022-infraestructura-cloud-de-referencia.md); R2, R3, C1 y C4 con [29](29-seguridad-identidad-y-cumplimiento.md) y [ADR-0023](adr/ADR-0023-autenticacion-y-sesiones.md).
