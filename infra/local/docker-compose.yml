@@ -1,0 +1,40 @@
+# Local infrastructure only: one PostgreSQL per service (data ownership, ADR-0016) and a local
+# RabbitMQ. Synthetic data only. Usage: docs/implementacion/02.
+name: digital-banking-local
+
+services:
+  rabbitmq:
+    image: rabbitmq:4.1-management
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:?set in .env}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:?set in .env}
+    ports:
+      - "127.0.0.1:5672:5672"
+      - "127.0.0.1:15672:15672"
+
+  linking-db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: linking
+      POSTGRES_USER: ${LINKING_DB_USER:?set in .env}
+      POSTGRES_PASSWORD: ${LINKING_DB_PASSWORD:?set in .env}
+    ports:
+      - "127.0.0.1:5432:5432"
+
+  notifications-db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: notifications
+      POSTGRES_USER: ${NOTIFICATIONS_DB_USER:?set in .env}
+      POSTGRES_PASSWORD: ${NOTIFICATIONS_DB_PASSWORD:?set in .env}
+    ports:
+      - "127.0.0.1:5433:5432"
+
+  audit-db:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: audit
+      POSTGRES_USER: ${AUDIT_DB_USER:?set in .env}
+      POSTGRES_PASSWORD: ${AUDIT_DB_PASSWORD:?set in .env}
+    ports:
+      - "127.0.0.1:5434:5432"
