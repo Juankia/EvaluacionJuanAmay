@@ -3,23 +3,23 @@
 | Campo | Valor |
 |---|---|
 | Entrega | Reto técnico de Arquitecto de Soluciones/Aplicaciones — Plataforma de Banca Digital |
-| Autor | Juan Carlos Amay |
+| Autor y responsable | Juan Carlos Amay. Elaborado con apoyo de herramientas de IA generativa ([autoría y uso de IA](../../README.md#autoría-dirección-arquitectónica-y-uso-de-ia)) |
 | Fecha | 2026-10-27 |
-| Estado | **Propuesta arquitectónica completa, con limitaciones declaradas.** No apta para producción |
+| Estado | **Propuesta arquitectónica con limitaciones declaradas:** cubre R1–R6 y C1–C6; C3 y C6 parciales; ejecución financiera bloqueada. No apta para producción |
 
 ---
 
 ## 1. Qué se propone
 
-Una plataforma de canales digitales (web y móvil) que **protege al Core Bancario** y lo trata como sistema autoritativo, externo y de capacidad limitada. La plataforma:
+Una plataforma de canales digitales (web y móvil) **diseñada para proteger al Core Bancario**, que lo trata como sistema autoritativo, externo y de capacidad limitada. Lo que sigue describe el **diseño propuesto**; lo implementado se detalla en la §3. El diseño:
 
 - **Integra** el Core mediante **capas anticorrupción por dominio**, con un presupuesto global de capacidad (ADR-0001, ADR-0011).
 - **Expone** un API Gateway de borde y un **BFF compartido** sin lógica financiera (ADR-0002, ADR-0014).
 - **Divide** el negocio en servicios por dominio: consultas, vinculación, transferencias, notificaciones y auditoría, cada uno con su base de datos (ADR-0012, ADR-0016).
-- **Garantiza la integridad transaccional** con una máquina de estados durable, idempotencia y conciliación: **un timeout no es una falla** (ADR-0005, ADR-0006).
+- **Busca la integridad transaccional** con una máquina de estados durable, idempotencia y conciliación: **un timeout no es una falla** (ADR-0005, ADR-0006). Esas garantías son de diseño y están **condicionadas** a capacidades del Core por confirmar (Q-02, Q-17) y a un diario de despacho cuyo diseño (ADR-0021) **no fue aprobado**; por eso la ejecución financiera no se implementa.
 - **Comunica** los servicios por eventos con **outbox transaccional** y un broker gestionado (ADR-0015).
 - **Autentica** con un **IdP OIDC** interno, Authorization Code + PKCE y sesiones del servidor para la web (ADR-0013, ADR-0019, ADR-0023).
-- **Se despliega** sobre **AWS como referencia**: multizona, con DR en espera templada y conmutación con cuarentena financiera (ADR-0022).
+- **Propone** un despliegue de **referencia en AWS**, no realizado: multizona, con DR en espera templada y conmutación con cuarentena financiera (ADR-0022). La HA y el DR no se han probado.
 
 ## 2. Diagramas clave
 
@@ -43,8 +43,9 @@ Base técnica en Java 21 y Quarkus, autorizada por ARG-03 solo para el alcance *
 
 ## 4. Gobierno de riesgos
 
-- La arquitectura pasó por **tres revisiones adversariales** (ARG-01, ARG-02 y ARG-03), cuyos hallazgos se remediaron y quedaron registrados.
-- La **ejecución de transferencias y el alta de clientes en el Core están bloqueadas** (B-05) hasta enmendar ADR-0021 y obtener una verificación humana independiente. Es una decisión deliberada: **no se construye lo que no se puede demostrar seguro**.
+- La arquitectura pasó por **tres ciclos de revisión adversarial** (ARG-01, ARG-02 y ARG-03). Los hallazgos de ARG-01 y ARG-02 se remediaron en diseño. Los de ARG-03 sobre el diario de despacho (ARG03-C01, H01, H02) **siguen abiertos**.
+- Las revisiones usaron perfiles de comité simulados mediante IA y **no equivalen a una auditoría humana independiente** (ARG03-L03).
+- La **ejecución de transferencias y el alta de clientes en el Core están bloqueadas** (B-05) hasta enmendar ADR-0021 y obtener esa verificación humana independiente. Es una decisión deliberada: la ejecución financiera no se implementa mientras sus garantías no estén demostradas.
 
 ## 5. Cobertura
 

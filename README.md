@@ -2,15 +2,39 @@
 
 Repositorio de arquitectura como código (*Architecture as Code*) de la propuesta para el reto técnico **«Reto Técnico - Arquitecto de Soluciones/Aplicaciones — Plataforma de Banca Digital»**.
 
-> **Estado de la entrega:** propuesta arquitectónica completa **con limitaciones declaradas**. Incluye una base ejecutable local para el alcance **no financiero**. **No es apta para producción.** Las transferencias y el alta de clientes en el Core están **bloqueadas** de forma deliberada (B-05).
+> **Estado de la entrega:** propuesta arquitectónica que cubre los requisitos R1–R6 y C1–C6, **con limitaciones declaradas**: C3 y C6 son parciales y la ejecución financiera está bloqueada. Incluye una base ejecutable local para el alcance **no financiero**. **No es apta para producción.** Las transferencias y el alta de clientes en el Core están **bloqueadas** de forma deliberada (B-05) porque ADR-0021 no fue aprobado.
 
 **Empiece aquí:** [Resumen ejecutivo](docs/entrega/resumen-ejecutivo.md) · [Matriz de cumplimiento](docs/entrega/matriz-cumplimiento.md) · [Guía de defensa](docs/entrega/guia-defensa-arquitectura.md) · [Limitaciones y supuestos](docs/entrega/limitaciones-y-supuestos.md) · [Validación final](docs/entrega/validacion-final.md)
+
+## Autoría, dirección arquitectónica y uso de IA
+
+**Responsable de la propuesta:** Juan Carlos Amay, quien responde por el alcance, las decisiones aceptadas y su presentación ante el comité.
+
+**Uso de IA.** La elaboración contó con herramientas de IA generativa, entre ellas Claude Code (Anthropic), como apoyo profesional para:
+
+- redactar y estructurar documentos y ADR;
+- escribir el modelo C4, los diagramas, el código de la base ejecutable y sus pruebas;
+- simular revisiones adversariales;
+- ejecutar las validaciones.
+
+El código **no** se escribió manualmente en su totalidad: se generó con asistencia y se verificó con pruebas automatizadas.
+
+**Cómo se tomaron y controlaron las decisiones:**
+
+| Mecanismo | Cómo se aplica | Evidencia |
+|---|---|---|
+| Decisión humana | El autor definió el alcance, la secuencia de fases y las restricciones de trabajo: no inventar respuestas institucionales, cifras ni cumplimiento normativo, y no implementar operaciones financieras reales. Cada entrega se incorporó al repositorio con su aceptación | Historial de Git; [política de documentación](docs/00-politica-de-documentacion.md) |
+| Revisión crítica | Las afirmaciones de diseño se trataron como hipótesis y se sometieron a revisiones adversariales. Ante los hallazgos sin resolver se mantuvieron los bloqueos en lugar de avanzar | [Revisiones](docs/reviews/), [riesgos y condiciones](docs/23-riesgos-y-condiciones-fase-3.md) |
+| Trazabilidad | Cada decisión relevante tiene un ADR con contexto, alternativas, trade-offs y riesgos, y se enlaza con su requisito | [ADR](#8-registros-de-decisiones-arquitectónicas-adr), [matriz de cumplimiento](docs/entrega/matriz-cumplimiento.md) |
+| Validación | Comandos reales con sus resultados (DSL, diagramas, Markdown, enlaces, secretos y 63 pruebas automatizadas); también lo que **no** se validó | [Validación final](docs/entrega/validacion-final.md) |
+
+**Límite de las revisiones.** Las revisiones ARG-01, ARG-01-R2, ARG-02, ARG-02-R y ARG-03 se realizaron con perfiles de comité **simulados** mediante IA, dentro del mismo flujo de trabajo asistido que produjo el diseño (ARG03-L03). El término «independiente» en los títulos de ARG-01-R2 y ARG-02 se refiere a una revisión separada y adversarial, **no** a un revisor humano ajeno a la autoría. **Ninguna equivale a una auditoría humana independiente.** Esa auditoría es condición previa para levantar B-05 y para cualquier uso productivo.
 
 ## 1. Reto y objetivos
 
 El reto pide diseñar una plataforma de banca digital (web y app móvil) para una institución financiera que permita consultar datos del cliente y movimientos, realizar transferencias, vincular clientes nuevos con reconocimiento facial y notificar cada movimiento. Además exige atender la normativa, la alta disponibilidad, la recuperación ante desastres, la seguridad, la escalabilidad y una infraestructura en AWS o Azure (requisitos R1–R6 y C1–C6).
 
-El objetivo de este repositorio es una arquitectura **defendible ante un comité**, con decisiones trazables:
+El objetivo de este repositorio es una arquitectura que pueda **evaluarse ante un comité**, con decisiones trazables:
 
 ```text
 Requisito → Driver / Supuesto → Decisión (ADR) → Trade-off → Consecuencia → Evidencia
@@ -23,7 +47,7 @@ Requisito → Driver / Supuesto → Decisión (ADR) → Trade-off → Consecuenc
 | Integración con el Core | El Core es autoritativo, externo y de capacidad limitada. ACL por dominio, sin acceso a su base de datos y con un presupuesto global de capacidad | [ADR-0001](docs/adr/ADR-0001-acl-por-dominio.md), [ADR-0009](docs/adr/ADR-0009-core-autoritativo.md), [ADR-0011](docs/adr/ADR-0011-presupuesto-de-capacidad-del-core.md), [05](docs/05-frontera-de-integracion-core.md) |
 | Capa de entrada | API Gateway de borde sin lógica de negocio y BFF compartido para web y móvil | [ADR-0002](docs/adr/ADR-0002-frontera-api-gateway.md), [ADR-0014](docs/adr/ADR-0014-api-gateway-y-bff-de-canales.md) |
 | Descomposición | Híbrida: cinco servicios de dominio con base de datos propia | [ADR-0012](docs/adr/ADR-0012-descomposicion-hibrida-de-contenedores.md), [16](docs/16-arquitectura-de-contenedores.md) |
-| Seguridad transaccional | Máquina de estados durable, idempotencia, conciliación. **Un timeout no es una falla** | [ADR-0005](docs/adr/ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](docs/adr/ADR-0006-idempotencia-y-conciliacion.md), [07](docs/07-maquina-de-estados-transaccional.md), [08](docs/08-idempotencia-y-conciliacion.md) |
+| Seguridad transaccional | Máquina de estados durable, idempotencia, conciliación. **Un timeout no es una falla.** Las garantías son de diseño y dependen de capacidades del Core por confirmar (Q-02, Q-17) y de ADR-0021, no aprobado: la ejecución sigue bloqueada | [ADR-0005](docs/adr/ADR-0005-maquina-de-estados-transaccional.md), [ADR-0006](docs/adr/ADR-0006-idempotencia-y-conciliacion.md), [07](docs/07-maquina-de-estados-transaccional.md), [08](docs/08-idempotencia-y-conciliacion.md) |
 | Eventos y notificaciones | Outbox transaccional + broker; push con respaldo SMS; deduplicación y cola de mensajes muertos | [ADR-0015](docs/adr/ADR-0015-mensajeria-asincrona-con-outbox.md), [25](docs/25-contratos-eventos-y-errores.md) |
 | Auditoría y caché | Auditoría de solo anexión por categoría con cadena de hash; Cache-Aside con frescura por categoría | [ADR-0020](docs/adr/ADR-0020-politica-de-auditoria-por-categoria.md), [ADR-0004](docs/adr/ADR-0004-cache-aside.md), [06](docs/06-estrategia-de-cache.md) |
 | Seguridad e identidad | IdP OIDC interno; Authorization Code + PKCE; sesión del servidor en el BFF; MFA y autenticación reforzada; KYC con prueba de vida | [ADR-0013](docs/adr/ADR-0013-frontera-del-idp.md), [ADR-0019](docs/adr/ADR-0019-sesiones-del-bff.md), [ADR-0023](docs/adr/ADR-0023-autenticacion-y-sesiones.md), [29](docs/29-seguridad-identidad-y-cumplimiento.md) |
@@ -71,8 +95,10 @@ Resultados de la última ejecución: [validación final](docs/entrega/validacion
 
 ## 5. Disponibilidad, DR y limitaciones
 
-- **HA:** tres zonas de disponibilidad, PostgreSQL con réplica síncrona y degradación a caché ante fallas del Core ([28](docs/28-alta-disponibilidad-y-recuperacion.md)).
-- **DR:** región secundaria en espera templada con conmutación **manual** y **cuarentena financiera**. Los RTO/RPO son **candidatos** y no se han medido.
+Lo que sigue es diseño: no se ha desplegado ni probado en la nube.
+
+- **HA:** tres zonas de disponibilidad, PostgreSQL con réplica síncrona y degradación a caché ante fallas del Core ([28](docs/28-alta-disponibilidad-y-recuperacion.md)). La ausencia de pérdida de escrituras confirmadas depende de validar la semántica real del servicio gestionado (ADR-0016).
+- **DR:** región secundaria en espera templada con conmutación **manual** y **cuarentena financiera**. Los RTO/RPO son **candidatos** y no se han medido. Para la ejecución financiera la postura es **suspender y conciliar**, no dar continuidad: ADR-0021 no garantiza hoy la ausencia de pérdidas ni de duplicados ante la caída de una región.
 - **Limitaciones principales:**
   - sin despliegue en la nube;
   - sin latencia ni costos medidos;

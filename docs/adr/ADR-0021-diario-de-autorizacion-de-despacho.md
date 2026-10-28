@@ -2,7 +2,7 @@
 
 | Campo | Valor |
 |---|---|
-| Estado | **Aceptada con condiciones** (remediación de ARG02-C01). Pendiente de verificación independiente y de la selección de la capacidad de almacenamiento (DD-23). **No autoriza el diseño de los componentes de ejecución y recuperación** mientras no se verifique |
+| Estado | **No aprobada en [ARG-03](../reviews/ARG-03-revision-componentes.md)** (ARG03-C01 CRITICAL; ARG03-H01 y H02 HIGH): requiere enmienda y verificación humana independiente antes de levantar B-05. Estado anterior: **Aceptada con condiciones** (remediación de ARG02-C01). Pendiente de verificación independiente y de la selección de la capacidad de almacenamiento (DD-23). **No autoriza el diseño de los componentes de ejecución y recuperación** mientras no se verifique |
 | Fecha | 2026-10-27 |
 | Requisitos | R1 (transferencias), R3 (alta del cliente); C2, C3 |
 | Drivers y supuestos | S3, S19, S20; AQ-02, AQ-05; QA3, QA12, QA14 |
