@@ -22,6 +22,7 @@
     <module>test-fixtures/core-simulator</module>
     <module>services/audit</module>
     <module>services/notifications</module>
+    <module>services/digital-linking</module>
   </modules>
 
   <properties>

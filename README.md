@@ -20,6 +20,8 @@ Requisito → Driver / Supuesto → Decisión → Trade-off → Consecuencia
 | Fase 3 | C4 Nivel 2: Contenedores | **Completada; pendiente de la revisión ARG-02** ([preparación](docs/reviews/ARG-02-preparacion-revision-contenedores.md)). El orquestador de transferencias es **provisional**. **No se autoriza implementación productiva** |
 | Revisión ARG-02 | Revisión independiente de contenedores | CONDITIONAL GO con alcance restringido; **NO-GO para el diseño de los componentes de ejecución y recuperación** de transferencias y del alta de clientes. Remediación en [registro](docs/reviews/ARG-02-registro-de-remediacion.md) |
 | Fase 4 | C4 Nivel 3: Componentes | **Parcialmente completada**: BFF, consultas, vinculación (salvo el alta), notificaciones y auditoría. **Bloqueado (B-05):** servicio de transferencias y ejecutor del alta. Pendiente de ARG-03 ([lista de verificación](docs/reviews/ARG-03-lista-de-verificacion-fase-4.md)) |
+| Revisión ARG-03 | Revisión de componentes y del diario de despacho | **CONDITIONAL GO para la base técnica no financiera**; NO-GO para la ejecución financiera y el alta en el Core ([informe](docs/reviews/ARG-03-revision-componentes.md)) |
+| Base ejecutable | Java 21 y Quarkus: paquetes transversales, contratos, simulador del Core, auditoría, notificaciones y vinculación (subconjunto seguro, sin alta ni activación) | **Implementada para uso local**; transferencias y alta bloqueadas (B-05). No apta para producción ([alcance](docs/implementacion/01-alcance-de-la-base-ejecutable.md)) |
 | Fases posteriores | C4 de Componentes, seguridad e identidad, infraestructura cloud, DR, justificaciones de frontend y notificaciones | No iniciadas |
 
 > Este repositorio no anticipa decisiones de fases posteriores. Lo que todavía no se ha decidido figura como **decisión diferida**, con su disparador explícito.
@@ -85,11 +87,17 @@ Documentos:
 │   ├── 25-contratos-eventos-y-errores.md       Contratos, eventos, errores y timeouts
 │   ├── 26-validacion-adversarial-fase-4.md     Escenarios adversariales y preguntas de diseño
 │   ├── adr/                                    Registros de decisiones arquitectónicas
+│   ├── implementacion/                         Alcance, construcción, servicios y límites de la base ejecutable
 │   └── reviews/                                Revisiones de arquitectura (ARG) y remediaciones
 ├── c4/
 │   └── workspace.dsl                           Modelo C4 en Structurizr DSL (fuente autoritativa)
-└── diagrams/
-    └── c4/                                     Diagramas generados desde el DSL (no editar)
+├── diagrams/
+│   └── c4/                                     Diagramas generados desde el DSL (no editar)
+├── pom.xml                                     POM agregador del backend (Java 21, Quarkus)
+├── packages/                                   Bibliotecas transversales y contratos OpenAPI
+├── services/                                   Auditoría, notificaciones y vinculación digital
+├── test-fixtures/                              Simulador del Core (solo pruebas, datos sintéticos)
+└── infra/local/                                Entorno local (PostgreSQL por servicio y RabbitMQ)
 ```
 
 ## Registros de decisiones arquitectónicas (ADR)
