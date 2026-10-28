@@ -583,6 +583,92 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
         plataforma.auditoria.audAnclaje -> plataforma.auditoria.audRepo "Ancla las cabezas de las cadenas"
         plataforma.auditoria.audApi -> plataforma.auditoria.audRepo "Consulta"
         plataforma.auditoria.audRepo -> plataforma.auditoriaDb "Solo anexión y archivo inmutable" "SQL/TLS; almacenamiento de objetos"
+
+        // ================================================================
+        // Despliegue de referencia (ADR-0022, docs/27 y docs/28).
+        // ARQUITECTURA DE REFERENCIA DEL RETO: no es un despliegue aprobado. La región, la ubicación
+        // del Core y la conectividad están sin confirmar (ADR-0010, Q-20, DD-15).
+        ref = deploymentEnvironment "Referencia" {
+            disp = deploymentNode "Dispositivos del cliente" "Zona TB-1: no confiable" "Navegador, Android, iOS" {
+                nav = deploymentNode "Navegador web" "" "Navegador moderno" {
+                    spa = containerInstance plataforma.spa
+                }
+                movil = deploymentNode "Teléfono inteligente" "" "Android / iOS" {
+                    app = containerInstance plataforma.app
+                }
+            }
+            aws = deploymentNode "AWS — región principal" "Región por seleccionar (ADR-0010, Q-20). Referencia del reto, no aprobada para producción" "Amazon Web Services" {
+                borde = deploymentNode "Borde" "Perímetro público" "AWS edge" {
+                    cdn = infrastructureNode "CDN, WAF y anti-DDoS" "Entrega la SPA; filtra el tráfico con reglas gestionadas y límites de tasa" "CloudFront, AWS WAF, AWS Shield"
+                }
+                vpc = deploymentNode "VPC de la plataforma" "Zona TB-2. Subredes privadas en tres zonas de disponibilidad; sin acceso directo desde Internet" "Amazon VPC" {
+                    entrada = deploymentNode "Entrada" "Única subred con tráfico de Internet (ya filtrado)" "API Gateway gestionado o Kong (DD-15)" {
+                        gw = containerInstance plataforma.gateway
+                    }
+                    computo = deploymentNode "Cómputo de aplicaciones" "Réplicas repartidas en 3 zonas de disponibilidad; techo de réplicas por servicio (RI-01)" "Amazon EKS o ECS/Fargate (por decidir)" "" 3 {
+                        bff = containerInstance plataforma.bff
+                        idp = containerInstance plataforma.idp
+                        consultas = containerInstance plataforma.consultas
+                        vinculacion = containerInstance plataforma.vinculacion
+                        transferencias = containerInstance plataforma.transferencias
+                        notif = containerInstance plataforma.notif
+                        auditoria = containerInstance plataforma.auditoria
+                    }
+                    admin = deploymentNode "Zona de administración" "Acceso solo del personal, por red privada e IdP corporativo" "Amazon EKS o ECS/Fargate" {
+                        consola = containerInstance plataforma.consola
+                    }
+                    datos = deploymentNode "Datos gestionados" "Subredes de datos aisladas; cifrado en reposo con claves de KMS" "Multizona" {
+                        pg = deploymentNode "PostgreSQL por servicio" "Primario y réplica síncrona en otra zona (PT-01); un solo escritor (PT-03)" "Amazon RDS / Aurora PostgreSQL Multi-AZ" {
+                            idpDb = containerInstance plataforma.idpDb
+                            consultasDb = containerInstance plataforma.consultasDb
+                            vinculacionDb = containerInstance plataforma.vinculacionDb
+                            transferenciasDb = containerInstance plataforma.transferenciasDb
+                            notifDb = containerInstance plataforma.notifDb
+                            auditoriaDb = containerInstance plataforma.auditoriaDb
+                        }
+                        redis = deploymentNode "Caché y sesiones" "Réplicas multizona; nunca autoritativa" "Amazon ElastiCache (compatible con Redis)" {
+                            cache = containerInstance plataforma.cache
+                            sesiones = containerInstance plataforma.bffSesiones
+                        }
+                        mq = deploymentNode "Broker" "Clúster de 3 nodos en 3 zonas" "Amazon MQ for RabbitMQ" {
+                            broker = containerInstance plataforma.broker
+                        }
+                        diario = deploymentNode "Diario de despacho (BLOQUEADO)" "ADR-0021 no aprobado (ARG03-C01, H01, H02); producto por demostrar (DD-23)" "Por seleccionar" {
+                            diarioDespacho = containerInstance plataforma.diarioDespacho
+                        }
+                    }
+                    seg = deploymentNode "Seguridad y operación" "" "Servicios gestionados" {
+                        kms = infrastructureNode "Claves y secretos" "Cifrado, firma de afirmaciones (PF4-05) y secretos de servicio; rotación" "AWS KMS, CloudHSM (candidato), Secrets Manager"
+                        obs = infrastructureNode "Observabilidad" "Trazas, métricas y registros con correlación, sin datos sensibles" "OpenTelemetry, CloudWatch"
+                        segtel = infrastructureNode "Telemetría de seguridad" "Registro de la API de control y detección de amenazas; envío al SIEM institucional si existe (Q-13)" "CloudTrail, GuardDuty, Security Hub"
+                        respaldo = infrastructureNode "Respaldos" "Copias cifradas en una cuenta aislada, con bloqueo de retención" "AWS Backup"
+                        archivo = infrastructureNode "Archivo inmutable de auditoría" "WORM; retención por acordar (Q-19)" "Amazon S3 Object Lock"
+                    }
+                    enlace = infrastructureNode "Conectividad privada hacia el Core" "Sin tránsito por Internet. Topología y ubicación del Core por confirmar (Q-20)" "AWS Direct Connect o VPN IPsec (por decidir)"
+                }
+            }
+            awsDr = deploymentNode "AWS — región secundaria (DR)" "Espera templada; conmutación manual con cuarentena financiera (PT-02)" "Amazon Web Services" {
+                drDatos = infrastructureNode "Réplicas y respaldos entre regiones" "Réplica asíncrona de PostgreSQL y copias de respaldo; RPO mayor que 0" "RDS cross-region, AWS Backup"
+                drComputo = infrastructureNode "Cómputo en espera" "Infraestructura como código e imágenes replicadas; capacidad mínima hasta la conmutación" "EKS o ECS/Fargate"
+                drArchivo = infrastructureNode "Réplica del archivo de auditoría" "" "S3 Cross-Region Replication"
+            }
+            inst = deploymentNode "Infraestructura de la institución" "Zona TB-3. Ubicación (instalaciones propias o nube) por confirmar (Q-20)" "Por confirmar" {
+                coreBancario = softwareSystemInstance core
+                sistemaComplementario = softwareSystemInstance complementario
+            }
+            terceros = deploymentNode "Proveedores terceros" "Zona TB-4: confianza contractual" "SaaS" {
+                proveedorKyc = softwareSystemInstance kyc
+                proveedoresNotif = softwareSystemInstance notificaciones
+            }
+            externa = deploymentNode "Infraestructura financiera externa" "Zona TB-5. Topología por resolver (Q-01, B-03)" "Por confirmar" {
+                sistemaTransferencias = softwareSystemInstance transferencias
+            }
+
+            ref.aws.borde.cdn -> ref.aws.vpc.entrada.gw "Reenvía el tráfico filtrado" "HTTPS"
+            ref.aws.vpc.enlace -> ref.inst.coreBancario "Canal privado cifrado" "TLS sobre enlace privado"
+            ref.aws.vpc.seg.respaldo -> ref.awsDr.drDatos "Copia entre regiones" "AWS Backup"
+            ref.aws.vpc.seg.archivo -> ref.awsDr.drArchivo "Replica" "S3 CRR"
+        }
     }
 
     views {
@@ -673,7 +759,11 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
         }
 
         // Servicio de transferencias: SIN vista de componentes (B-05; ARG02-C01, CF-01, CF-02).
-        // TODO (Fase de infraestructura): deployment plataforma "Producción" "Despliegue" { ... }
+        deployment plataforma "Referencia" "Infraestructura-Referencia" "Infraestructura cloud de referencia del reto (ADR-0022). No es un despliegue aprobado: región, ubicación del Core y conectividad por confirmar." {
+            title "Infraestructura cloud de referencia (AWS) — no aprobada para producción"
+            include *
+            autolayout lr 150 150
+        }
 
         terminology {
             person "Persona"
@@ -732,6 +822,11 @@ workspace "Plataforma de Banca Digital" "Arquitectura de la plataforma de banca 
                 stroke #b45f06
                 strokeWidth 6
                 border dashed
+            }
+            element "Infrastructure Node" {
+                background #ffffff
+                color #232f3e
+                stroke #232f3e
             }
             element "Component" {
                 background #85bbf0

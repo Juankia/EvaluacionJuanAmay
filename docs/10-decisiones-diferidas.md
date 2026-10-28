@@ -52,3 +52,12 @@ Esto evita seleccionar tecnología antes de entender el problema. En el registro
 | DD-19 | **Provisional** (Java 21 + Quarkus) | [ADR-0017](adr/ADR-0017-stack-de-backend.md) |
 | DD-20 | Disparador ampliado: rechazos de CL-1 con baja utilización real del Core | [19 §3.5](19-comunicacion-entre-contenedores.md#35-comportamiento-con-menos-réplicas-que-el-máximo) |
 | DD-15 | Ahora concentra la selección de productos: Gateway, broker, caché, PostgreSQL gestionado y entorno de ejecución | [21](21-alternativas-tecnologicas.md) |
+
+## Actualización de la entrega (docs 27 a 29)
+
+| DD | Nuevo estado | Referencia |
+|---|---|---|
+| DD-03 | Flujo OAuth **propuesto**: Authorization Code + PKCE, BFF para la web, MFA y autenticación reforzada; el producto sigue provisional | [ADR-0023](adr/ADR-0023-autenticacion-y-sesiones.md) |
+| DD-09 | RTO/RPO **candidatos** propuestos para discusión; **no** acordados ni probados | [28 §7](28-alta-disponibilidad-y-recuperacion.md#7-objetivos-candidatos-de-rto-y-rpo) |
+| DD-15 | AWS como **arquitectura de referencia** del reto; la selección definitiva sigue condicionada a ADR-0010 y Q-20 | [ADR-0022](adr/ADR-0022-infraestructura-cloud-de-referencia.md), [27](27-infraestructura-cloud.md) |
+| DD-04, DD-14, DD-23 | Sin cambios: siguen diferidas | — |

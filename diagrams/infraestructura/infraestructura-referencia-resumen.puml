@@ -1,0 +1,102 @@
+@startuml infraestructura-referencia-resumen
+' Vista ejecutiva de la infraestructura de referencia (ADR-0022, docs/27, docs/28).
+' La vista detallada se genera desde c4/workspace.dsl (Infraestructura-Referencia).
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam rectangle {
+  RoundCorner 8
+}
+skinparam database {
+  BackgroundColor #2f6fa7
+  FontColor #ffffff
+}
+skinparam queue {
+  BackgroundColor #2f6fa7
+  FontColor #ffffff
+}
+left to right direction
+
+title Infraestructura cloud de referencia (AWS) — vista ejecutiva\n<size:12>Arquitectura de referencia del reto. NO es un despliegue aprobado: región, ubicación del Core y conectividad por confirmar (ADR-0010, Q-20)</size>
+
+rectangle "TB-1 · Canales públicos (no confiables)" as tb1 #fdf2e9 {
+  rectangle "SPA web\nReact + TS" as spa #438dd5
+  rectangle "App móvil\nReact Native + TS\nSDK KYC · biometría local" as app #438dd5
+}
+
+rectangle "AWS · Región principal (por seleccionar)" as region #f4f8fc {
+  rectangle "Borde\nCloudFront · AWS WAF · Shield" as edge #ffffff
+  rectangle "TB-2 · VPC de la plataforma (subredes privadas en 3 zonas de disponibilidad)" as vpc #eaf2fb {
+    rectangle "API Gateway\n(gestionado o Kong, DD-15)" as gw #438dd5
+    rectangle "Cómputo (EKS o ECS/Fargate)\nréplicas en AZ-a · AZ-b · AZ-c" as compute #dbe9f7 {
+      rectangle "BFF de canales\n(sesiones del lado del servidor)" as bff #438dd5
+      rectangle "IdP OIDC\n(interno, ADR-0013)" as idp #438dd5
+      rectangle "Consultas\n(ACL + Cache-Aside)" as inq #438dd5
+      rectangle "Vinculación\n(E3/E5 deshabilitados)" as lnk #438dd5
+      rectangle "Notificaciones" as ntf #438dd5
+      rectangle "Auditoría" as aud #438dd5
+      rectangle "Transferencias\nBLOQUEADO (B-05)" as trf #f4cccc
+    }
+    rectangle "Datos gestionados (multizona)" as data #dbe9f7 {
+      database "PostgreSQL por servicio\nRDS/Aurora Multi-AZ\nréplica síncrona (PT-01)" as pg
+      database "ElastiCache\ncaché + sesiones BFF" as redis
+      queue "Amazon MQ\nfor RabbitMQ\n(3 nodos, 3 AZ)" as mq
+      rectangle "Diario de despacho\nBLOQUEADO (ADR-0021 no aprobado)" as jrnl #f4cccc
+    }
+    rectangle "Seguridad y operación" as ops #ffffff {
+      rectangle "KMS · CloudHSM (candidato)\nSecrets Manager" as kms #ffffff
+      rectangle "OpenTelemetry · CloudWatch\nCloudTrail · GuardDuty · Security Hub" as obs #ffffff
+      rectangle "AWS Backup (cuenta aislada)\nS3 Object Lock (auditoría WORM)" as bkp #ffffff
+    }
+    rectangle "Enlace privado al Core\nDirect Connect o VPN IPsec\n(por decidir)" as link #ffffff
+  }
+}
+
+rectangle "AWS · Región secundaria (DR, espera templada)" as dr #f7f7f7 {
+  rectangle "Réplica asíncrona de PostgreSQL\nrespaldos · réplica S3\ncómputo mínimo (IaC)" as drsite #ffffff
+}
+
+rectangle "TB-3 · Institución (ubicación por confirmar, Q-20)" as tb3 #eeeeee {
+  rectangle "Core Bancario\n(autoritativo)" as core #5b6770
+  rectangle "Sistema Complementario" as comp #5b6770
+}
+
+rectangle "TB-4 · Terceros" as tb4 #eeeeee {
+  rectangle "KYC / biometría" as kyc #8a8a8a
+  rectangle "Push · SMS · correo" as prov #8a8a8a
+}
+
+spa --> edge : HTTPS
+app --> edge : HTTPS (token OIDC)
+edge --> gw : tráfico filtrado
+gw --> bff
+bff --> idp : OIDC (cliente confidencial)
+bff --> inq
+bff --> lnk
+inq --> redis
+bff --> redis
+inq --> pg
+lnk --> pg
+aud --> pg
+lnk --> mq : outbox
+mq --> ntf
+mq --> aud
+inq --> link
+link --> core : TLS · cuota global (ADR-0011)
+inq ..> comp
+lnk --> kyc
+ntf --> prov
+pg ..> drsite : réplica asíncrona\n(estado no financiero)
+bkp ..> drsite : copias entre regiones
+trf ..> jrnl : sin despacho\nhasta levantar B-05
+
+legend right
+  |= Símbolo |= Significado |
+  | <#438dd5> | Contenedor de la plataforma |
+  | <#f4cccc> | Bloqueado: no se implementa ni se despliega |
+  | <#5b6770> | Sistema existente de la institución |
+  | <#8a8a8a> | Proveedor tercero |
+  | línea punteada | Replicación, respaldo o dependencia bloqueada |
+  TB-n = zona de confianza (docs/14)
+endlegend
+@enduml

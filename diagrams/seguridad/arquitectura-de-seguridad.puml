@@ -1,0 +1,64 @@
+@startuml arquitectura-de-seguridad
+' Arquitectura de seguridad e identidad (docs/29, ADR-0023). Vista conceptual.
+skinparam defaultFontName "DejaVu Sans"
+skinparam defaultFontSize 13
+skinparam shadowing false
+skinparam rectangle {
+  RoundCorner 8
+}
+left to right direction
+
+title Arquitectura de seguridad e identidad — vista conceptual\n<size:12>Controles por zona de confianza. Productos y parámetros por confirmar en la fase de seguridad (DD-03, DD-04, DD-14)</size>
+
+rectangle "TB-1 · Canales (no confiables)" as tb1 #fdf2e9 {
+  rectangle "SPA web\nsin tokens en el navegador\ncookie __Host- HttpOnly · Secure · SameSite=Strict" as spa #438dd5
+  rectangle "App móvil\nAuthorization Code + PKCE\ntokens en Keychain/Keystore\nbiometría LOCAL desbloquea la credencial" as app #438dd5
+}
+
+rectangle "Perímetro" as edge #ffffff {
+  rectangle "WAF · anti-DDoS · TLS 1.2+\nlimitación de tasa" as waf #ffffff
+  rectangle "API Gateway\nvalida firma, audiencia, vigencia y alcances del token" as gw #438dd5
+}
+
+rectangle "TB-2 · Plataforma" as tb2 #eaf2fb {
+  rectangle "BFF\ncliente OIDC confidencial\nsesión del lado del servidor (ADR-0019)\nprotección CSRF · revocación por sujeto" as bff #438dd5
+  rectangle "IdP OIDC (ADR-0013)\nMFA · autenticación reforzada (step-up)\nrotación de refresh token con detección de reutilización\nrecuperación de cuenta reforzada" as idp #438dd5
+  rectangle "Servicios de dominio\nautorización de negocio en CADA solicitud\n(propiedad de cuentas y recursos; RESOURCE_NOT_FOUND)" as svc #438dd5
+  rectangle "Vinculación\nKYC + prueba de vida en el servidor\nprueba de control independiente (DD-21)\nE3/E5 BLOQUEADOS" as lnk #438dd5
+  rectangle "Auditoría A1–A8\nsolo anexión · cadena de hash\narchivo WORM (por acordar)" as aud #438dd5
+  rectangle "KMS / HSM · gestor de secretos\ncifrado en reposo · firma de afirmaciones\nidentidad de carga de trabajo + mTLS" as kms #ffffff
+  rectangle "Telemetría de seguridad\nregistros sin datos sensibles\ndetección de fraude y ATO\n→ SIEM institucional (Q-13)" as siem #ffffff
+}
+
+rectangle "TB-4 · Terceros (confianza contractual)" as tb4 #eeeeee {
+  rectangle "Proveedor KYC\nverificación facial 1:1 · prueba de vida\n(capacidades por confirmar, DD-14)" as kyc #8a8a8a
+}
+
+rectangle "TB-3 · Institución" as tb3 #eeeeee {
+  rectangle "Core Bancario\nautoritativo para la identidad del cliente (ADR-0009)" as core #5b6770
+  rectangle "IdP corporativo (candidato)\npersonal: operadores y auditores" as corp #ffffff
+}
+
+spa --> waf : (1) HTTPS + cookie de sesión
+waf --> gw
+gw --> bff
+bff --> idp : (2) Authorization Code + PKCE\ncliente confidencial
+app --> idp : (3) OIDC directo (cliente público)
+app --> waf : (4) API con token de acceso corto
+gw --> svc : token validado + contexto
+svc --> core : (5) titularidad según el Core (vía ACL)
+app --> kyc : (6) captura con SDK (sin biometría en la plataforma)
+lnk --> kyc : (7) resultado verificado en el servidor
+lnk --> core : (8) búsqueda / alta (alta BLOQUEADA)
+svc --> aud : eventos A1–A8
+bff --> aud
+idp --> siem : eventos de seguridad
+svc ..> kms
+corp ..> svc : consola de operaciones (cuatro ojos)
+
+note bottom of app
+  Biometría local (huella / rostro del dispositivo) ≠ verificación facial del KYC.
+  La local solo desbloquea una credencial guardada en el dispositivo;
+  la autorización la decide siempre el servidor.
+end note
+@enduml
